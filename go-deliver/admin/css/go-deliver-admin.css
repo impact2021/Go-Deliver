@@ -1,0 +1,790 @@
+/**
+ * Go Deliver – Admin Styles
+ *
+ * @package Go_Deliver
+ */
+
+/* ==========================================================================
+   General layout
+   ========================================================================== */
+
+.gd-admin-wrap {
+	max-width: 1200px;
+	margin: 20px 0;
+}
+
+.gd-admin-wrap h1 {
+	margin-bottom: 20px;
+}
+
+.gd-section {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px 24px;
+	margin-bottom: 24px;
+}
+
+.gd-section h2 {
+	margin-top: 0;
+	padding-bottom: 12px;
+	border-bottom: 1px solid #e0e0e0;
+	font-size: 14px;
+	font-weight: 600;
+	text-transform: uppercase;
+	color: #3c434a;
+	letter-spacing: .03em;
+}
+
+/* ==========================================================================
+   Stats cards
+   ========================================================================== */
+
+.gd-stats-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 16px;
+	margin-bottom: 28px;
+}
+
+.gd-stat-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 20px;
+	text-align: center;
+	box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+
+.gd-stat-card .gd-stat-number {
+	display: block;
+	font-size: 32px;
+	font-weight: 700;
+	line-height: 1.1;
+	color: #2271b1;
+	margin-bottom: 6px;
+}
+
+.gd-stat-card .gd-stat-label {
+	display: block;
+	font-size: 12px;
+	color: #646970;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+}
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+
+.gd-table-wrap {
+	overflow-x: auto;
+}
+
+.gd-table {
+	width: 100%;
+	border-collapse: collapse;
+	border-spacing: 0;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	font-size: 13px;
+}
+
+.gd-table thead th {
+	background: #f6f7f7;
+	border-bottom: 1px solid #c3c4c7;
+	padding: 10px 14px;
+	text-align: left;
+	font-weight: 600;
+	color: #3c434a;
+	white-space: nowrap;
+}
+
+.gd-table tbody tr {
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.gd-table tbody tr:last-child {
+	border-bottom: none;
+}
+
+.gd-table tbody tr:hover {
+	background: #f6f7f7;
+}
+
+.gd-table tbody td {
+	padding: 10px 14px;
+	vertical-align: middle;
+	color: #3c434a;
+}
+
+.gd-table tbody td a {
+	color: #2271b1;
+	text-decoration: none;
+}
+
+.gd-table tbody td a:hover {
+	color: #135e96;
+	text-decoration: underline;
+}
+
+.gd-table tfoot td {
+	padding: 10px 14px;
+	background: #f6f7f7;
+	border-top: 1px solid #c3c4c7;
+	font-weight: 600;
+}
+
+/* ==========================================================================
+   Status badges
+   ========================================================================== */
+
+.gd-badge {
+	display: inline-block;
+	padding: 3px 9px;
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+/* Job statuses */
+.gd-badge-open       { background: #dbeafe; color: #1d4ed8; }
+.gd-badge-locked     { background: #ffedd5; color: #c2410c; }
+.gd-badge-accepted   { background: #dcfce7; color: #166534; }
+.gd-badge-expired    { background: #f3f4f6; color: #6b7280; }
+.gd-badge-cancelled  { background: #fee2e2; color: #b91c1c; }
+
+/* Mover/document statuses */
+.gd-badge-pending    { background: #fef9c3; color: #854d0e; }
+.gd-badge-approved   { background: #dcfce7; color: #166534; }
+.gd-badge-rejected   { background: #fee2e2; color: #b91c1c; }
+.gd-badge-suspended  { background: #f3f4f6; color: #6b7280; }
+
+/* Transaction types */
+.gd-badge-topup      { background: #dcfce7; color: #166534; }
+.gd-badge-charge     { background: #fee2e2; color: #b91c1c; }
+.gd-badge-refund     { background: #dbeafe; color: #1d4ed8; }
+.gd-badge-adjustment { background: #f3f4f6; color: #6b7280; }
+
+/* ==========================================================================
+   Filter bar
+   ========================================================================== */
+
+.gd-filter-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: flex-end;
+	margin-bottom: 16px;
+	padding: 14px 16px;
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+}
+
+.gd-filter-bar .gd-filter-group {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.gd-filter-bar label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #3c434a;
+}
+
+.gd-filter-bar input[type="text"],
+.gd-filter-bar input[type="date"],
+.gd-filter-bar select {
+	min-width: 140px;
+	padding: 6px 8px;
+	font-size: 13px;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	background: #fff;
+	color: #2c3338;
+}
+
+.gd-filter-bar .button {
+	align-self: flex-end;
+}
+
+/* ==========================================================================
+   Form builder
+   ========================================================================== */
+
+.gd-form-builder {
+	margin-top: 12px;
+}
+
+.gd-field-list {
+	list-style: none;
+	margin: 0 0 16px;
+	padding: 0;
+	min-height: 60px;
+	border: 2px dashed #c3c4c7;
+	border-radius: 4px;
+}
+
+.gd-field-list:empty::after {
+	content: "Drag fields here or add a new field below.";
+	display: block;
+	padding: 20px;
+	text-align: center;
+	color: #8c8f94;
+	font-style: italic;
+}
+
+.gd-field-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	margin: 6px;
+	cursor: default;
+}
+
+.gd-field-row:hover {
+	background: #f6f7f7;
+}
+
+.gd-field-handle {
+	cursor: grab;
+	color: #8c8f94;
+	font-size: 18px;
+	line-height: 1;
+	padding: 2px 4px;
+	flex-shrink: 0;
+}
+
+.gd-field-handle:active {
+	cursor: grabbing;
+}
+
+.gd-field-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.gd-field-label {
+	font-weight: 600;
+	font-size: 13px;
+	color: #3c434a;
+	margin-bottom: 2px;
+}
+
+.gd-field-key {
+	font-size: 11px;
+	color: #8c8f94;
+	font-family: monospace;
+}
+
+.gd-field-meta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.gd-field-type {
+	font-size: 11px;
+	background: #f0f0f1;
+	color: #3c434a;
+	padding: 2px 7px;
+	border-radius: 3px;
+	text-transform: uppercase;
+	letter-spacing: .03em;
+}
+
+.gd-field-actions {
+	display: flex;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.gd-add-field-form {
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 16px;
+	margin-top: 12px;
+}
+
+.gd-add-field-form h3 {
+	margin: 0 0 14px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.gd-form-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.gd-form-col {
+	flex: 1;
+	min-width: 160px;
+}
+
+.gd-form-col label {
+	display: block;
+	font-size: 12px;
+	font-weight: 600;
+	margin-bottom: 4px;
+	color: #3c434a;
+}
+
+.gd-form-col input[type="text"],
+.gd-form-col input[type="number"],
+.gd-form-col select,
+.gd-form-col textarea {
+	width: 100%;
+	padding: 6px 8px;
+	font-size: 13px;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	background: #fff;
+	color: #2c3338;
+	box-sizing: border-box;
+}
+
+.gd-form-col textarea {
+	resize: vertical;
+	min-height: 72px;
+}
+
+.gd-edit-field-inline {
+	background: #fffde7;
+	border: 1px solid #f9a825;
+	border-radius: 4px;
+	padding: 12px;
+	margin: 6px;
+}
+
+/* ==========================================================================
+   Mover approval actions
+   ========================================================================== */
+
+.gd-approval-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+	margin-top: 12px;
+}
+
+.gd-btn-approve {
+	background: #00a32a;
+	color: #fff;
+	border-color: #00a32a;
+}
+
+.gd-btn-approve:hover,
+.gd-btn-approve:focus {
+	background: #008a20;
+	border-color: #007d1c;
+	color: #fff;
+}
+
+.gd-btn-reject {
+	background: #d63638;
+	color: #fff;
+	border-color: #d63638;
+}
+
+.gd-btn-reject:hover,
+.gd-btn-reject:focus {
+	background: #b32d2e;
+	border-color: #a32626;
+	color: #fff;
+}
+
+.gd-btn-suspend {
+	background: #d97706;
+	color: #fff;
+	border-color: #d97706;
+}
+
+.gd-btn-suspend:hover,
+.gd-btn-suspend:focus {
+	background: #b45309;
+	border-color: #a34507;
+	color: #fff;
+}
+
+.gd-reason-wrap {
+	margin-top: 12px;
+}
+
+.gd-reason-wrap textarea {
+	width: 100%;
+	max-width: 480px;
+	padding: 8px;
+	font-size: 13px;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	resize: vertical;
+	min-height: 80px;
+}
+
+/* ==========================================================================
+   Wallet adjustment
+   ========================================================================== */
+
+.gd-wallet-adjust {
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	padding: 12px 14px;
+	margin-top: 8px;
+	display: none; /* toggled by JS */
+}
+
+.gd-wallet-adjust.is-open {
+	display: block;
+}
+
+.gd-wallet-adjust form {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: flex-end;
+}
+
+.gd-wallet-adjust .gd-wa-field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.gd-wallet-adjust label {
+	font-size: 12px;
+	font-weight: 600;
+	color: #3c434a;
+}
+
+.gd-wallet-adjust input[type="number"],
+.gd-wallet-adjust input[type="text"] {
+	padding: 6px 8px;
+	font-size: 13px;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	background: #fff;
+	width: 120px;
+}
+
+.gd-wallet-adjust input[type="text"].gd-wa-desc {
+	width: 220px;
+}
+
+/* ==========================================================================
+   Tabs
+   ========================================================================== */
+
+.gd-tabs {
+	display: flex;
+	gap: 0;
+	border-bottom: 1px solid #c3c4c7;
+	margin-bottom: 24px;
+}
+
+.gd-tab-link {
+	display: inline-block;
+	padding: 10px 18px;
+	font-size: 14px;
+	font-weight: 500;
+	color: #3c434a;
+	text-decoration: none;
+	border: 1px solid transparent;
+	border-bottom: none;
+	margin-bottom: -1px;
+	border-radius: 4px 4px 0 0;
+	background: transparent;
+	cursor: pointer;
+}
+
+.gd-tab-link:hover {
+	background: #f6f7f7;
+	color: #2271b1;
+}
+
+.gd-tab-link.is-active {
+	background: #fff;
+	border-color: #c3c4c7;
+	border-bottom-color: #fff;
+	color: #2271b1;
+	font-weight: 600;
+}
+
+.gd-tab-panel {
+	display: none;
+}
+
+.gd-tab-panel.is-active {
+	display: block;
+}
+
+/* ==========================================================================
+   Forms (settings etc.)
+   ========================================================================== */
+
+.gd-settings-form .form-table th {
+	width: 220px;
+	padding: 16px 10px 16px 0;
+	vertical-align: top;
+	font-weight: 600;
+	font-size: 13px;
+	color: #3c434a;
+}
+
+.gd-settings-form .form-table td {
+	padding: 10px 0;
+	vertical-align: top;
+}
+
+.gd-settings-form input[type="text"],
+.gd-settings-form input[type="number"],
+.gd-settings-form input[type="email"],
+.gd-settings-form input[type="password"] {
+	width: 360px;
+	max-width: 100%;
+}
+
+.gd-settings-form .gd-input-copy-wrap {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.gd-settings-form .gd-input-copy-wrap input[readonly] {
+	background: #f6f7f7;
+	color: #646970;
+	cursor: default;
+}
+
+.gd-settings-form p.description {
+	margin-top: 4px;
+	font-size: 12px;
+	color: #646970;
+}
+
+/* ==========================================================================
+   Pagination
+   ========================================================================== */
+
+.gd-pagination {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+	margin-top: 16px;
+	flex-wrap: wrap;
+}
+
+.gd-pagination a,
+.gd-pagination span {
+	display: inline-block;
+	padding: 5px 10px;
+	font-size: 13px;
+	border: 1px solid #c3c4c7;
+	border-radius: 3px;
+	text-decoration: none;
+	color: #2271b1;
+	background: #fff;
+	line-height: 1.4;
+}
+
+.gd-pagination span.gd-current-page {
+	background: #2271b1;
+	color: #fff;
+	border-color: #2271b1;
+	font-weight: 700;
+}
+
+.gd-pagination a:hover {
+	background: #f0f0f1;
+}
+
+/* ==========================================================================
+   Toast notifications
+   ========================================================================== */
+
+#gd-toast-container {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 99999;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	pointer-events: none;
+}
+
+.gd-toast {
+	min-width: 240px;
+	max-width: 360px;
+	padding: 12px 16px;
+	border-radius: 4px;
+	font-size: 13px;
+	font-weight: 500;
+	box-shadow: 0 4px 12px rgba(0,0,0,.15);
+	opacity: 0;
+	transform: translateY(8px);
+	transition: opacity .25s ease, transform .25s ease;
+	pointer-events: auto;
+}
+
+.gd-toast.gd-toast-show {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.gd-toast-success { background: #00a32a; color: #fff; }
+.gd-toast-error   { background: #d63638; color: #fff; }
+.gd-toast-info    { background: #2271b1; color: #fff; }
+
+/* ==========================================================================
+   Misc helpers
+   ========================================================================== */
+
+.gd-amount-positive { color: #00a32a; font-weight: 600; }
+.gd-amount-negative { color: #d63638; font-weight: 600; }
+
+.gd-summary-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	padding: 12px 16px;
+	background: #f6f7f7;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	margin-bottom: 16px;
+	font-size: 13px;
+}
+
+.gd-summary-bar .gd-summary-item strong {
+	margin-left: 4px;
+}
+
+.gd-spinner-inline {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border: 2px solid #c3c4c7;
+	border-top-color: #2271b1;
+	border-radius: 50%;
+	animation: gd-spin .7s linear infinite;
+	vertical-align: middle;
+	margin-left: 6px;
+}
+
+@keyframes gd-spin {
+	to { transform: rotate(360deg); }
+}
+
+.gd-tag {
+	display: inline-block;
+	background: #f0f0f1;
+	border-radius: 3px;
+	padding: 2px 6px;
+	font-size: 11px;
+	color: #646970;
+	margin-right: 4px;
+}
+
+.gd-required-badge {
+	display: inline-block;
+	background: #fee2e2;
+	color: #b91c1c;
+	font-size: 10px;
+	font-weight: 700;
+	padding: 1px 5px;
+	border-radius: 3px;
+	text-transform: uppercase;
+	letter-spacing: .04em;
+	margin-left: 4px;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media screen and (max-width: 960px) {
+	.gd-stats-cards {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media screen and (max-width: 640px) {
+	.gd-stats-cards {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.gd-filter-bar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.gd-filter-bar input[type="text"],
+	.gd-filter-bar input[type="date"],
+	.gd-filter-bar select {
+		min-width: 0;
+		width: 100%;
+	}
+
+	.gd-table thead {
+		display: none;
+	}
+
+	.gd-table tbody tr {
+		display: block;
+		margin-bottom: 12px;
+		border: 1px solid #c3c4c7;
+		border-radius: 4px;
+	}
+
+	.gd-table tbody td {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 8px 12px;
+		border-bottom: 1px solid #f0f0f1;
+		font-size: 13px;
+	}
+
+	.gd-table tbody td::before {
+		content: attr(data-label);
+		font-weight: 600;
+		color: #646970;
+		font-size: 11px;
+		text-transform: uppercase;
+		letter-spacing: .03em;
+		margin-right: 12px;
+		flex-shrink: 0;
+	}
+
+	.gd-settings-form input[type="text"],
+	.gd-settings-form input[type="number"],
+	.gd-settings-form input[type="email"],
+	.gd-settings-form input[type="password"] {
+		width: 100%;
+	}
+
+	.gd-tabs {
+		flex-wrap: wrap;
+	}
+
+	.gd-form-row {
+		flex-direction: column;
+	}
+}
