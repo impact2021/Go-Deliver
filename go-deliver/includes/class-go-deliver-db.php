@@ -89,10 +89,8 @@ class Go_Deliver_DB {
 
 		$limit = absint( $limit );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- table name is safe; limit is absint().
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
 				"SELECT * FROM `{$wpdb->prefix}gd_wallet_transactions`
 				 WHERE user_id = %d
 				 ORDER BY created_at DESC

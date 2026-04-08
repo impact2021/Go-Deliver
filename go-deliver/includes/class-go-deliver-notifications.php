@@ -108,7 +108,7 @@ class Go_Deliver_Notifications {
 	 */
 	private function notify_expiring_jobs() {
 		$expiry_days    = (int) get_option( 'gd_job_expiry_days', 30 );
-		$warning_days   = max( 1, (int) floor( $expiry_days * 0.2 ) ); // 20 % of expiry window.
+		$warning_days   = max( 1, (int) floor( $expiry_days * 0.2 ) ); // 20% of expiry window.
 		$threshold_date = date( 'Y-m-d', strtotime( "+{$warning_days} days" ) );
 
 		$jobs = get_posts(
