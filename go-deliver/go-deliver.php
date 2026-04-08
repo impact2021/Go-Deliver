@@ -39,6 +39,16 @@ require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-roles.php';
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-db.php';
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-post-types.php';
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-notifications.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-location.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-wallet.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-stripe.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-jobs.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-quotes.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-messaging.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-reviews.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-mover-reg.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-sub-users.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-form-builder.php';
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver.php';
 
 // Admin and public classes are loaded conditionally inside Go_Deliver.

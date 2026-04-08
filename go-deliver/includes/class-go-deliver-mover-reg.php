@@ -114,7 +114,10 @@ update_user_meta( $user_id, 'gd_phone',                 sanitize_text_field( $da
 if ( ! empty( $data['documents'] ) && is_array( $data['documents'] ) ) {
 foreach ( $data['documents'] as $doc ) {
 if ( is_array( $doc ) && ! empty( $doc['type'] ) && ! empty( $doc['file_id'] ) ) {
-Go_Deliver_DB::save_document( $user_id, sanitize_text_field( $doc['type'] ), (int) $doc['file_id'] );
+$file_url = wp_get_attachment_url( (int) $doc['file_id'] );
+if ( $file_url ) {
+Go_Deliver_DB::save_document( $user_id, sanitize_text_field( $doc['type'] ), $file_url );
+}
 }
 }
 }
