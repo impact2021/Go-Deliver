@@ -252,7 +252,7 @@
 			$section.find( '[required]:visible' ).each( function () {
 				var $f = $( this );
 				if ( ! $.trim( $f.val() ) ) {
-					gdFieldError( $f, $f.prev( 'label' ).text().replace( '*', '' ).trim() + ' is required.' );
+					gdFieldError( $f, $f.prev( 'label' ).text().replace( /\*/g, '' ).trim() + ' is required.' );
 					valid = false;
 				} else {
 					gdClearFieldError( $f );
@@ -352,7 +352,7 @@
 		// Include dynamic form fields.
 		$form.find( '.gd-form-field:visible input, .gd-form-field:visible select, .gd-form-field:visible textarea' ).each( function () {
 			var $input = $( this );
-			var label  = $input.closest( '.gd-form-field' ).find( 'label' ).first().text().replace( '*', '' ).trim();
+			var label  = $input.closest( '.gd-form-field' ).find( 'label' ).first().text().replace( /\*/g, '' ).trim();
 			var value  = $input.val();
 			if ( $input.is( ':checkbox' ) ) { value = $input.is( ':checked' ) ? 'Yes' : 'No'; }
 			if ( label && value ) {
@@ -1053,7 +1053,7 @@
 					return;
 				}
 				if ( ! $.trim( $f.val() ) ) {
-					gdFieldError( $f, $f.closest( '.gd-field-group' ).find( 'label' ).first().text().replace( '*', '' ).trim() + ' is required.' );
+					gdFieldError( $f, $f.closest( '.gd-field-group' ).find( 'label' ).first().text().replace( /\*/g, '' ).trim() + ' is required.' );
 					valid = false;
 				} else {
 					gdClearFieldError( $f );
