@@ -138,16 +138,16 @@ class Go_Deliver {
 			'gd_submit_quote'   => array( 'Go_Deliver_Quotes', 'ajax_submit_quote' ),
 			'gd_accept_quote'   => array( 'Go_Deliver_Quotes', 'ajax_accept_quote' ),
 			'gd_withdraw_quote' => array( 'Go_Deliver_Quotes', 'ajax_withdraw_quote' ),
-			'gd_send_message'   => array( 'Go_Deliver_Messages', 'ajax_send_message' ),
-			'gd_get_messages'   => array( 'Go_Deliver_Messages', 'ajax_get_messages' ),
+			'gd_send_message'   => array( 'Go_Deliver_Messaging', 'ajax_send_message' ),
+			'gd_get_messages'   => array( 'Go_Deliver_Messaging', 'ajax_get_messages' ),
 			'gd_topup_wallet'   => array( 'Go_Deliver_Wallet', 'ajax_topup_wallet' ),
-			'gd_stripe_topup'   => array( 'Go_Deliver_Wallet', 'ajax_stripe_topup' ),
-			'gd_register_mover' => array( 'Go_Deliver_Movers', 'ajax_register_mover' ),
+			'gd_stripe_topup'   => array( 'Go_Deliver_Stripe', 'ajax_create_topup_session' ),
+			'gd_register_mover' => array( 'Go_Deliver_Mover_Reg', 'ajax_register_mover' ),
 			'gd_submit_review'  => array( 'Go_Deliver_Reviews', 'ajax_submit_review' ),
 			'gd_get_job_details' => array( 'Go_Deliver_Jobs', 'ajax_get_job_details' ),
 			'gd_cancel_job'     => array( 'Go_Deliver_Jobs', 'ajax_cancel_job' ),
-			'gd_add_sub_user'   => array( 'Go_Deliver_Movers', 'ajax_add_sub_user' ),
-			'gd_remove_sub_user' => array( 'Go_Deliver_Movers', 'ajax_remove_sub_user' ),
+			'gd_add_sub_user'   => array( 'Go_Deliver_Sub_Users', 'ajax_add_sub_user' ),
+			'gd_remove_sub_user' => array( 'Go_Deliver_Sub_Users', 'ajax_remove_sub_user' ),
 		);
 
 		if ( isset( $handler_map[ $action ] ) ) {

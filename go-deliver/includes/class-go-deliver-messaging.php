@@ -260,7 +260,7 @@ if ( ! $this->can_message( (int) $job_id, (int) $user_id ) ) {
 return new WP_Error( 'permission_denied', __( 'You are not allowed to view messages for this job.', 'go-deliver' ) );
 }
 
-return Go_Deliver_DB::get_messages( (int) $job_id );
+return Go_Deliver_DB::get_messages( (int) $job_id, (int) $user_id );
 }
 
 // =========================================================================
