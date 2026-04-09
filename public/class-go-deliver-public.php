@@ -52,12 +52,14 @@ class Go_Deliver_Public {
 	/**
 	 * Render the job submission form.
 	 *
+	 * Shortcode: [gd_job_form]
+	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output.
 	 */
 	public function render_job_form( $atts ) {
 		ob_start();
-		$template = GD_PLUGIN_DIR . 'templates/job-form.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/job-form.php';
 		if ( file_exists( $template ) ) {
 			include $template;
 		}
@@ -67,12 +69,14 @@ class Go_Deliver_Public {
 	/**
 	 * Render the available job listings for movers.
 	 *
+	 * Shortcode: [gd_job_list]
+	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output.
 	 */
 	public function render_job_list( $atts ) {
 		ob_start();
-		$template = GD_PLUGIN_DIR . 'templates/job-list.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/job-list.php';
 		if ( file_exists( $template ) ) {
 			include $template;
 		}
@@ -80,7 +84,10 @@ class Go_Deliver_Public {
 	}
 
 	/**
-	 * Render the user dashboard.
+	 * Render the appropriate dashboard based on the current user's role.
+	 *
+	 * Shortcode: [gd_dashboard]
+	 * Routes movers to the mover dashboard and customers to the customer dashboard.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output.
@@ -90,8 +97,44 @@ class Go_Deliver_Public {
 			return '<p>' . esc_html__( 'Please log in to view your dashboard.', 'go-deliver' ) . '</p>';
 		}
 
+		$user  = wp_get_current_user();
+		$roles = (array) $user->roles;
+
+		if ( in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true ) ) {
+			return $this->render_mover_dashboard( $atts );
+		}
+
+		return $this->render_customer_dashboard( $atts );
+	}
+
+	/**
+	 * Render the customer dashboard.
+	 *
+	 * Shortcode: [gd_customer_dashboard]
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string HTML output.
+	 */
+	public function render_customer_dashboard( $atts ) {
 		ob_start();
-		$template = GD_PLUGIN_DIR . 'templates/dashboard.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/customer-dashboard.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render the mover dashboard.
+	 *
+	 * Shortcode: [gd_mover_dashboard]
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string HTML output.
+	 */
+	public function render_mover_dashboard( $atts ) {
+		ob_start();
+		$template = GD_PLUGIN_DIR . 'public/partials/mover-dashboard.php';
 		if ( file_exists( $template ) ) {
 			include $template;
 		}
@@ -101,12 +144,48 @@ class Go_Deliver_Public {
 	/**
 	 * Render the mover registration form.
 	 *
+	 * Shortcode: [gd_mover_registration]
+	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string HTML output.
 	 */
-	public function render_register( $atts ) {
+	public function render_mover_registration( $atts ) {
 		ob_start();
-		$template = GD_PLUGIN_DIR . 'templates/register.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/mover-registration.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render the messaging interface.
+	 *
+	 * Shortcode: [gd_messaging]
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string HTML output.
+	 */
+	public function render_messaging( $atts ) {
+		ob_start();
+		$template = GD_PLUGIN_DIR . 'public/partials/messaging.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render the wallet top-up form.
+	 *
+	 * Shortcode: [gd_wallet_topup]
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string HTML output.
+	 */
+	public function render_wallet_topup( $atts ) {
+		ob_start();
+		$template = GD_PLUGIN_DIR . 'public/partials/wallet-topup.php';
 		if ( file_exists( $template ) ) {
 			include $template;
 		}

@@ -72,7 +72,11 @@ class Go_Deliver {
 		add_shortcode( 'gd_job_form', array( $public, 'render_job_form' ) );
 		add_shortcode( 'gd_job_list', array( $public, 'render_job_list' ) );
 		add_shortcode( 'gd_dashboard', array( $public, 'render_dashboard' ) );
-		add_shortcode( 'gd_register', array( $public, 'render_register' ) );
+		add_shortcode( 'gd_customer_dashboard', array( $public, 'render_customer_dashboard' ) );
+		add_shortcode( 'gd_mover_dashboard', array( $public, 'render_mover_dashboard' ) );
+		add_shortcode( 'gd_mover_registration', array( $public, 'render_mover_registration' ) );
+		add_shortcode( 'gd_messaging', array( $public, 'render_messaging' ) );
+		add_shortcode( 'gd_wallet_topup', array( $public, 'render_wallet_topup' ) );
 	}
 
 	/**
