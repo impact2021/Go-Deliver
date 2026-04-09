@@ -59,7 +59,10 @@ class Go_Deliver_Public {
 	 */
 	public function render_job_form( $atts ) {
 		ob_start();
-		include GD_PLUGIN_DIR . 'public/partials/job-form.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/job-form.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
 		return ob_get_clean();
 	}
 
@@ -114,7 +117,10 @@ class Go_Deliver_Public {
 	 */
 	public function render_customer_dashboard( $atts ) {
 		ob_start();
-		include GD_PLUGIN_DIR . 'public/partials/customer-dashboard.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/customer-dashboard.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
 		return ob_get_clean();
 	}
 
@@ -128,7 +134,10 @@ class Go_Deliver_Public {
 	 */
 	public function render_mover_dashboard( $atts ) {
 		ob_start();
-		include GD_PLUGIN_DIR . 'public/partials/mover-dashboard.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/mover-dashboard.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
 		return ob_get_clean();
 	}
 
@@ -142,7 +151,10 @@ class Go_Deliver_Public {
 	 */
 	public function render_mover_registration( $atts ) {
 		ob_start();
-		include GD_PLUGIN_DIR . 'public/partials/mover-registration.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/mover-registration.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
 		return ob_get_clean();
 	}
 
@@ -156,7 +168,10 @@ class Go_Deliver_Public {
 	 */
 	public function render_messaging( $atts ) {
 		ob_start();
-		include GD_PLUGIN_DIR . 'public/partials/messaging.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/messaging.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
 		return ob_get_clean();
 	}
 
@@ -170,7 +185,10 @@ class Go_Deliver_Public {
 	 */
 	public function render_wallet_topup( $atts ) {
 		ob_start();
-		include GD_PLUGIN_DIR . 'public/partials/wallet-topup.php';
+		$template = GD_PLUGIN_DIR . 'public/partials/wallet-topup.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
 		return ob_get_clean();
 	}
 }
