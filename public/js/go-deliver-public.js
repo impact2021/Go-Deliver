@@ -188,7 +188,7 @@
 				if ( String( current ) === conditionalVal ) {
 					$field.addClass( 'gd-visible' ).find( 'input, select, textarea' ).removeAttr( 'disabled' );
 				} else {
-					$field.removeClass( 'gd-visible' ).find( 'input, select, textarea' ).attr( 'disabled', true );
+					$field.removeClass( 'gd-visible' ).find( 'input, select, textarea' ).attr( 'disabled', true ).trigger( 'change' );
 				}
 			}
 
