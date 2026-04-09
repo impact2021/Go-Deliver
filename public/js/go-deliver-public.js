@@ -276,7 +276,7 @@
 				if ( $pass.length && $conf.length && $pass.val() !== $conf.val() ) {
 					gdFieldError( $conf, 'Passwords do not match.' );
 					valid = false;
-				} else if ( $conf.length && $pass.val() === $conf.val() ) {
+				} else if ( $conf.length && $.trim( $pass.val() ) && $pass.val() === $conf.val() ) {
 					gdClearFieldError( $conf );
 				}
 			}

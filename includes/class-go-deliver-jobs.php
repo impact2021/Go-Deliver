@@ -483,6 +483,8 @@ if ( strlen( $password ) < 8 ) {
 wp_send_json_error( array( 'message' => __( 'Password must be at least 8 characters.', 'go-deliver' ) ) );
 }
 
+// Use the email address as the WordPress username (common single-field
+// registration pattern; username is not displayed to end users).
 $user_id = wp_create_user( $email, $password, $email );
 if ( is_wp_error( $user_id ) ) {
 wp_send_json_error( array( 'message' => $user_id->get_error_message() ) );
