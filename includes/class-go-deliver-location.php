@@ -18,7 +18,7 @@ class Go_Deliver_Location {
 const EARTH_RADIUS_KM = 6371.0;
 
 /** Nominatim User-Agent — required by Nominatim usage policy. */
-const NOMINATIM_USER_AGENT = 'GoDeliver/1.0 (contact@go-deliver.com.au)';
+const NOMINATIM_USER_AGENT = 'GoDeliver/1.0 (contact@go-deliver.co.nz)';
 
 // =========================================================================
 // Distance calculation.
@@ -208,7 +208,7 @@ return new WP_Error( 'not_found', __( 'Location could not be determined.', 'go-d
 
 $address = $result['address'];
 
-// Australian address hierarchy: suburb > town > city > county.
+// NZ address hierarchy: suburb > town > city > county.
 $suburb = $address['suburb']
 ?? $address['town']
 ?? $address['city']

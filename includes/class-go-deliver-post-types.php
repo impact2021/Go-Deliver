@@ -78,7 +78,7 @@ class Go_Deliver_Post_Types {
 			'hierarchical'        => false,
 			'menu_position'       => 25,
 			'menu_icon'           => 'dashicons-car',
-			'supports'            => array( 'title', 'custom-fields' ),
+			'supports'            => array( 'title' ),
 			'taxonomies'          => array(),
 		);
 

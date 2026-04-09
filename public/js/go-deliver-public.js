@@ -353,6 +353,21 @@
 		// Initialise location geocoding.
 		gdInitLocationFields( $form );
 
+		// Show the rest of the form once a job type is selected.
+		var $jobType    = $form.find( '#gd_job_type' );
+		var $jobDetails = $form.find( '#gd-job-form-details' );
+
+		function gdToggleJobDetails() {
+			if ( $.trim( $jobType.val() ) ) {
+				$jobDetails.slideDown( 200 );
+			} else {
+				$jobDetails.slideUp( 200 );
+			}
+		}
+
+		$jobType.on( 'change', gdToggleJobDetails );
+		gdToggleJobDetails(); // honour any pre-selected value on page load.
+
 		showStep( 1 );
 	}
 
@@ -424,7 +439,7 @@
 				$.getJSON(
 					'https://nominatim.openstreetmap.org/search',
 					{
-						q:              suburb + ', Australia',
+						q:              suburb + ', New Zealand',
 						format:         'json',
 						limit:          1,
 						addressdetails: 1,

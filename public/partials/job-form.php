@@ -59,7 +59,7 @@ type="text"
 id="gd_pickup_suburb"
 name="pickup_suburb"
 class="gd-suburb-input"
-placeholder="<?php esc_attr_e( 'e.g. Sydney CBD NSW', 'go-deliver' ); ?>"
+placeholder="<?php esc_attr_e( 'e.g. Auckland CBD', 'go-deliver' ); ?>"
 required
 autocomplete="off"
 >
@@ -84,7 +84,7 @@ type="text"
 id="gd_dropoff_suburb"
 name="dropoff_suburb"
 class="gd-suburb-input"
-placeholder="<?php esc_attr_e( 'e.g. Parramatta NSW', 'go-deliver' ); ?>"
+placeholder="<?php esc_attr_e( 'e.g. Christchurch', 'go-deliver' ); ?>"
 required
 autocomplete="off"
 >
