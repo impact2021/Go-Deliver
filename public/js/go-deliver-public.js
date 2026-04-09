@@ -353,20 +353,23 @@
 		// Initialise location geocoding.
 		gdInitLocationFields( $form );
 
-		// Show the rest of the form once a job type is selected.
-		var $jobType    = $form.find( '#gd_job_type' );
-		var $jobDetails = $form.find( '#gd-job-form-details' );
+		// Show/hide type-specific fields within step 1 based on job type selection.
+		var $jobType = $form.find( '#gd_job_type' );
 
-		function gdToggleJobDetails() {
-			if ( $.trim( $jobType.val() ) ) {
-				$jobDetails.slideDown( 200 );
-			} else {
-				$jobDetails.slideUp( 200 );
-			}
+		function gdToggleTypeFields() {
+			var selected = $.trim( $jobType.val() );
+			$form.find( '[data-job-type-show]' ).each( function () {
+				var types = String( $( this ).data( 'job-type-show' ) ).split( ',' );
+				if ( selected && types.indexOf( selected ) !== -1 ) {
+					$( this ).slideDown( 150 );
+				} else {
+					$( this ).slideUp( 150 );
+				}
+			} );
 		}
 
-		$jobType.on( 'change', gdToggleJobDetails );
-		gdToggleJobDetails(); // honour any pre-selected value on page load.
+		$jobType.on( 'change', gdToggleTypeFields );
+		gdToggleTypeFields(); // honour any pre-selected value on page load.
 
 		showStep( 1 );
 	}

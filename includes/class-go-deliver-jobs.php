@@ -530,6 +530,11 @@ $form_data[ sanitize_key( $key ) ] = sanitize_text_field( wp_unslash( $value ) )
 }
 }
 
+// Persist phone number to user meta so it pre-fills on future submissions.
+if ( ! empty( $form_data['contact_phone'] ) ) {
+update_user_meta( $current_user_id, 'gd_phone', $form_data['contact_phone'] );
+}
+
 $photos = array();
 if ( ! empty( $_POST['photos'] ) && is_array( $_POST['photos'] ) ) {
 foreach ( $_POST['photos'] as $photo_id ) {
