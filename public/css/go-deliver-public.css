@@ -1968,7 +1968,6 @@
 	flex-shrink: 0;
 }
 
-.gd-radio-label input[type="radio"]:checked + span,
 .gd-radio-label:has(input[type="radio"]:checked) {
 	font-weight: 600;
 	border-color: var(--gd-primary);

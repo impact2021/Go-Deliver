@@ -224,7 +224,7 @@ $form_builder = new Go_Deliver_Form_Builder();
 					<div class="gd-radio-group">
 						<label class="gd-radio-label">
 							<input type="radio" name="form_data[collection_helpers]" value="self" checked>
-							<?php esc_html_e( "I'll load it myself", 'go-deliver' ); ?>
+							<?php esc_html_e( 'I\'ll load it myself', 'go-deliver' ); ?>
 						</label>
 						<label class="gd-radio-label">
 							<input type="radio" name="form_data[collection_helpers]" value="1">
@@ -353,7 +353,7 @@ $form_builder = new Go_Deliver_Form_Builder();
 				<?php if ( ! is_user_logged_in() ) : ?>
 
 					<p class="gd-text-muted" style="margin-bottom:16px;">
-						<?php esc_html_e( "We'll create a free account so you can track quotes and manage your job.", 'go-deliver' ); ?>
+						<?php esc_html_e( 'We\'ll create a free account so you can track quotes and manage your job.', 'go-deliver' ); ?>
 					</p>
 
 					<div class="gd-field-row" style="display:flex;gap:16px;">
