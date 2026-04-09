@@ -450,15 +450,64 @@ return $job;
 
 /**
  * AJAX: submit a new job.
+ *
+ * Accepts submissions from both logged-in users and guests.
+ * For guests, account creation fields are required and a new gd_customer
+ * account is created before the job is saved.
  */
 public function ajax_submit_job() {
-check_ajax_referer( 'gd_submit_job', 'nonce' );
-
-if ( ! is_user_logged_in() || ! current_user_can( 'gd_submit_jobs' ) ) {
-wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
-}
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
 
 $current_user_id = get_current_user_id();
+
+if ( ! $current_user_id ) {
+// Guest: validate account creation fields and register a new customer.
+$first_name = sanitize_text_field( wp_unslash( $_POST['account_first_name'] ?? '' ) );
+$last_name  = sanitize_text_field( wp_unslash( $_POST['account_last_name'] ?? '' ) );
+$email      = sanitize_email( wp_unslash( $_POST['account_email'] ?? '' ) );
+$password   = isset( $_POST['account_password'] ) ? wp_unslash( $_POST['account_password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+if ( empty( $first_name ) || empty( $last_name ) || empty( $email ) || empty( $password ) ) {
+wp_send_json_error( array( 'message' => __( 'Please fill in all account fields.', 'go-deliver' ) ) );
+}
+
+if ( ! is_email( $email ) ) {
+wp_send_json_error( array( 'message' => __( 'Please enter a valid email address.', 'go-deliver' ) ) );
+}
+
+if ( email_exists( $email ) ) {
+wp_send_json_error( array( 'message' => __( 'An account with this email already exists. Please log in first.', 'go-deliver' ) ) );
+}
+
+if ( strlen( $password ) < 8 ) {
+wp_send_json_error( array( 'message' => __( 'Password must be at least 8 characters.', 'go-deliver' ) ) );
+}
+
+// Use the email address as the WordPress username (common single-field
+// registration pattern; username is not displayed to end users).
+$user_id = wp_create_user( $email, $password, $email );
+if ( is_wp_error( $user_id ) ) {
+wp_send_json_error( array( 'message' => $user_id->get_error_message() ) );
+}
+
+$user = new WP_User( $user_id );
+$user->set_role( 'gd_customer' );
+wp_update_user(
+array(
+'ID'           => $user_id,
+'first_name'   => $first_name,
+'last_name'    => $last_name,
+'display_name' => trim( $first_name . ' ' . $last_name ),
+)
+);
+
+wp_set_current_user( $user_id );
+wp_set_auth_cookie( $user_id );
+
+$current_user_id = $user_id;
+} elseif ( ! current_user_can( 'gd_submit_jobs' ) ) {
+wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+}
 
 $pickup_location = array(
 'lat'     => isset( $_POST['pickup_lat'] )     ? (float) $_POST['pickup_lat']                          : 0.0,

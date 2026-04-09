@@ -259,6 +259,28 @@
 				}
 			} );
 
+			// Extra validation for the account creation step.
+			var $email = $section.find( '#gd_account_email' );
+			if ( $email.length && $email.is( ':visible' ) ) {
+				if ( ! gdValidateEmail( $email ) ) {
+					valid = false;
+				}
+				var $pass  = $section.find( '#gd_account_password' );
+				var $conf  = $section.find( '#gd_account_password_confirm' );
+				if ( $pass.length && $.trim( $pass.val() ).length < 8 ) {
+					gdFieldError( $pass, 'Password must be at least 8 characters.' );
+					valid = false;
+				} else if ( $pass.length ) {
+					gdClearFieldError( $pass );
+				}
+				if ( $pass.length && $conf.length && $pass.val() !== $conf.val() ) {
+					gdFieldError( $conf, 'Passwords do not match.' );
+					valid = false;
+				} else if ( $conf.length && $.trim( $pass.val() ) && $pass.val() === $conf.val() ) {
+					gdClearFieldError( $conf );
+				}
+			}
+
 			return valid;
 		}
 
