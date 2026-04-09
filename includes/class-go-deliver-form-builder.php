@@ -276,6 +276,94 @@ array(
 }
 
 // =========================================================================
+// Flat job type dropdown.
+// =========================================================================
+
+/**
+ * Return the flat list of job types for the single-selection dropdown.
+ *
+ * Each entry has 'value' (submitted) and 'label' (display text with description).
+ *
+ * @return array
+ */
+public function get_flat_job_types() {
+return array(
+array(
+'value' => 'trademe_purchase_pickup',
+'label' => __( 'TradeMe Purchase Pickup — purchase pickup from trademe.co.nz', 'go-deliver' ),
+),
+array(
+'value' => 'item',
+'label' => __( 'Item — furniture, electronics, antique, box, vehicle part etc.', 'go-deliver' ),
+),
+array(
+'value' => 'furniture',
+'label' => __( 'Furniture — sofa, table, bed, bookcase, chest, drawer etc.', 'go-deliver' ),
+),
+array(
+'value' => 'item_packed',
+'label' => __( 'Item — packed item, electronics, bicycle, box etc.', 'go-deliver' ),
+),
+array(
+'value' => 'move',
+'label' => __( 'Move — home move, office move, storage move', 'go-deliver' ),
+),
+array(
+'value' => 'vehicle',
+'label' => __( 'Vehicle — car, motorcycle, RV, truck and other motor vehicles', 'go-deliver' ),
+),
+array(
+'value' => 'car',
+'label' => __( 'Car — sedan, minivan, 4x4, pickup, sports car, coupe etc.', 'go-deliver' ),
+),
+array(
+'value' => 'motorcycle',
+'label' => __( 'Motorcycle — chopper, superbike, moped, scooter etc.', 'go-deliver' ),
+),
+array(
+'value' => 'other_vehicle',
+'label' => __( 'Other Vehicle — truck, bus, RV, tractor and other motor vehicles', 'go-deliver' ),
+),
+array(
+'value' => 'boat',
+'label' => __( 'Boat — powerboat, sailboat, houseboat, jet ski, watercraft etc.', 'go-deliver' ),
+),
+array(
+'value' => 'piano',
+'label' => __( 'Piano — grand piano, upright piano, digital piano etc.', 'go-deliver' ),
+),
+array(
+'value' => 'pet',
+'label' => __( 'Pet — cat, dog, bird, horse etc.', 'go-deliver' ),
+),
+array(
+'value' => 'junk',
+'label' => __( 'Junk — junk clearance, rubbish removal etc.', 'go-deliver' ),
+),
+array(
+'value' => 'other',
+'label' => __( 'Other — heavy, farm equipment, construction material etc.', 'go-deliver' ),
+),
+);
+}
+
+/**
+ * Echo HTML for the flat job type <select> element.
+ *
+ * @param string $selected Currently selected value (for pre-population).
+ */
+public function render_flat_job_type_dropdown( $selected = '' ) {
+$types = $this->get_flat_job_types();
+echo '<select id="gd_job_type" name="job_type" required>';
+echo '<option value="">' . esc_html__( '-- Select job type --', 'go-deliver' ) . '</option>';
+foreach ( $types as $type ) {
+$sel = selected( $selected, $type['value'], false );
+echo '<option value="' . esc_attr( $type['value'] ) . '"' . $sel . '>' . esc_html( $type['label'] ) . '</option>';
+}
+echo '</select>';
+}
+
+// =========================================================================
 // Rendering.
 // =========================================================================
 

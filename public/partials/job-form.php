@@ -22,52 +22,30 @@ exit;
 <?php else : ?>
 <div class="gd-job-form" id="gd-job-form-wrap">
 
-<!-- Header with progress steps -->
 <div class="gd-job-form__header">
-<h1 class="gd-job-form__title"><?php esc_html_e( 'Post a Moving Job', 'go-deliver' ); ?></h1>
-<nav class="gd-steps" aria-label="<?php esc_attr_e( 'Form steps', 'go-deliver' ); ?>">
-<div class="gd-step gd-step--active" data-step="1">
-<span class="gd-step__number">1</span>
-<span class="gd-step__label"><?php esc_html_e( 'Job Details', 'go-deliver' ); ?></span>
-</div>
-<div class="gd-step" data-step="2">
-<span class="gd-step__number">2</span>
-<span class="gd-step__label"><?php esc_html_e( 'Items & Access', 'go-deliver' ); ?></span>
-</div>
-<?php if ( ! is_user_logged_in() ) : ?>
-<div class="gd-step" data-step="3">
-<span class="gd-step__number">3</span>
-<span class="gd-step__label"><?php esc_html_e( 'Your Account', 'go-deliver' ); ?></span>
-</div>
-<div class="gd-step" data-step="4">
-<span class="gd-step__number">4</span>
-<span class="gd-step__label"><?php esc_html_e( 'Review', 'go-deliver' ); ?></span>
-</div>
-<?php else : ?>
-<div class="gd-step" data-step="3">
-<span class="gd-step__number">3</span>
-<span class="gd-step__label"><?php esc_html_e( 'Review', 'go-deliver' ); ?></span>
-</div>
-<?php endif; ?>
-</nav>
+<h1 class="gd-job-form__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h1>
 </div>
 
 <form id="gd-job-form" method="post" enctype="multipart/form-data" novalidate>
 <?php wp_nonce_field( 'gd_submit_job', 'gd_submit_job_nonce' ); ?>
 <input type="hidden" name="action" value="gd_submit_job">
 
-<!-- =========================================================
-     Step 1: Basic Info + Location
-     ========================================================= -->
 <div class="gd-job-form__body">
-<section class="gd-form-section gd-form-section--active" data-step="1">
-<h2 class="gd-form-section__title"><?php esc_html_e( 'Job Type & Locations', 'go-deliver' ); ?></h2>
 
-<!-- Dynamic form fields from the admin form builder -->
+<!-- Job Type selector — always visible first -->
+<div class="gd-field-group">
+<label for="gd_job_type">
+<?php esc_html_e( 'What do you need transported?', 'go-deliver' ); ?>
+<span class="gd-required" aria-hidden="true">*</span>
+</label>
 <?php
 $form_builder = new Go_Deliver_Form_Builder();
-$form_builder->render_form_fields();
+$form_builder->render_flat_job_type_dropdown();
 ?>
+</div>
+
+<!-- The rest of the form is hidden until a job type is chosen -->
+<div id="gd-job-form-details" style="display:none;">
 
 <!-- Pickup Location -->
 <div class="gd-field-group gd-location-field">
@@ -134,26 +112,6 @@ min="<?php echo esc_attr( gmdate( 'Y-m-d', strtotime( '+1 day' ) ) ); ?>"
 >
 </div>
 
-<!-- Special Instructions -->
-<div class="gd-field-group">
-<label for="gd_special_instructions">
-<?php esc_html_e( 'Special Instructions', 'go-deliver' ); ?>
-</label>
-<textarea
-id="gd_special_instructions"
-name="special_instructions"
-rows="4"
-placeholder="<?php esc_attr_e( 'Any additional details the mover should know…', 'go-deliver' ); ?>"
-></textarea>
-</div>
-</section>
-
-<!-- ==========================================================
-     Step 2: Items & Access
-     ========================================================== -->
-<section class="gd-form-section" data-step="2">
-<h2 class="gd-form-section__title"><?php esc_html_e( 'Items & Access', 'go-deliver' ); ?></h2>
-
 <!-- Labour -->
 <div class="gd-field-group">
 <label><?php esc_html_e( 'Labour Required', 'go-deliver' ); ?></label>
@@ -198,6 +156,19 @@ placeholder="<?php esc_attr_e( 'e.g. Elevator available, parking on street, narr
 ></textarea>
 </div>
 
+<!-- Special Instructions -->
+<div class="gd-field-group">
+<label for="gd_special_instructions">
+<?php esc_html_e( 'Special Instructions', 'go-deliver' ); ?>
+</label>
+<textarea
+id="gd_special_instructions"
+name="special_instructions"
+rows="4"
+placeholder="<?php esc_attr_e( 'Any additional details the mover should know…', 'go-deliver' ); ?>"
+></textarea>
+</div>
+
 <!-- Photo Upload -->
 <div class="gd-field-group">
 <label><?php esc_html_e( 'Photos (optional)', 'go-deliver' ); ?></label>
@@ -218,13 +189,10 @@ id="gd_job_photos"
 </div>
 <div class="gd-upload-preview" id="gd-photo-preview"></div>
 </div>
-</section>
 
 <?php if ( ! is_user_logged_in() ) : ?>
-<!-- ==========================================================
-     Step 3: Create Account (guests only)
-     ========================================================== -->
-<section class="gd-form-section" data-step="3">
+<!-- Account creation (guests only) -->
+<div class="gd-field-group-section">
 <h2 class="gd-form-section__title"><?php esc_html_e( 'Create Your Account', 'go-deliver' ); ?></h2>
 <p class="gd-text-muted" style="margin-bottom:16px;">
 <?php esc_html_e( 'Almost there! Create a free account so you can track quotes and manage your job.', 'go-deliver' ); ?>
@@ -308,21 +276,8 @@ autocomplete="new-password"
 <?php esc_html_e( 'Log in here', 'go-deliver' ); ?>
 </a>
 </p>
-</section>
-
-<!-- Step 4: Review & Submit (guests) -->
-<section class="gd-form-section" data-step="4">
-<?php else : ?>
-<!-- Step 3: Review & Submit (logged-in users) -->
-<section class="gd-form-section" data-step="3">
-<?php endif; ?>
-<h2 class="gd-form-section__title"><?php esc_html_e( 'Review Your Job', 'go-deliver' ); ?></h2>
-<p class="gd-text-muted" style="margin-bottom:16px;">
-<?php esc_html_e( 'Please review the details below before submitting.', 'go-deliver' ); ?>
-</p>
-<div class="gd-review-summary" id="gd-review-summary">
-<!-- Populated by JavaScript -->
 </div>
+<?php endif; ?>
 
 <div class="gd-alert gd-alert--info" style="margin-top:20px;">
 <span class="gd-alert__icon">ℹ️</span>
@@ -330,25 +285,17 @@ autocomplete="new-password"
 <?php esc_html_e( 'Once submitted, your job will be visible to approved movers in your area. You can cancel an open job from your dashboard.', 'go-deliver' ); ?>
 </div>
 </div>
-</section>
 
-</div><!-- /.gd-job-form__body -->
-
-<!-- Footer navigation -->
-<div class="gd-job-form__footer">
-<button type="button" id="gd-job-prev" class="gd-btn gd-btn--secondary" style="display:none;">
-← <?php esc_html_e( 'Previous', 'go-deliver' ); ?>
-</button>
-
-<div style="margin-left:auto;display:flex;gap:10px;align-items:center;">
-<button type="button" id="gd-job-next" class="gd-btn gd-btn--primary">
-<?php esc_html_e( 'Next Step', 'go-deliver' ); ?> →
-</button>
-<button type="submit" id="gd-job-submit" class="gd-btn gd-btn--success" style="display:none;">
+<!-- Submit button -->
+<div class="gd-job-form__footer" style="margin-top:20px;">
+<button type="submit" id="gd-job-submit" class="gd-btn gd-btn--success">
 ✓ <?php esc_html_e( 'Submit Job', 'go-deliver' ); ?>
 </button>
 </div>
-</div>
+
+</div><!-- /#gd-job-form-details -->
+
+</div><!-- /.gd-job-form__body -->
 
 </form>
 </div><!-- /.gd-job-form -->
