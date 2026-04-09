@@ -95,13 +95,159 @@ class Go_Deliver_Admin {
 	}
 
 	/**
+	 * Register meta boxes for the gd_job post type.
+	 */
+	public function add_job_meta_boxes() {
+		add_meta_box(
+			'gd_job_details',
+			__( 'Job Information', 'go-deliver' ),
+			array( $this, 'render_job_meta_box' ),
+			'gd_job',
+			'normal',
+			'high'
+		);
+	}
+
+	/**
+	 * Render the job meta box content.
+	 *
+	 * @param WP_Post $post The current post.
+	 */
+	public function render_job_meta_box( $post ) {
+		require GD_PLUGIN_DIR . 'admin/partials/job-meta-box.php';
+	}
+
+	/**
+	 * Save job meta when the gd_job post is saved.
+	 *
+	 * @param int $post_id The post ID being saved.
+	 */
+	public function save_job_meta( $post_id ) {
+		// Verify nonce.
+		if (
+			! isset( $_POST['gd_job_meta_nonce'] ) ||
+			! wp_verify_nonce( sanitize_key( $_POST['gd_job_meta_nonce'] ), 'gd_save_job_meta' )
+		) {
+			return;
+		}
+
+		// Bail on autosave / revision.
+		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) ) {
+			return;
+		}
+
+		// Capability check.
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		// ── Core fields ──────────────────────────────────────────────────────
+		$job_type = isset( $_POST['gd_job_type'] )
+			? sanitize_text_field( wp_unslash( $_POST['gd_job_type'] ) )
+			: '';
+		update_post_meta( $post_id, 'gd_job_type', $job_type );
+
+		$customer_id = isset( $_POST['gd_customer_id'] ) ? absint( $_POST['gd_customer_id'] ) : 0;
+		update_post_meta( $post_id, 'gd_customer_id', $customer_id );
+
+		$date_requested = isset( $_POST['gd_date_requested'] )
+			? sanitize_text_field( wp_unslash( $_POST['gd_date_requested'] ) )
+			: '';
+		update_post_meta( $post_id, 'gd_date_requested', $date_requested );
+
+		$valid_statuses = array( 'open', 'locked', 'accepted', 'expired', 'cancelled' );
+		$job_status     = isset( $_POST['gd_job_status'] )
+			? sanitize_key( wp_unslash( $_POST['gd_job_status'] ) )
+			: 'open';
+		if ( ! in_array( $job_status, $valid_statuses, true ) ) {
+			$job_status = 'open';
+		}
+		update_post_meta( $post_id, 'gd_job_status', $job_status );
+
+		// ── Pickup location ───────────────────────────────────────────────────
+		$pickup_location = array(
+			'suburb'  => isset( $_POST['gd_pickup_suburb'] )
+				? sanitize_text_field( wp_unslash( $_POST['gd_pickup_suburb'] ) )
+				: '',
+			'address' => isset( $_POST['gd_pickup_address'] )
+				? sanitize_text_field( wp_unslash( $_POST['gd_pickup_address'] ) )
+				: '',
+			'lat'     => isset( $_POST['gd_pickup_lat'] )
+				? (float) wp_unslash( $_POST['gd_pickup_lat'] )
+				: 0.0,
+			'lng'     => isset( $_POST['gd_pickup_lng'] )
+				? (float) wp_unslash( $_POST['gd_pickup_lng'] )
+				: 0.0,
+		);
+		update_post_meta( $post_id, 'gd_pickup_location', wp_json_encode( $pickup_location ) );
+		// Keep the flat suburb key used by the admin jobs list.
+		update_post_meta( $post_id, 'gd_pickup_suburb', $pickup_location['suburb'] );
+
+		// ── Dropoff location ──────────────────────────────────────────────────
+		$dropoff_location = array(
+			'suburb'  => isset( $_POST['gd_dropoff_suburb'] )
+				? sanitize_text_field( wp_unslash( $_POST['gd_dropoff_suburb'] ) )
+				: '',
+			'address' => isset( $_POST['gd_dropoff_address'] )
+				? sanitize_text_field( wp_unslash( $_POST['gd_dropoff_address'] ) )
+				: '',
+			'lat'     => isset( $_POST['gd_dropoff_lat'] )
+				? (float) wp_unslash( $_POST['gd_dropoff_lat'] )
+				: 0.0,
+			'lng'     => isset( $_POST['gd_dropoff_lng'] )
+				? (float) wp_unslash( $_POST['gd_dropoff_lng'] )
+				: 0.0,
+		);
+		update_post_meta( $post_id, 'gd_dropoff_location', wp_json_encode( $dropoff_location ) );
+
+		// ── Items & notes ─────────────────────────────────────────────────────
+		$inventory = isset( $_POST['gd_inventory'] )
+			? wp_kses_post( wp_unslash( $_POST['gd_inventory'] ) )
+			: '';
+		update_post_meta( $post_id, 'gd_inventory', $inventory );
+
+		update_post_meta( $post_id, 'gd_labour_pickup',  ! empty( $_POST['gd_labour_pickup'] ) ? 1 : 0 );
+		update_post_meta( $post_id, 'gd_labour_dropoff', ! empty( $_POST['gd_labour_dropoff'] ) ? 1 : 0 );
+
+		$access_notes = isset( $_POST['gd_access_notes'] )
+			? sanitize_textarea_field( wp_unslash( $_POST['gd_access_notes'] ) )
+			: '';
+		update_post_meta( $post_id, 'gd_access_notes', $access_notes );
+
+		$special_instructions = isset( $_POST['gd_special_instructions'] )
+			? wp_kses_post( wp_unslash( $_POST['gd_special_instructions'] ) )
+			: '';
+		update_post_meta( $post_id, 'gd_special_instructions', $special_instructions );
+
+		// Set created_at timestamp on first save.
+		if ( ! get_post_meta( $post_id, 'gd_created_at', true ) ) {
+			update_post_meta( $post_id, 'gd_created_at', current_time( 'mysql' ) );
+		}
+	}
+
+	/**
 	 * Enqueue admin scripts and styles.
 	 *
 	 * @param string $hook_suffix The current admin page hook suffix.
 	 */
 	public function enqueue_scripts( $hook_suffix ) {
-		// Only load on plugin pages.
-		if ( strpos( $hook_suffix, 'go-deliver' ) === false ) {
+		// Load on plugin admin pages and on the gd_job post edit screens.
+		$is_plugin_page = strpos( $hook_suffix, 'go-deliver' ) !== false;
+
+		$is_job_edit = false;
+		if ( in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
+			// post-new.php passes post_type in the query string.
+			// post.php passes the post ID; derive the type from it.
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended
+			if ( isset( $_GET['post_type'] ) && 'gd_job' === sanitize_key( $_GET['post_type'] ) ) {
+				$is_job_edit = true;
+			} elseif ( isset( $_GET['post'] ) && 'gd_job' === get_post_type( absint( $_GET['post'] ) ) ) {
+				$is_job_edit = true;
+			}
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		}
+
+		if ( ! $is_plugin_page && ! $is_job_edit ) {
 			return;
 		}
 
