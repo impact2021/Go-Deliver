@@ -137,60 +137,8 @@ class Go_Deliver_Activator {
 
 		// Default form fields schema (stored as JSON).
 		if ( false === get_option( 'gd_form_fields' ) ) {
-			$default_fields = array(
-				array(
-					'key'      => 'item_type',
-					'type'     => 'select',
-					'label'    => __( 'Item Type', 'go-deliver' ),
-					'required' => true,
-					'options'  => array(
-						'studio'    => __( 'Studio', 'go-deliver' ),
-						'1_bedroom' => __( '1 Bedroom', 'go-deliver' ),
-						'2_bedroom' => __( '2 Bedrooms', 'go-deliver' ),
-						'3_bedroom' => __( '3 Bedrooms', 'go-deliver' ),
-						'4_bedroom' => __( '4 Bedrooms', 'go-deliver' ),
-						'other'     => __( 'Other', 'go-deliver' ),
-					),
-				),
-				array(
-					'key'      => 'bedrooms',
-					'type'     => 'select',
-					'label'    => __( 'Number of Bedrooms', 'go-deliver' ),
-					'required' => false,
-					'options'  => array(
-						'0' => __( 'Studio / No bedroom', 'go-deliver' ),
-						'1' => __( '1', 'go-deliver' ),
-						'2' => __( '2', 'go-deliver' ),
-						'3' => __( '3', 'go-deliver' ),
-						'4' => __( '4+', 'go-deliver' ),
-					),
-				),
-				array(
-					'key'      => 'special_items',
-					'type'     => 'textarea',
-					'label'    => __( 'Special Items', 'go-deliver' ),
-					'required' => false,
-				),
-				array(
-					'key'      => 'access_info',
-					'type'     => 'textarea',
-					'label'    => __( 'Access Information', 'go-deliver' ),
-					'required' => false,
-				),
-				array(
-					'key'      => 'packing_required',
-					'type'     => 'checkbox',
-					'label'    => __( 'Packing Required', 'go-deliver' ),
-					'required' => false,
-				),
-				array(
-					'key'      => 'piano',
-					'type'     => 'checkbox',
-					'label'    => __( 'Piano / Large Instrument', 'go-deliver' ),
-					'required' => false,
-				),
-			);
-
+			$form_builder   = new Go_Deliver_Form_Builder();
+			$default_fields = $form_builder->get_default_fields();
 			add_option( 'gd_form_fields', wp_json_encode( $default_fields ) );
 		}
 	}

@@ -538,7 +538,7 @@ $photos[] = absint( $photo_id );
 }
 
 $data = array(
-'job_type'             => sanitize_text_field( wp_unslash( $_POST['job_type'] ?? '' ) ),
+'job_type'             => sanitize_text_field( wp_unslash( $_POST['job_type'] ?? $form_data['item_type'] ?? '' ) ),
 'pickup_location'      => $pickup_location,
 'dropoff_location'     => $dropoff_location,
 'date_requested'       => sanitize_text_field( wp_unslash( $_POST['date_requested'] ?? '' ) ),

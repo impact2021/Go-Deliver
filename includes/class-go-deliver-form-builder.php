@@ -124,45 +124,153 @@ return true;
  */
 public function get_default_fields() {
 return array(
+// ── Level 1: top-level job type ──────────────────────────────────────
 array(
 'key'      => 'item_type',
-'label'    => __( 'Type of Move', 'go-deliver' ),
+'label'    => __( 'Job Type', 'go-deliver' ),
 'type'     => 'select',
 'required' => true,
-'options'  => array( 'House', 'Apartment', 'Office', 'Single Items' ),
+'options'  => array(
+'TradeMe Purchase Pickup',
+'Item',
+'Move',
+'Vehicle',
+'Boat',
+'Piano',
+'Pet',
+'Junk',
+'Other',
 ),
+),
+// ── Level 2: Item sub-type ────────────────────────────────────────────
 array(
-'key'               => 'bedrooms',
-'label'             => __( 'Number of Bedrooms', 'go-deliver' ),
+'key'               => 'item_subtype',
+'label'             => __( 'Item Type', 'go-deliver' ),
 'type'              => 'select',
 'required'          => false,
-'options'           => array( 'Studio', '1', '2', '3', '4', '5+' ),
+'options'           => array( 'Furniture', 'Item' ),
 'conditional_on'    => 'item_type',
-'conditional_value' => 'House',
+'conditional_value' => 'Item',
 ),
+// ── Level 3: Furniture detail ─────────────────────────────────────────
 array(
-'key'      => 'special_items',
-'label'    => __( 'Special Items (piano, pool table, etc)', 'go-deliver' ),
-'type'     => 'textarea',
-'required' => false,
+'key'               => 'furniture_subtype',
+'label'             => __( 'Furniture Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Sofa', 'Table', 'Bed', 'Bookcase', 'Chest', 'Drawer' ),
+'conditional_on'    => 'item_subtype',
+'conditional_value' => 'Furniture',
 ),
+// ── Level 3: Loose / packed item detail ───────────────────────────────
 array(
-'key'      => 'access_info',
-'label'    => __( 'Access Information', 'go-deliver' ),
-'type'     => 'textarea',
-'required' => false,
+'key'               => 'item_detail_subtype',
+'label'             => __( 'Item Detail', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Packed Item', 'Electronics', 'Bicycle', 'Box' ),
+'conditional_on'    => 'item_subtype',
+'conditional_value' => 'Item',
 ),
+// ── Level 2: Move sub-type ────────────────────────────────────────────
 array(
-'key'      => 'packing_required',
-'label'    => __( 'Packing Required', 'go-deliver' ),
-'type'     => 'checkbox',
-'required' => false,
+'key'               => 'move_subtype',
+'label'             => __( 'Move Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Home', 'Office', 'Storage' ),
+'conditional_on'    => 'item_type',
+'conditional_value' => 'Move',
 ),
+// ── Level 2: Vehicle sub-type ─────────────────────────────────────────
 array(
-'key'      => 'estimated_volume',
-'label'    => __( 'Estimated Volume (cubic meters)', 'go-deliver' ),
-'type'     => 'number',
-'required' => false,
+'key'               => 'vehicle_subtype',
+'label'             => __( 'Vehicle Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Car', 'Motorcycle', 'Other Vehicle' ),
+'conditional_on'    => 'item_type',
+'conditional_value' => 'Vehicle',
+),
+// ── Level 3: Car detail ───────────────────────────────────────────────
+array(
+'key'               => 'car_subtype',
+'label'             => __( 'Car Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Sedan', 'Minivan', '4x4', 'Pickup', 'Sports Car', 'Coupe' ),
+'conditional_on'    => 'vehicle_subtype',
+'conditional_value' => 'Car',
+),
+// ── Level 3: Motorcycle detail ────────────────────────────────────────
+array(
+'key'               => 'motorcycle_subtype',
+'label'             => __( 'Motorcycle Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Chopper', 'Superbike', 'Moped', 'Scooter' ),
+'conditional_on'    => 'vehicle_subtype',
+'conditional_value' => 'Motorcycle',
+),
+// ── Level 3: Other vehicle detail ─────────────────────────────────────
+array(
+'key'               => 'other_vehicle_subtype',
+'label'             => __( 'Vehicle Detail', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Truck', 'Bus', 'RV', 'Tractor' ),
+'conditional_on'    => 'vehicle_subtype',
+'conditional_value' => 'Other Vehicle',
+),
+// ── Level 2: Boat sub-type ────────────────────────────────────────────
+array(
+'key'               => 'boat_subtype',
+'label'             => __( 'Boat Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Powerboat', 'Sailboat', 'Houseboat', 'Jet Ski', 'Watercraft' ),
+'conditional_on'    => 'item_type',
+'conditional_value' => 'Boat',
+),
+// ── Level 2: Piano sub-type ───────────────────────────────────────────
+array(
+'key'               => 'piano_subtype',
+'label'             => __( 'Piano Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Grand Piano', 'Upright Piano', 'Digital Piano' ),
+'conditional_on'    => 'item_type',
+'conditional_value' => 'Piano',
+),
+// ── Level 2: Pet sub-type ─────────────────────────────────────────────
+array(
+'key'               => 'pet_subtype',
+'label'             => __( 'Pet Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Cat', 'Dog', 'Bird', 'Horse' ),
+'conditional_on'    => 'item_type',
+'conditional_value' => 'Pet',
+),
+// ── Level 2: Junk sub-type ────────────────────────────────────────────
+array(
+'key'               => 'junk_subtype',
+'label'             => __( 'Junk Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Junk Clearance', 'Rubbish Removal' ),
+'conditional_on'    => 'item_type',
+'conditional_value' => 'Junk',
+),
+// ── Level 2: Other sub-type ───────────────────────────────────────────
+array(
+'key'               => 'other_subtype',
+'label'             => __( 'Other Type', 'go-deliver' ),
+'type'              => 'select',
+'required'          => false,
+'options'           => array( 'Heavy', 'Farm Equipment', 'Construction Material' ),
+'conditional_on'    => 'item_type',
+'conditional_value' => 'Other',
 ),
 );
 }

@@ -243,12 +243,15 @@ if ( is_user_logged_in() ) {
 						<div class="gd-checkbox-group">
 							<?php
 							$job_type_options = array(
-								'house_move'     => __( 'House Move', 'go-deliver' ),
-								'apartment_move' => __( 'Apartment Move', 'go-deliver' ),
-								'office_move'    => __( 'Office Move', 'go-deliver' ),
-								'single_items'   => __( 'Single Items', 'go-deliver' ),
+								'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
+								'item'           => __( 'Item', 'go-deliver' ),
+								'move'           => __( 'Move', 'go-deliver' ),
+								'vehicle'        => __( 'Vehicle', 'go-deliver' ),
+								'boat'           => __( 'Boat', 'go-deliver' ),
 								'piano'          => __( 'Piano', 'go-deliver' ),
-								'interstate'     => __( 'Interstate', 'go-deliver' ),
+								'pet'            => __( 'Pet', 'go-deliver' ),
+								'junk'           => __( 'Junk', 'go-deliver' ),
+								'other'          => __( 'Other', 'go-deliver' ),
 							);
 							foreach ( $job_type_options as $slug => $label ) :
 							?>
