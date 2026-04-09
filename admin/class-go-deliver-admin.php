@@ -83,6 +83,15 @@ class Go_Deliver_Admin {
 			'go-deliver-settings',
 			array( $this, 'render_settings_page' )
 		);
+
+		add_submenu_page(
+			'go-deliver',
+			__( 'Shortcodes', 'go-deliver' ),
+			__( 'Shortcodes', 'go-deliver' ),
+			'manage_options',
+			'go-deliver-shortcodes',
+			array( $this, 'render_shortcodes_page' )
+		);
 	}
 
 	/**
@@ -322,5 +331,15 @@ class Go_Deliver_Admin {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
 		}
 		require GD_PLUGIN_DIR . 'admin/partials/settings.php';
+	}
+
+	/**
+	 * Render the shortcodes reference page.
+	 */
+	public function render_shortcodes_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
+		}
+		require GD_PLUGIN_DIR . 'admin/partials/shortcodes.php';
 	}
 }
