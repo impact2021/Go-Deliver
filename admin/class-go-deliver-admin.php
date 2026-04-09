@@ -41,11 +41,11 @@ class Go_Deliver_Admin {
 
 		add_submenu_page(
 			'go-deliver',
-			__( 'Settings', 'go-deliver' ),
-			__( 'Settings', 'go-deliver' ),
+			__( 'Jobs', 'go-deliver' ),
+			__( 'Jobs', 'go-deliver' ),
 			'manage_options',
-			'go-deliver-settings',
-			array( $this, 'render_settings_page' )
+			'go-deliver-jobs',
+			array( $this, 'render_jobs_page' )
 		);
 
 		add_submenu_page(
@@ -64,6 +64,24 @@ class Go_Deliver_Admin {
 			'manage_options',
 			'go-deliver-transactions',
 			array( $this, 'render_transactions_page' )
+		);
+
+		add_submenu_page(
+			'go-deliver',
+			__( 'Form Builder', 'go-deliver' ),
+			__( 'Form Builder', 'go-deliver' ),
+			'manage_options',
+			'go-deliver-form-builder',
+			array( $this, 'render_form_builder_page' )
+		);
+
+		add_submenu_page(
+			'go-deliver',
+			__( 'Settings', 'go-deliver' ),
+			__( 'Settings', 'go-deliver' ),
+			'manage_options',
+			'go-deliver-settings',
+			array( $this, 'render_settings_page' )
 		);
 	}
 
@@ -118,13 +136,54 @@ class Go_Deliver_Admin {
 	}
 
 	/**
-	 * Render the settings page.
+	 * Render the jobs list page.
 	 */
-	public function render_settings_page() {
+	public function render_jobs_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
 		}
-		echo '<div class="wrap"><h1>' . esc_html__( 'Go Deliver Settings', 'go-deliver' ) . '</h1></div>';
+
+		$per_page     = 20;
+		$current_page = max( 1, isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$status_filter = isset( $_GET['status'] ) ? sanitize_key( $_GET['status'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$suburb_search = isset( $_GET['suburb'] ) ? sanitize_text_field( wp_unslash( $_GET['suburb'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$query_args = array(
+			'post_type'      => 'gd_job',
+			'post_status'    => 'publish',
+			'posts_per_page' => $per_page,
+			'paged'          => $current_page,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+		);
+
+		$meta_clauses = array();
+
+		if ( $status_filter ) {
+			$meta_clauses[] = array(
+				'key'   => 'gd_job_status',
+				'value' => $status_filter,
+			);
+		}
+
+		if ( $suburb_search ) {
+			$meta_clauses[] = array(
+				'key'     => 'gd_pickup_suburb',
+				'value'   => $suburb_search,
+				'compare' => 'LIKE',
+			);
+		}
+
+		if ( $meta_clauses ) {
+			$query_args['meta_query'] = array_merge( array( 'relation' => 'AND' ), $meta_clauses ); // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		}
+
+		$query       = new WP_Query( $query_args );
+		$jobs        = $query->posts;
+		$total_pages = $query->max_num_pages;
+
+		require GD_PLUGIN_DIR . 'admin/partials/jobs-list.php';
+		wp_reset_postdata();
 	}
 
 	/**
@@ -134,7 +193,43 @@ class Go_Deliver_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
 		}
-		echo '<div class="wrap"><h1>' . esc_html__( 'Movers', 'go-deliver' ) . '</h1></div>';
+
+		// Detail view: single mover approval.
+		if ( isset( $_GET['user_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$uid   = absint( $_GET['user_id'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$mover = get_userdata( $uid );
+			if ( ! $mover ) {
+				wp_die( esc_html__( 'Mover not found.', 'go-deliver' ) );
+			}
+			$documents    = Go_Deliver_DB::get_documents( $uid );
+			$transactions = Go_Deliver_DB::get_transactions( $uid );
+			$status_log   = array();
+			require GD_PLUGIN_DIR . 'admin/partials/mover-approval.php';
+			return;
+		}
+
+		// List view.
+		$per_page      = 20;
+		$current_page  = max( 1, isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$status_filter = isset( $_GET['status'] ) ? sanitize_key( $_GET['status'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$user_args = array(
+			'role'   => 'gd_mover',
+			'number' => $per_page,
+			'paged'  => $current_page,
+		);
+
+		if ( $status_filter ) {
+			$user_args['meta_key']   = 'gd_mover_status'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+			$user_args['meta_value'] = $status_filter; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+		}
+
+		$user_query  = new WP_User_Query( $user_args );
+		$movers      = $user_query->get_results();
+		$total_users = $user_query->get_total();
+		$total_pages = $per_page > 0 ? (int) ceil( $total_users / $per_page ) : 1;
+
+		require GD_PLUGIN_DIR . 'admin/partials/movers-list.php';
 	}
 
 	/**
@@ -144,6 +239,88 @@ class Go_Deliver_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
 		}
-		echo '<div class="wrap"><h1>' . esc_html__( 'Transactions', 'go-deliver' ) . '</h1></div>';
+
+		global $wpdb;
+
+		$per_page     = 30;
+		$current_page = max( 1, isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$filter_user  = isset( $_GET['filter_user'] ) ? sanitize_text_field( wp_unslash( $_GET['filter_user'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$filter_type  = isset( $_GET['filter_type'] ) ? sanitize_key( $_GET['filter_type'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$filter_from  = isset( $_GET['filter_from'] ) ? sanitize_text_field( wp_unslash( $_GET['filter_from'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$filter_to    = isset( $_GET['filter_to'] ) ? sanitize_text_field( wp_unslash( $_GET['filter_to'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$table  = $wpdb->prefix . 'gd_wallet_transactions';
+		$where  = array( '1=1' );
+		$params = array();
+
+		if ( $filter_user ) {
+			$user = get_user_by( 'login', $filter_user );
+			if ( ! $user ) {
+				$user = get_user_by( 'email', $filter_user );
+			}
+			if ( $user ) {
+				$where[]  = 'user_id = %d';
+				$params[] = $user->ID;
+			}
+		}
+
+		$valid_types = array( 'topup', 'charge', 'refund', 'adjustment' );
+		if ( $filter_type && in_array( $filter_type, $valid_types, true ) ) {
+			$where[]  = 'type = %s';
+			$params[] = $filter_type;
+		}
+
+		if ( $filter_from ) {
+			$where[]  = 'created_at >= %s';
+			$params[] = $filter_from . ' 00:00:00';
+		}
+
+		if ( $filter_to ) {
+			$where[]  = 'created_at <= %s';
+			$params[] = $filter_to . ' 23:59:59';
+		}
+
+		$where_sql = implode( ' AND ', $where );
+		$offset    = ( $current_page - 1 ) * $per_page;
+
+		if ( $params ) {
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$total_count   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE {$where_sql}", $params ) );
+			$transactions  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM `{$table}` WHERE {$where_sql} ORDER BY created_at DESC LIMIT %d OFFSET %d", array_merge( $params, array( $per_page, $offset ) ) ) );
+			$total_credits = (float) $wpdb->get_var( $wpdb->prepare( "SELECT COALESCE(SUM(amount),0) FROM `{$table}` WHERE {$where_sql} AND amount > 0", $params ) );
+			$total_debits  = abs( (float) $wpdb->get_var( $wpdb->prepare( "SELECT COALESCE(SUM(amount),0) FROM `{$table}` WHERE {$where_sql} AND amount < 0", $params ) ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		} else {
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$total_count   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+			$transactions  = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM `{$table}` ORDER BY created_at DESC LIMIT %d OFFSET %d", $per_page, $offset ) );
+			$total_credits = (float) $wpdb->get_var( "SELECT COALESCE(SUM(amount),0) FROM `{$table}` WHERE amount > 0" );
+			$total_debits  = abs( (float) $wpdb->get_var( "SELECT COALESCE(SUM(amount),0) FROM `{$table}` WHERE amount < 0" ) );
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		}
+
+		$total_pages = $per_page > 0 ? (int) ceil( $total_count / $per_page ) : 1;
+
+		require GD_PLUGIN_DIR . 'admin/partials/transactions.php';
+	}
+
+	/**
+	 * Render the form builder page.
+	 */
+	public function render_form_builder_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
+		}
+		require GD_PLUGIN_DIR . 'admin/partials/form-builder.php';
+	}
+
+	/**
+	 * Render the settings page.
+	 */
+	public function render_settings_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
+		}
+		require GD_PLUGIN_DIR . 'admin/partials/settings.php';
 	}
 }
