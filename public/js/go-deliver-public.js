@@ -439,7 +439,7 @@
 				$.getJSON(
 					'https://nominatim.openstreetmap.org/search',
 					{
-						q:              suburb + ', Australia',
+						q:              suburb + ', New Zealand',
 						format:         'json',
 						limit:          1,
 						addressdetails: 1,

@@ -224,7 +224,7 @@ return $customer_id;
  * @return string Filtered message.
  */
 public function contact_filter( $message ) {
-// Remove phone numbers (various formats including Australian).
+// Remove phone numbers (various formats including New Zealand).
 $message = preg_replace(
 '/(?:\+?\d[\d\s\-().]{7,}\d)/',
 '[phone removed]',

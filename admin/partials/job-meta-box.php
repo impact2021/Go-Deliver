@@ -139,7 +139,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				id="gd_admin_pickup_suburb"
 				name="gd_pickup_suburb"
 				value="<?php echo esc_attr( $pickup_suburb ); ?>"
-				placeholder="<?php esc_attr_e( 'e.g. Sydney CBD NSW', 'go-deliver' ); ?>"
+				placeholder="<?php esc_attr_e( 'e.g. Auckland CBD', 'go-deliver' ); ?>"
 			>
 		</div>
 
@@ -195,7 +195,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				id="gd_admin_dropoff_suburb"
 				name="gd_dropoff_suburb"
 				value="<?php echo esc_attr( $dropoff_suburb ); ?>"
-				placeholder="<?php esc_attr_e( 'e.g. Parramatta NSW', 'go-deliver' ); ?>"
+				placeholder="<?php esc_attr_e( 'e.g. Christchurch', 'go-deliver' ); ?>"
 			>
 		</div>
 
