@@ -436,6 +436,13 @@
 					{ types: [ 'geocode' ] }
 				);
 
+				// Clear stale coordinates whenever the user edits the text.
+				$suburb.on( 'input', function () {
+					$lat.val( '' );
+					$lng.val( '' );
+					$address.val( '' );
+				} );
+
 				autocomplete.addListener( 'place_changed', function () {
 					var place = autocomplete.getPlace();
 
@@ -455,6 +462,14 @@
 			// ---------------------------------------------------------------
 			// Nominatim fallback: auto-geocode on blur
 			// ---------------------------------------------------------------
+
+			// Clear stale coordinates whenever the user edits the text.
+			$suburb.on( 'input', function () {
+				$lat.val( '' );
+				$lng.val( '' );
+				$address.val( '' );
+			} );
+
 			$suburb.on( 'blur', function () {
 				var query = $.trim( $suburb.val() );
 				if ( ! query || ( $lat.val() && $lng.val() ) ) { return; }
