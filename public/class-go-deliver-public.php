@@ -27,6 +27,18 @@ class Go_Deliver_Public {
 			GD_VERSION
 		);
 
+		$google_maps_key = get_option( 'gd_google_maps_api_key', '' );
+
+		if ( $google_maps_key ) {
+			wp_enqueue_script(
+				'google-maps-places',
+				'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode( $google_maps_key ) . '&libraries=places',
+				array(),
+				null,
+				true
+			);
+		}
+
 		wp_enqueue_script(
 			'go-deliver-public',
 			GD_PLUGIN_URL . 'public/js/go-deliver-public.js',
@@ -39,8 +51,9 @@ class Go_Deliver_Public {
 			'go-deliver-public',
 			'gdPublic',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'gd_public_nonce' ),
+				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'gd_public_nonce' ),
+				'hasGooglePlaces' => $google_maps_key ? '1' : '',
 			)
 		);
 	}

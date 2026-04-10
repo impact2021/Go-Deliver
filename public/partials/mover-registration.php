@@ -203,21 +203,16 @@ if ( is_user_logged_in() ) {
 							<?php esc_html_e( 'Base Suburb / City', 'go-deliver' ); ?>
 							<span class="gd-required">*</span>
 						</label>
-						<div style="display:flex;gap:8px;align-items:flex-start;">
-							<input
-								type="text"
-								id="gd-reg-base-suburb"
-								name="base_suburb"
-								class="gd-suburb-input"
-								required
-								placeholder="<?php esc_attr_e( 'e.g. Wellington', 'go-deliver' ); ?>"
-								autocomplete="off"
-							>
-							<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-geocode-btn">
-								<?php esc_html_e( 'Verify', 'go-deliver' ); ?>
-							</button>
-						</div>
-						<span class="gd-geocode-status gd-field-hint"></span>
+						<input
+							type="text"
+							id="gd-reg-base-suburb"
+							name="base_suburb"
+							class="gd-suburb-input"
+							required
+							placeholder="<?php esc_attr_e( 'e.g. Wellington', 'go-deliver' ); ?>"
+							autocomplete="off"
+						>
+						<input type="hidden" name="base_address" class="gd-address-input">
 						<input type="hidden" name="base_lat" class="gd-lat-input">
 						<input type="hidden" name="base_lng" class="gd-lng-input">
 					</div>

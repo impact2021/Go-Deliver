@@ -423,48 +423,59 @@
 		$context.find( '.gd-location-field' ).each( function () {
 			var $wrap    = $( this );
 			var $suburb  = $wrap.find( '.gd-suburb-input' );
+			var $address = $wrap.find( '.gd-address-input' );
 			var $lat     = $wrap.find( '.gd-lat-input' );
 			var $lng     = $wrap.find( '.gd-lng-input' );
-			var $geocode = $wrap.find( '.gd-geocode-btn' );
-			var $status  = $wrap.find( '.gd-geocode-status' );
 
-			$geocode.on( 'click', function () {
-				var suburb = $.trim( $suburb.val() );
-				if ( ! suburb ) {
-					$status.text( 'Please enter a suburb or address.' ).css( 'color', 'var(--gd-danger)' );
-					return;
-				}
+			// ---------------------------------------------------------------
+			// Google Places Autocomplete (preferred)
+			// ---------------------------------------------------------------
+			if ( gdPublic.hasGooglePlaces && typeof google !== 'undefined' && google.maps && google.maps.places ) {
+				var autocomplete = new google.maps.places.Autocomplete(
+					$suburb[ 0 ],
+					{ types: [ 'geocode' ] }
+				);
 
-				$geocode.prop( 'disabled', true ).text( 'Searching…' );
-				$status.text( '' );
+				autocomplete.addListener( 'place_changed', function () {
+					var place = autocomplete.getPlace();
 
-				// Use OpenStreetMap Nominatim (no API key required).
+					if ( place.geometry && place.geometry.location ) {
+						$lat.val( place.geometry.location.lat().toFixed( 6 ) );
+						$lng.val( place.geometry.location.lng().toFixed( 6 ) );
+					}
+
+					var fullAddress = place.formatted_address || $suburb.val();
+					$address.val( fullAddress );
+					$suburb.val( fullAddress );
+				} );
+
+				return; // Skip Nominatim fallback for this field.
+			}
+
+			// ---------------------------------------------------------------
+			// Nominatim fallback: auto-geocode on blur
+			// ---------------------------------------------------------------
+			$suburb.on( 'blur', function () {
+				var query = $.trim( $suburb.val() );
+				if ( ! query || ( $lat.val() && $lng.val() ) ) { return; }
+
 				$.getJSON(
 					'https://nominatim.openstreetmap.org/search',
 					{
-						q:              suburb + ', New Zealand',
+						q:              query + ', New Zealand',
 						format:         'json',
 						limit:          1,
 						addressdetails: 1,
 					},
 					function ( results ) {
-						$geocode.prop( 'disabled', false ).text( 'Verify' );
 						if ( results && results.length ) {
 							var place = results[ 0 ];
 							$lat.val( parseFloat( place.lat ).toFixed( 6 ) );
 							$lng.val( parseFloat( place.lon ).toFixed( 6 ) );
-
-							var displaySuburb = ( place.address && ( place.address.suburb || place.address.town || place.address.city ) ) || suburb;
-							$suburb.val( displaySuburb );
-							$status.text( '✓ Found: ' + displaySuburb ).css( 'color', 'var(--gd-success)' );
-						} else {
-							$status.text( 'Location not found. You can continue with manual entry.' ).css( 'color', 'var(--gd-warning)' );
+							$address.val( place.display_name || query );
 						}
 					}
-				).fail( function () {
-					$geocode.prop( 'disabled', false ).text( 'Verify' );
-					$status.text( 'Geocoding unavailable. Please enter coordinates manually if needed.' ).css( 'color', 'var(--gd-text-muted)' );
-				} );
+				);
 			} );
 		} );
 	}
@@ -1038,7 +1049,8 @@
 
 		// Click-to-browse.
 		$( document ).on( 'click', '.gd-upload-area', function () {
-			$( this ).find( 'input[type="file"]' ).trigger( 'click' );
+			var input = $( this ).find( 'input[type="file"]' )[ 0 ];
+			if ( input ) { input.click(); }
 		} );
 	}
 

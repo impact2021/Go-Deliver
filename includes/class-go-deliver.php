@@ -160,7 +160,7 @@ class Go_Deliver {
 			list( $class, $method ) = $handler_map[ $action ];
 
 			if ( class_exists( $class ) && method_exists( $class, $method ) ) {
-				call_user_func( array( $class, $method ) );
+				call_user_func( array( new $class(), $method ) );
 				return;
 			}
 		}
