@@ -8,296 +8,511 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-exit;
+	exit;
 }
+
+$form_builder = new Go_Deliver_Form_Builder();
 ?>
 <div class="gd-wrap">
 <?php if ( is_user_logged_in() && ! current_user_can( 'gd_submit_jobs' ) ) : ?>
-<div class="gd-alert gd-alert--warning">
-<span class="gd-alert__icon">⚠️</span>
-<div class="gd-alert__body">
-<?php esc_html_e( 'Your account does not have permission to submit jobs. Please contact support.', 'go-deliver' ); ?>
-</div>
-</div>
+	<div class="gd-alert gd-alert--warning">
+		<span class="gd-alert__icon">⚠️</span>
+		<div class="gd-alert__body">
+			<?php esc_html_e( 'Your account does not have permission to submit jobs. Please contact support.', 'go-deliver' ); ?>
+		</div>
+	</div>
 <?php else : ?>
 <div class="gd-job-form" id="gd-job-form-wrap">
 
-<div class="gd-job-form__header">
-<h1 class="gd-job-form__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h1>
-</div>
+	<div class="gd-job-form__header">
+		<h1 class="gd-job-form__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h1>
 
-<form id="gd-job-form" method="post" enctype="multipart/form-data" novalidate>
-<?php wp_nonce_field( 'gd_submit_job', 'gd_submit_job_nonce' ); ?>
-<input type="hidden" name="action" value="gd_submit_job">
+		<!-- Step progress indicators -->
+		<div class="gd-steps">
+			<div class="gd-step" data-step="1">
+				<span class="gd-step__number">1</span>
+				<span class="gd-step__label"><?php esc_html_e( 'What?', 'go-deliver' ); ?></span>
+			</div>
+			<div class="gd-step" data-step="2">
+				<span class="gd-step__number">2</span>
+				<span class="gd-step__label"><?php esc_html_e( 'Collection', 'go-deliver' ); ?></span>
+			</div>
+			<div class="gd-step" data-step="3">
+				<span class="gd-step__number">3</span>
+				<span class="gd-step__label"><?php esc_html_e( 'Delivery', 'go-deliver' ); ?></span>
+			</div>
+			<div class="gd-step" data-step="4">
+				<span class="gd-step__number">4</span>
+				<span class="gd-step__label"><?php esc_html_e( 'When?', 'go-deliver' ); ?></span>
+			</div>
+			<div class="gd-step" data-step="5">
+				<span class="gd-step__number">5</span>
+				<span class="gd-step__label"><?php esc_html_e( 'Photos &amp; Notes', 'go-deliver' ); ?></span>
+			</div>
+			<div class="gd-step" data-step="6">
+				<span class="gd-step__number">6</span>
+				<span class="gd-step__label"><?php esc_html_e( 'Your Details', 'go-deliver' ); ?></span>
+			</div>
+		</div>
+	</div><!-- /.gd-job-form__header -->
 
-<div class="gd-job-form__body">
+	<form id="gd-job-form" method="post" enctype="multipart/form-data" novalidate>
+		<?php wp_nonce_field( 'gd_submit_job', 'gd_submit_job_nonce' ); ?>
+		<input type="hidden" name="action" value="gd_submit_job">
 
-<!-- Job Type selector — always visible first -->
-<div class="gd-field-group">
-<label for="gd_job_type">
-<?php esc_html_e( 'What do you need transported?', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<?php
-$form_builder = new Go_Deliver_Form_Builder();
-$form_builder->render_flat_job_type_dropdown();
-?>
-</div>
+		<div class="gd-job-form__body">
 
-<!-- The rest of the form is hidden until a job type is chosen -->
-<div id="gd-job-form-details" style="display:none;">
+			<!-- ============================================================
+			     Step 1: What are you moving?
+			     ============================================================ -->
+			<div class="gd-form-section" data-step="1">
+				<h2 class="gd-form-section__title"><?php esc_html_e( 'What are you moving?', 'go-deliver' ); ?></h2>
 
-<!-- Pickup Location -->
-<div class="gd-field-group gd-location-field">
-<label for="gd_pickup_suburb">
-<?php esc_html_e( 'Pickup Suburb / Address', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<div style="display:flex;gap:8px;align-items:flex-start;">
-<input
-type="text"
-id="gd_pickup_suburb"
-name="pickup_suburb"
-class="gd-suburb-input"
-placeholder="<?php esc_attr_e( 'e.g. Auckland CBD', 'go-deliver' ); ?>"
-required
-autocomplete="off"
->
-<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-geocode-btn" style="white-space:nowrap;">
-<?php esc_html_e( 'Verify', 'go-deliver' ); ?>
-</button>
-</div>
-<span class="gd-geocode-status gd-field-hint"></span>
-<input type="hidden" name="pickup_lat" class="gd-lat-input">
-<input type="hidden" name="pickup_lng" class="gd-lng-input">
-</div>
+				<div class="gd-field-group">
+					<label for="gd_job_type">
+						<?php esc_html_e( 'Item type', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<?php $form_builder->render_flat_job_type_dropdown(); ?>
+				</div>
 
-<!-- Dropoff Location -->
-<div class="gd-field-group gd-location-field">
-<label for="gd_dropoff_suburb">
-<?php esc_html_e( 'Dropoff Suburb / Address', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<div style="display:flex;gap:8px;align-items:flex-start;">
-<input
-type="text"
-id="gd_dropoff_suburb"
-name="dropoff_suburb"
-class="gd-suburb-input"
-placeholder="<?php esc_attr_e( 'e.g. Christchurch', 'go-deliver' ); ?>"
-required
-autocomplete="off"
->
-<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-geocode-btn" style="white-space:nowrap;">
-<?php esc_html_e( 'Verify', 'go-deliver' ); ?>
-</button>
-</div>
-<span class="gd-geocode-status gd-field-hint"></span>
-<input type="hidden" name="dropoff_lat" class="gd-lat-input">
-<input type="hidden" name="dropoff_lng" class="gd-lng-input">
-</div>
+				<!-- Vehicle: Make & Model (shown for car / motorcycle / vehicle / other_vehicle) -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="car,motorcycle,vehicle,other_vehicle" style="display:none;">
+					<label for="gd_vehicle_make">
+						<?php esc_html_e( 'Make', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<input
+						type="text"
+						id="gd_vehicle_make"
+						name="form_data[vehicle_make]"
+						placeholder="<?php esc_attr_e( 'e.g. Toyota', 'go-deliver' ); ?>"
+						autocomplete="off"
+					>
+				</div>
 
-<!-- Date Requested -->
-<div class="gd-field-group">
-<label for="gd_date_requested">
-<?php esc_html_e( 'Preferred Moving Date', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<input
-type="date"
-id="gd_date_requested"
-name="date_requested"
-required
-min="<?php echo esc_attr( gmdate( 'Y-m-d', strtotime( '+1 day' ) ) ); ?>"
->
-</div>
+				<div class="gd-field-group gd-type-field" data-job-type-show="car,motorcycle,vehicle,other_vehicle" style="display:none;">
+					<label for="gd_vehicle_model">
+						<?php esc_html_e( 'Model', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<input
+						type="text"
+						id="gd_vehicle_model"
+						name="form_data[vehicle_model]"
+						placeholder="<?php esc_attr_e( 'e.g. Corolla', 'go-deliver' ); ?>"
+						autocomplete="off"
+					>
+				</div>
 
-<!-- Labour -->
-<div class="gd-field-group">
-<label><?php esc_html_e( 'Labour Required', 'go-deliver' ); ?></label>
-<div class="gd-checkbox-group">
-<label class="gd-checkbox-label">
-<input type="checkbox" name="labour_pickup" value="1">
-<?php esc_html_e( 'Labour at Pickup', 'go-deliver' ); ?>
-</label>
-<label class="gd-checkbox-label">
-<input type="checkbox" name="labour_dropoff" value="1">
-<?php esc_html_e( 'Labour at Dropoff', 'go-deliver' ); ?>
-</label>
-</div>
-</div>
+				<!-- Furniture type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="furniture" style="display:none;">
+					<label for="gd_furniture_type">
+						<?php esc_html_e( 'What kind of furniture?', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<select id="gd_furniture_type" name="form_data[furniture_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="sofa"><?php esc_html_e( 'Sofa / Couch', 'go-deliver' ); ?></option>
+						<option value="table"><?php esc_html_e( 'Table', 'go-deliver' ); ?></option>
+						<option value="bed"><?php esc_html_e( 'Bed / Mattress', 'go-deliver' ); ?></option>
+						<option value="bookcase"><?php esc_html_e( 'Bookcase / Shelving', 'go-deliver' ); ?></option>
+						<option value="wardrobe"><?php esc_html_e( 'Wardrobe / Dresser', 'go-deliver' ); ?></option>
+						<option value="desk"><?php esc_html_e( 'Desk', 'go-deliver' ); ?></option>
+						<option value="appliance"><?php esc_html_e( 'Fridge / Appliance', 'go-deliver' ); ?></option>
+						<option value="other"><?php esc_html_e( 'Other furniture', 'go-deliver' ); ?></option>
+					</select>
+				</div>
 
-<!-- Inventory Description -->
-<div class="gd-field-group">
-<label for="gd_inventory">
-<?php esc_html_e( 'Inventory / Items Description', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<textarea
-id="gd_inventory"
-name="inventory"
-rows="5"
-required
-placeholder="<?php esc_attr_e( 'List your items, e.g. 3-seater sofa, queen bed, fridge, 20 boxes…', 'go-deliver' ); ?>"
-></textarea>
-<span class="gd-field-hint"><?php esc_html_e( 'The more detail you provide, the better the quotes you\'ll receive.', 'go-deliver' ); ?></span>
-</div>
+				<!-- Move type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="move" style="display:none;">
+					<label for="gd_move_type">
+						<?php esc_html_e( 'What kind of move?', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<select id="gd_move_type" name="form_data[move_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="home"><?php esc_html_e( 'Home move', 'go-deliver' ); ?></option>
+						<option value="office"><?php esc_html_e( 'Office move', 'go-deliver' ); ?></option>
+						<option value="storage"><?php esc_html_e( 'Into / out of storage', 'go-deliver' ); ?></option>
+					</select>
+				</div>
 
-<!-- Access Notes -->
-<div class="gd-field-group">
-<label for="gd_access_notes">
-<?php esc_html_e( 'Access Notes', 'go-deliver' ); ?>
-</label>
-<textarea
-id="gd_access_notes"
-name="access_notes"
-rows="3"
-placeholder="<?php esc_attr_e( 'e.g. Elevator available, parking on street, narrow driveway…', 'go-deliver' ); ?>"
-></textarea>
-</div>
+				<!-- Boat type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="boat" style="display:none;">
+					<label for="gd_boat_type"><?php esc_html_e( 'What kind of boat?', 'go-deliver' ); ?></label>
+					<select id="gd_boat_type" name="form_data[boat_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="powerboat"><?php esc_html_e( 'Powerboat', 'go-deliver' ); ?></option>
+						<option value="sailboat"><?php esc_html_e( 'Sailboat', 'go-deliver' ); ?></option>
+						<option value="houseboat"><?php esc_html_e( 'Houseboat', 'go-deliver' ); ?></option>
+						<option value="jet_ski"><?php esc_html_e( 'Jet Ski', 'go-deliver' ); ?></option>
+						<option value="other"><?php esc_html_e( 'Other watercraft', 'go-deliver' ); ?></option>
+					</select>
+				</div>
 
-<!-- Special Instructions -->
-<div class="gd-field-group">
-<label for="gd_special_instructions">
-<?php esc_html_e( 'Special Instructions', 'go-deliver' ); ?>
-</label>
-<textarea
-id="gd_special_instructions"
-name="special_instructions"
-rows="4"
-placeholder="<?php esc_attr_e( 'Any additional details the mover should know…', 'go-deliver' ); ?>"
-></textarea>
-</div>
+				<!-- Piano type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="piano" style="display:none;">
+					<label for="gd_piano_type"><?php esc_html_e( 'What kind of piano?', 'go-deliver' ); ?></label>
+					<select id="gd_piano_type" name="form_data[piano_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="grand"><?php esc_html_e( 'Grand Piano', 'go-deliver' ); ?></option>
+						<option value="upright"><?php esc_html_e( 'Upright Piano', 'go-deliver' ); ?></option>
+						<option value="digital"><?php esc_html_e( 'Digital Piano / Keyboard', 'go-deliver' ); ?></option>
+					</select>
+				</div>
 
-<!-- Photo Upload -->
-<div class="gd-field-group">
-<label><?php esc_html_e( 'Photos (optional)', 'go-deliver' ); ?></label>
-<div class="gd-upload-area" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Upload photos', 'go-deliver' ); ?>">
-<input
-type="file"
-name="job_photos[]"
-accept="image/*"
-multiple
-id="gd_job_photos"
->
-<div class="gd-upload-area__icon">📷</div>
-<p class="gd-upload-area__text">
-<?php esc_html_e( 'Drag photos here or ', 'go-deliver' ); ?>
-<strong><?php esc_html_e( 'click to browse', 'go-deliver' ); ?></strong>
-</p>
-<p class="gd-upload-area__hint"><?php esc_html_e( 'JPEG, PNG up to 10 MB each. Multiple allowed.', 'go-deliver' ); ?></p>
-</div>
-<div class="gd-upload-preview" id="gd-photo-preview"></div>
-</div>
+				<!-- Pet type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="pet" style="display:none;">
+					<label for="gd_pet_type"><?php esc_html_e( 'What kind of pet?', 'go-deliver' ); ?></label>
+					<select id="gd_pet_type" name="form_data[pet_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="cat"><?php esc_html_e( 'Cat', 'go-deliver' ); ?></option>
+						<option value="dog"><?php esc_html_e( 'Dog', 'go-deliver' ); ?></option>
+						<option value="bird"><?php esc_html_e( 'Bird', 'go-deliver' ); ?></option>
+						<option value="horse"><?php esc_html_e( 'Horse / Large animal', 'go-deliver' ); ?></option>
+						<option value="other"><?php esc_html_e( 'Other', 'go-deliver' ); ?></option>
+					</select>
+				</div>
 
-<?php if ( ! is_user_logged_in() ) : ?>
-<!-- Account creation (guests only) -->
-<div class="gd-field-group-section">
-<h2 class="gd-form-section__title"><?php esc_html_e( 'Create Your Account', 'go-deliver' ); ?></h2>
-<p class="gd-text-muted" style="margin-bottom:16px;">
-<?php esc_html_e( 'Almost there! Create a free account so you can track quotes and manage your job.', 'go-deliver' ); ?>
-</p>
+			</div><!-- /step 1 -->
 
-<div class="gd-field-row" style="display:flex;gap:16px;">
-<div class="gd-field-group" style="flex:1;">
-<label for="gd_account_first_name">
-<?php esc_html_e( 'First Name', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<input
-type="text"
-id="gd_account_first_name"
-name="account_first_name"
-required
-autocomplete="given-name"
->
-</div>
-<div class="gd-field-group" style="flex:1;">
-<label for="gd_account_last_name">
-<?php esc_html_e( 'Last Name', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<input
-type="text"
-id="gd_account_last_name"
-name="account_last_name"
-required
-autocomplete="family-name"
->
-</div>
-</div>
+			<!-- ============================================================
+			     Step 2: Collection Address
+			     ============================================================ -->
+			<div class="gd-form-section" data-step="2">
+				<h2 class="gd-form-section__title"><?php esc_html_e( 'Collection Address', 'go-deliver' ); ?></h2>
 
-<div class="gd-field-group">
-<label for="gd_account_email">
-<?php esc_html_e( 'Email Address', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<input
-type="email"
-id="gd_account_email"
-name="account_email"
-required
-autocomplete="email"
->
-</div>
+				<div class="gd-field-group gd-location-field">
+					<label for="gd_pickup_suburb">
+						<?php esc_html_e( 'Address', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<div style="display:flex;gap:8px;align-items:flex-start;">
+						<input
+							type="text"
+							id="gd_pickup_suburb"
+							name="pickup_suburb"
+							class="gd-suburb-input"
+							placeholder="<?php esc_attr_e( 'e.g. 123 Queen Street, Auckland', 'go-deliver' ); ?>"
+							required
+							autocomplete="off"
+						>
+						<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-geocode-btn" style="white-space:nowrap;">
+							<?php esc_html_e( 'Verify', 'go-deliver' ); ?>
+						</button>
+					</div>
+					<span class="gd-geocode-status gd-field-hint"></span>
+					<input type="hidden" name="pickup_lat" class="gd-lat-input">
+					<input type="hidden" name="pickup_lng" class="gd-lng-input">
+				</div>
 
-<div class="gd-field-group">
-<label for="gd_account_password">
-<?php esc_html_e( 'Password', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<input
-type="password"
-id="gd_account_password"
-name="account_password"
-required
-autocomplete="new-password"
->
-<span class="gd-field-hint"><?php esc_html_e( 'Minimum 8 characters.', 'go-deliver' ); ?></span>
-</div>
+				<div class="gd-field-group">
+					<label for="gd_collection_floors">
+						<?php esc_html_e( 'Floors / flights of stairs at collection', 'go-deliver' ); ?>
+					</label>
+					<select id="gd_collection_floors" name="form_data[collection_floors]">
+						<option value="0"><?php esc_html_e( 'Ground floor / no stairs', 'go-deliver' ); ?></option>
+						<option value="1"><?php esc_html_e( '1 floor / flight of stairs', 'go-deliver' ); ?></option>
+						<option value="2"><?php esc_html_e( '2 floors / flights of stairs', 'go-deliver' ); ?></option>
+						<option value="3"><?php esc_html_e( '3 or more floors / flights', 'go-deliver' ); ?></option>
+					</select>
+				</div>
 
-<div class="gd-field-group">
-<label for="gd_account_password_confirm">
-<?php esc_html_e( 'Confirm Password', 'go-deliver' ); ?>
-<span class="gd-required" aria-hidden="true">*</span>
-</label>
-<input
-type="password"
-id="gd_account_password_confirm"
-name="account_password_confirm"
-required
-autocomplete="new-password"
->
-</div>
+				<div class="gd-field-group">
+					<label><?php esc_html_e( 'How many people might be needed to load?', 'go-deliver' ); ?></label>
+					<div class="gd-radio-group">
+						<label class="gd-radio-label">
+							<input type="radio" name="form_data[collection_helpers]" value="self" checked>
+							<?php esc_html_e( 'I\'ll load it myself', 'go-deliver' ); ?>
+						</label>
+						<label class="gd-radio-label">
+							<input type="radio" name="form_data[collection_helpers]" value="1">
+							<?php esc_html_e( 'Need 1 person to help', 'go-deliver' ); ?>
+						</label>
+						<label class="gd-radio-label">
+							<input type="radio" name="form_data[collection_helpers]" value="2plus">
+							<?php esc_html_e( 'Need 2+ people to help', 'go-deliver' ); ?>
+						</label>
+					</div>
+				</div>
 
-<p class="gd-text-muted" style="font-size:0.85em;margin-top:12px;">
-<?php esc_html_e( 'Already have an account?', 'go-deliver' ); ?>
-<a href="<?php echo esc_url( wp_login_url( get_permalink() ) ); ?>">
-<?php esc_html_e( 'Log in here', 'go-deliver' ); ?>
-</a>
-</p>
-</div>
-<?php endif; ?>
+			</div><!-- /step 2 -->
 
-<div class="gd-alert gd-alert--info" style="margin-top:20px;">
-<span class="gd-alert__icon">ℹ️</span>
-<div class="gd-alert__body">
-<?php esc_html_e( 'Once submitted, your job will be visible to approved movers in your area. You can cancel an open job from your dashboard.', 'go-deliver' ); ?>
-</div>
-</div>
+			<!-- ============================================================
+			     Step 3: Delivery Address
+			     ============================================================ -->
+			<div class="gd-form-section" data-step="3">
+				<h2 class="gd-form-section__title"><?php esc_html_e( 'Delivery Address', 'go-deliver' ); ?></h2>
 
-<!-- Submit button -->
-<div class="gd-job-form__footer" style="margin-top:20px;">
-<button type="submit" id="gd-job-submit" class="gd-btn gd-btn--success">
-✓ <?php esc_html_e( 'Submit Job', 'go-deliver' ); ?>
-</button>
-</div>
+				<div class="gd-field-group gd-location-field">
+					<label for="gd_dropoff_suburb">
+						<?php esc_html_e( 'Address', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<div style="display:flex;gap:8px;align-items:flex-start;">
+						<input
+							type="text"
+							id="gd_dropoff_suburb"
+							name="dropoff_suburb"
+							class="gd-suburb-input"
+							placeholder="<?php esc_attr_e( 'e.g. 45 High Street, Christchurch', 'go-deliver' ); ?>"
+							required
+							autocomplete="off"
+						>
+						<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-geocode-btn" style="white-space:nowrap;">
+							<?php esc_html_e( 'Verify', 'go-deliver' ); ?>
+						</button>
+					</div>
+					<span class="gd-geocode-status gd-field-hint"></span>
+					<input type="hidden" name="dropoff_lat" class="gd-lat-input">
+					<input type="hidden" name="dropoff_lng" class="gd-lng-input">
+				</div>
 
-</div><!-- /#gd-job-form-details -->
+			</div><!-- /step 3 -->
 
-</div><!-- /.gd-job-form__body -->
+			<!-- ============================================================
+			     Step 4: When?
+			     ============================================================ -->
+			<div class="gd-form-section" data-step="4">
+				<h2 class="gd-form-section__title"><?php esc_html_e( 'When do you need it?', 'go-deliver' ); ?></h2>
 
-</form>
+				<div class="gd-field-group">
+					<label for="gd_date_requested">
+						<?php esc_html_e( 'Preferred date', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<input
+						type="date"
+						id="gd_date_requested"
+						name="date_requested"
+						required
+						min="<?php echo esc_attr( gmdate( 'Y-m-d', strtotime( '+1 day' ) ) ); ?>"
+					>
+				</div>
+
+				<div class="gd-field-group">
+					<label class="gd-checkbox-label">
+						<input type="checkbox" name="form_data[date_flexible]" value="1">
+						<?php esc_html_e( 'My date is flexible', 'go-deliver' ); ?>
+					</label>
+					<span class="gd-field-hint">
+						<?php esc_html_e( 'Check this if you can move on a different date for a better price.', 'go-deliver' ); ?>
+					</span>
+				</div>
+
+			</div><!-- /step 4 -->
+
+			<!-- ============================================================
+			     Step 5: Photos & Notes
+			     ============================================================ -->
+			<div class="gd-form-section" data-step="5">
+				<h2 class="gd-form-section__title"><?php esc_html_e( 'Photos &amp; Extra Information', 'go-deliver' ); ?></h2>
+
+				<!-- Photo Upload -->
+				<div class="gd-field-group">
+					<label><?php esc_html_e( 'Photos (optional)', 'go-deliver' ); ?></label>
+					<div class="gd-upload-area" role="button" tabindex="0" aria-label="<?php esc_attr_e( 'Upload photos', 'go-deliver' ); ?>">
+						<input
+							type="file"
+							name="job_photos[]"
+							accept="image/*"
+							multiple
+							id="gd_job_photos"
+						>
+						<div class="gd-upload-area__icon">📷</div>
+						<p class="gd-upload-area__text">
+							<?php esc_html_e( 'Drag photos here or ', 'go-deliver' ); ?>
+							<strong><?php esc_html_e( 'click to browse', 'go-deliver' ); ?></strong>
+						</p>
+						<p class="gd-upload-area__hint"><?php esc_html_e( 'JPEG, PNG up to 10 MB each. Multiple allowed.', 'go-deliver' ); ?></p>
+					</div>
+					<div class="gd-upload-preview" id="gd-photo-preview"></div>
+				</div>
+
+				<!-- Any more information -->
+				<div class="gd-field-group">
+					<label for="gd_inventory"><?php esc_html_e( 'Any more information?', 'go-deliver' ); ?></label>
+					<textarea
+						id="gd_inventory"
+						name="inventory"
+						rows="5"
+						placeholder="<?php esc_attr_e( 'Anything else the mover should know — dimensions, fragile items, parking details, access notes…', 'go-deliver' ); ?>"
+					></textarea>
+					<span class="gd-field-hint"><?php esc_html_e( 'The more detail you provide, the better the quotes you\'ll receive.', 'go-deliver' ); ?></span>
+				</div>
+
+			</div><!-- /step 5 -->
+
+			<!-- ============================================================
+			     Step 6: Contact Details
+			     ============================================================ -->
+			<div class="gd-form-section" data-step="6">
+				<h2 class="gd-form-section__title"><?php esc_html_e( 'Your Details', 'go-deliver' ); ?></h2>
+
+				<?php if ( ! is_user_logged_in() ) : ?>
+
+					<p class="gd-text-muted" style="margin-bottom:16px;">
+						<?php esc_html_e( 'We\'ll create a free account so you can track quotes and manage your job.', 'go-deliver' ); ?>
+					</p>
+
+					<div class="gd-field-row" style="display:flex;gap:16px;">
+						<div class="gd-field-group" style="flex:1;">
+							<label for="gd_account_first_name">
+								<?php esc_html_e( 'First Name', 'go-deliver' ); ?>
+								<span class="gd-required" aria-hidden="true">*</span>
+							</label>
+							<input
+								type="text"
+								id="gd_account_first_name"
+								name="account_first_name"
+								required
+								autocomplete="given-name"
+							>
+						</div>
+						<div class="gd-field-group" style="flex:1;">
+							<label for="gd_account_last_name">
+								<?php esc_html_e( 'Last Name', 'go-deliver' ); ?>
+								<span class="gd-required" aria-hidden="true">*</span>
+							</label>
+							<input
+								type="text"
+								id="gd_account_last_name"
+								name="account_last_name"
+								required
+								autocomplete="family-name"
+							>
+						</div>
+					</div>
+
+					<div class="gd-field-group">
+						<label for="gd_account_email">
+							<?php esc_html_e( 'Email Address', 'go-deliver' ); ?>
+							<span class="gd-required" aria-hidden="true">*</span>
+						</label>
+						<input
+							type="email"
+							id="gd_account_email"
+							name="account_email"
+							required
+							autocomplete="email"
+						>
+					</div>
+
+					<div class="gd-field-group">
+						<label for="gd_contact_phone_guest"><?php esc_html_e( 'Phone Number', 'go-deliver' ); ?></label>
+						<input
+							type="tel"
+							id="gd_contact_phone_guest"
+							name="form_data[contact_phone]"
+							placeholder="<?php esc_attr_e( 'e.g. 021 123 4567', 'go-deliver' ); ?>"
+							autocomplete="tel"
+						>
+					</div>
+
+					<div class="gd-field-group">
+						<label for="gd_account_password">
+							<?php esc_html_e( 'Password', 'go-deliver' ); ?>
+							<span class="gd-required" aria-hidden="true">*</span>
+						</label>
+						<input
+							type="password"
+							id="gd_account_password"
+							name="account_password"
+							required
+							autocomplete="new-password"
+						>
+						<span class="gd-field-hint"><?php esc_html_e( 'Minimum 8 characters.', 'go-deliver' ); ?></span>
+					</div>
+
+					<div class="gd-field-group">
+						<label for="gd_account_password_confirm">
+							<?php esc_html_e( 'Confirm Password', 'go-deliver' ); ?>
+							<span class="gd-required" aria-hidden="true">*</span>
+						</label>
+						<input
+							type="password"
+							id="gd_account_password_confirm"
+							name="account_password_confirm"
+							required
+							autocomplete="new-password"
+						>
+					</div>
+
+					<p class="gd-text-muted" style="font-size:0.85em;margin-top:12px;">
+						<?php esc_html_e( 'Already have an account?', 'go-deliver' ); ?>
+						<a href="<?php echo esc_url( wp_login_url( get_permalink() ) ); ?>">
+							<?php esc_html_e( 'Log in here', 'go-deliver' ); ?>
+						</a>
+					</p>
+
+				<?php else : ?>
+
+					<?php $current_user = wp_get_current_user(); ?>
+
+					<div class="gd-field-group">
+						<label for="gd_contact_name"><?php esc_html_e( 'Name', 'go-deliver' ); ?></label>
+						<input
+							type="text"
+							id="gd_contact_name"
+							name="form_data[contact_name]"
+							value="<?php echo esc_attr( trim( $current_user->first_name . ' ' . $current_user->last_name ) ?: $current_user->display_name ); ?>"
+							autocomplete="name"
+						>
+					</div>
+
+					<div class="gd-field-group">
+						<label for="gd_contact_email"><?php esc_html_e( 'Email Address', 'go-deliver' ); ?></label>
+						<input
+							type="email"
+							id="gd_contact_email"
+							name="form_data[contact_email]"
+							value="<?php echo esc_attr( $current_user->user_email ); ?>"
+							readonly
+						>
+					</div>
+
+					<div class="gd-field-group">
+						<label for="gd_contact_phone"><?php esc_html_e( 'Phone Number', 'go-deliver' ); ?></label>
+						<input
+							type="tel"
+							id="gd_contact_phone"
+							name="form_data[contact_phone]"
+							value="<?php echo esc_attr( get_user_meta( $current_user->ID, 'gd_phone', true ) ); ?>"
+							placeholder="<?php esc_attr_e( 'e.g. 021 123 4567', 'go-deliver' ); ?>"
+							autocomplete="tel"
+						>
+					</div>
+
+				<?php endif; ?>
+
+				<div class="gd-alert gd-alert--info" style="margin-top:20px;">
+					<span class="gd-alert__icon">ℹ️</span>
+					<div class="gd-alert__body">
+						<?php esc_html_e( 'Once submitted, your job will be visible to approved movers in your area. You can cancel an open job from your dashboard.', 'go-deliver' ); ?>
+					</div>
+				</div>
+
+			</div><!-- /step 6 -->
+
+		</div><!-- /.gd-job-form__body -->
+
+		<!-- Form navigation -->
+		<div class="gd-job-form__footer">
+			<button type="button" id="gd-job-prev" class="gd-btn gd-btn--outline" style="display:none;">
+				<?php esc_html_e( '← Back', 'go-deliver' ); ?>
+			</button>
+			<div>
+				<button type="button" id="gd-job-next" class="gd-btn gd-btn--primary">
+					<?php esc_html_e( 'Next →', 'go-deliver' ); ?>
+				</button>
+				<button type="submit" id="gd-job-submit" class="gd-btn gd-btn--success" style="display:none;">
+					✓ <?php esc_html_e( 'Submit Job', 'go-deliver' ); ?>
+				</button>
+			</div>
+		</div><!-- /.gd-job-form__footer -->
+
+	</form>
 </div><!-- /.gd-job-form -->
 <?php endif; ?>
 </div><!-- /.gd-wrap -->
