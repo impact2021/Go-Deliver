@@ -64,10 +64,10 @@ $pickup  = isset( $data['pickup_location'] ) && is_array( $data['pickup_location
 $dropoff = isset( $data['dropoff_location'] ) && is_array( $data['dropoff_location'] )
 ? $data['dropoff_location'] : array();
 
-if ( empty( $pickup['lat'] ) || empty( $pickup['lng'] ) ) {
+if ( empty( $pickup['suburb'] ) && empty( $pickup['address'] ) ) {
 return new WP_Error( 'invalid_pickup', __( 'Pickup location is required.', 'go-deliver' ) );
 }
-if ( empty( $dropoff['lat'] ) || empty( $dropoff['lng'] ) ) {
+if ( empty( $dropoff['suburb'] ) && empty( $dropoff['address'] ) ) {
 return new WP_Error( 'invalid_dropoff', __( 'Dropoff location is required.', 'go-deliver' ) );
 }
 

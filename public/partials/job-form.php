@@ -188,21 +188,16 @@ $form_builder = new Go_Deliver_Form_Builder();
 						<?php esc_html_e( 'Address', 'go-deliver' ); ?>
 						<span class="gd-required" aria-hidden="true">*</span>
 					</label>
-					<div style="display:flex;gap:8px;align-items:flex-start;">
-						<input
-							type="text"
-							id="gd_pickup_suburb"
-							name="pickup_suburb"
-							class="gd-suburb-input"
-							placeholder="<?php esc_attr_e( 'e.g. 123 Queen Street, Auckland', 'go-deliver' ); ?>"
-							required
-							autocomplete="off"
-						>
-						<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-geocode-btn" style="white-space:nowrap;">
-							<?php esc_html_e( 'Verify', 'go-deliver' ); ?>
-						</button>
-					</div>
-					<span class="gd-geocode-status gd-field-hint"></span>
+					<input
+						type="text"
+						id="gd_pickup_suburb"
+						name="pickup_suburb"
+						class="gd-suburb-input"
+						placeholder="<?php esc_attr_e( 'e.g. 123 Queen Street, Auckland', 'go-deliver' ); ?>"
+						required
+						autocomplete="off"
+					>
+					<input type="hidden" name="pickup_address" class="gd-address-input">
 					<input type="hidden" name="pickup_lat" class="gd-lat-input">
 					<input type="hidden" name="pickup_lng" class="gd-lng-input">
 				</div>
@@ -250,21 +245,16 @@ $form_builder = new Go_Deliver_Form_Builder();
 						<?php esc_html_e( 'Address', 'go-deliver' ); ?>
 						<span class="gd-required" aria-hidden="true">*</span>
 					</label>
-					<div style="display:flex;gap:8px;align-items:flex-start;">
-						<input
-							type="text"
-							id="gd_dropoff_suburb"
-							name="dropoff_suburb"
-							class="gd-suburb-input"
-							placeholder="<?php esc_attr_e( 'e.g. 45 High Street, Christchurch', 'go-deliver' ); ?>"
-							required
-							autocomplete="off"
-						>
-						<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-geocode-btn" style="white-space:nowrap;">
-							<?php esc_html_e( 'Verify', 'go-deliver' ); ?>
-						</button>
-					</div>
-					<span class="gd-geocode-status gd-field-hint"></span>
+					<input
+						type="text"
+						id="gd_dropoff_suburb"
+						name="dropoff_suburb"
+						class="gd-suburb-input"
+						placeholder="<?php esc_attr_e( 'e.g. 45 High Street, Christchurch', 'go-deliver' ); ?>"
+						required
+						autocomplete="off"
+					>
+					<input type="hidden" name="dropoff_address" class="gd-address-input">
 					<input type="hidden" name="dropoff_lat" class="gd-lat-input">
 					<input type="hidden" name="dropoff_lng" class="gd-lng-input">
 				</div>
