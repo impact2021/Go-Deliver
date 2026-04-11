@@ -488,4 +488,36 @@ class Go_Deliver_Admin {
 		}
 		require GD_PLUGIN_DIR . 'admin/partials/shortcodes.php';
 	}
+
+	/**
+	 * Add the Go Deliver plugin version and last-updated info to the admin bar.
+	 *
+	 * @param WP_Admin_Bar $wp_admin_bar The admin bar instance.
+	 */
+	public function add_admin_bar_menu( $wp_admin_bar ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$updated_timestamp = filemtime( GD_PLUGIN_DIR . 'go-deliver.php' );
+		$updated_label     = false !== $updated_timestamp
+			? date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated_timestamp )
+			: __( 'Unknown', 'go-deliver' );
+
+		$wp_admin_bar->add_node(
+			array(
+				'id'    => 'go-deliver-info',
+				'title' => sprintf(
+					/* translators: 1: plugin version number, 2: last-updated date/time */
+					esc_html__( 'Go Deliver v%1$s | Updated: %2$s', 'go-deliver' ),
+					esc_html( GD_VERSION ),
+					esc_html( $updated_label )
+				),
+				'href'  => admin_url( 'admin.php?page=go-deliver' ),
+				'meta'  => array(
+					'title' => esc_html__( 'Go to Go Deliver Dashboard', 'go-deliver' ),
+				),
+			)
+		);
+	}
 }
