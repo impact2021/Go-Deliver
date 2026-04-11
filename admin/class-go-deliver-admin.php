@@ -188,6 +188,19 @@ class Go_Deliver_Admin {
 				? (float) wp_unslash( $_POST['gd_pickup_lng'] )
 				: 0.0,
 		);
+
+		// Auto-geocode pickup if lat/lng is missing but suburb or address is present.
+		if ( ( ! $pickup_location['lat'] || ! $pickup_location['lng'] ) &&
+			( ! empty( $pickup_location['address'] ) || ! empty( $pickup_location['suburb'] ) ) ) {
+			$location_handler  = new Go_Deliver_Location();
+			$geocode_query     = ! empty( $pickup_location['address'] ) ? $pickup_location['address'] : $pickup_location['suburb'];
+			$coords            = $location_handler->geocode_address( $geocode_query );
+			if ( ! is_wp_error( $coords ) ) {
+				$pickup_location['lat'] = $coords['lat'];
+				$pickup_location['lng'] = $coords['lng'];
+			}
+		}
+
 		update_post_meta( $post_id, 'gd_pickup_location', wp_json_encode( $pickup_location ) );
 		// Keep the flat suburb key used by the admin jobs list.
 		update_post_meta( $post_id, 'gd_pickup_suburb', $pickup_location['suburb'] );
@@ -207,6 +220,21 @@ class Go_Deliver_Admin {
 				? (float) wp_unslash( $_POST['gd_dropoff_lng'] )
 				: 0.0,
 		);
+
+		// Auto-geocode dropoff if lat/lng is missing but suburb or address is present.
+		if ( ( ! $dropoff_location['lat'] || ! $dropoff_location['lng'] ) &&
+			( ! empty( $dropoff_location['address'] ) || ! empty( $dropoff_location['suburb'] ) ) ) {
+			if ( ! isset( $location_handler ) ) {
+				$location_handler = new Go_Deliver_Location();
+			}
+			$geocode_query = ! empty( $dropoff_location['address'] ) ? $dropoff_location['address'] : $dropoff_location['suburb'];
+			$coords        = $location_handler->geocode_address( $geocode_query );
+			if ( ! is_wp_error( $coords ) ) {
+				$dropoff_location['lat'] = $coords['lat'];
+				$dropoff_location['lng'] = $coords['lng'];
+			}
+		}
+
 		update_post_meta( $post_id, 'gd_dropoff_location', wp_json_encode( $dropoff_location ) );
 
 		// ── Items & notes ─────────────────────────────────────────────────────
