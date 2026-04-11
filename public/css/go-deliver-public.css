@@ -33,6 +33,10 @@
 	--gd-shadow-lg:      0 10px 15px rgba(0,0,0,.10), 0 4px 6px rgba(0,0,0,.05);
 	--gd-transition:     150ms ease;
 	--gd-font:           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+
+	/* Available-jobs board brand colours */
+	--gd-job-card-bg:     #2D1B0E; /* dark brown */
+	--gd-job-card-accent: #C9A227; /* gold       */
 }
 
 /* -----------------------------------------------------------------------------
@@ -2106,5 +2110,264 @@
 	.gd-job-form__footer .gd-btn {
 		width: 100%;
 		justify-content: center;
+	}
+}
+
+/* =============================================================================
+   Available Jobs Board  (#gd-job-list)
+   Premium dark-brown / gold theme.
+   Scoped to #gd-job-list so other pages that reuse .gd-job-card are unchanged.
+   ============================================================================= */
+
+/* Page header
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-dashboard-header {
+	text-align: center;
+	padding: 32px 0 40px;
+	margin-bottom: 0;
+}
+
+#gd-job-list .gd-dashboard-header__title {
+	font-size: 32px;
+	font-weight: 800;
+	letter-spacing: -0.5px;
+	color: var(--gd-job-card-bg);
+	margin: 0 0 6px;
+}
+
+#gd-job-list .gd-dashboard-header__title::after {
+	content: '';
+	display: block;
+	width: 60px;
+	height: 4px;
+	background: var(--gd-job-card-accent);
+	border-radius: 2px;
+	margin: 10px auto 0;
+}
+
+#gd-job-list .gd-dashboard-header__subtitle {
+	font-size: 15px;
+	color: var(--gd-text-muted);
+	margin: 8px 0 0;
+}
+
+/* Responsive grid
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-jobs-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 24px;
+}
+
+/* Card base
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-job-card {
+	background: linear-gradient(145deg, var(--gd-job-card-bg) 0%, #3d2314 100%);
+	border: 1px solid rgba(201, 162, 39, 0.30);
+	border-radius: 14px;
+	padding: 24px;
+	margin-bottom: 0;
+	color: #f5efe6;
+	transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+	position: relative;
+	overflow: hidden;
+}
+
+/* Subtle gold radial glow in the top-right corner */
+#gd-job-list .gd-job-card::before {
+	content: '';
+	position: absolute;
+	top: -40px;
+	right: -40px;
+	width: 120px;
+	height: 120px;
+	background: radial-gradient(circle, rgba(201, 162, 39, 0.18) 0%, transparent 70%);
+	pointer-events: none;
+}
+
+#gd-job-list .gd-job-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 20px 45px rgba(0, 0, 0, 0.40), 0 0 0 1px rgba(201, 162, 39, 0.55);
+	border-color: rgba(201, 162, 39, 0.55);
+}
+
+/* Card header (badge + job type)
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-job-card__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 18px;
+}
+
+#gd-job-list .gd-job-card__type {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--gd-job-card-accent);
+	letter-spacing: 0.01em;
+}
+
+/* Status badges */
+#gd-job-list .gd-badge {
+	background: rgba(201, 162, 39, 0.14);
+	color: var(--gd-job-card-accent);
+	border: 1px solid rgba(201, 162, 39, 0.40);
+	border-radius: 20px;
+	padding: 3px 12px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+#gd-job-list .gd-badge--locked {
+	background: rgba(249, 115, 22, 0.14);
+	color: #fb923c;
+	border-color: rgba(249, 115, 22, 0.40);
+}
+
+/* Card body (divider + content)
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-job-card__body {
+	border-top: 1px solid rgba(201, 162, 39, 0.20);
+	padding-top: 18px;
+}
+
+/* Route row */
+#gd-job-list .gd-job-card__route {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 14px;
+	flex-wrap: wrap;
+}
+
+#gd-job-list .gd-job-card__location {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex: 1;
+	min-width: 80px;
+}
+
+#gd-job-list .gd-job-card__location-icon {
+	font-size: 16px;
+	flex-shrink: 0;
+}
+
+#gd-job-list .gd-job-card__location-text {
+	font-size: 14px;
+	font-weight: 600;
+	color: #f5efe6;
+}
+
+#gd-job-list .gd-job-card__arrow {
+	color: var(--gd-job-card-accent);
+	font-size: 20px;
+	font-weight: 700;
+	flex-shrink: 0;
+}
+
+/* Date meta */
+#gd-job-list .gd-job-card__meta {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	color: rgba(245, 239, 230, 0.60);
+	margin-bottom: 10px;
+}
+
+#gd-job-list .gd-job-card__meta-icon {
+	font-size: 14px;
+}
+
+/* Inventory notes */
+#gd-job-list .gd-job-card__notes {
+	font-size: 13px;
+	color: rgba(245, 239, 230, 0.55);
+	line-height: 1.5;
+	font-style: italic;
+}
+
+/* Card footer
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-job-card__footer {
+	border-top: 1px solid rgba(201, 162, 39, 0.20);
+	padding-top: 16px;
+	margin-top: 16px;
+}
+
+/* CTA button */
+#gd-job-list .gd-btn--primary.gd-quote-btn {
+	display: flex;
+	width: 100%;
+	justify-content: center;
+	background: linear-gradient(135deg, var(--gd-job-card-accent) 0%, #a8831c 100%);
+	color: var(--gd-job-card-bg);
+	border: none;
+	font-weight: 700;
+	font-size: 13px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	border-radius: 8px;
+	padding: 11px 20px;
+	box-shadow: 0 4px 14px rgba(201, 162, 39, 0.35);
+	transition: filter 180ms ease, transform 180ms ease;
+}
+
+#gd-job-list .gd-btn--primary.gd-quote-btn:hover {
+	filter: brightness(1.12);
+	transform: translateY(-1px);
+}
+
+/* Empty state
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-empty-state {
+	text-align: center;
+	padding: 60px 24px;
+	background: linear-gradient(145deg, var(--gd-job-card-bg) 0%, #3d2314 100%);
+	border-radius: 16px;
+	border: 1px solid rgba(201, 162, 39, 0.25);
+	color: #f5efe6;
+}
+
+#gd-job-list .gd-empty-state__icon {
+	font-size: 56px;
+	margin-bottom: 16px;
+}
+
+#gd-job-list .gd-empty-state__title {
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--gd-job-card-accent);
+	margin: 0 0 8px;
+}
+
+#gd-job-list .gd-empty-state__text {
+	color: rgba(245, 239, 230, 0.65);
+	font-size: 15px;
+	margin: 0;
+}
+
+/* Responsive tweaks for the jobs board
+   --------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+	#gd-job-list .gd-jobs-grid {
+		grid-template-columns: 1fr;
+	}
+
+	#gd-job-list .gd-dashboard-header__title {
+		font-size: 26px;
+	}
+
+	#gd-job-list .gd-job-card__route {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	#gd-job-list .gd-job-card__arrow {
+		transform: rotate(90deg);
 	}
 }
