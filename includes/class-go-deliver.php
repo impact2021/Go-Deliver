@@ -70,6 +70,7 @@ class Go_Deliver {
 			'gd_adjust_wallet',
 			'gd_update_document_status',
 			'gd_save_form_fields',
+			'gd_admin_update_mover_profile',
 		);
 		foreach ( $admin_ajax_actions as $action ) {
 			add_action( 'wp_ajax_' . $action, array( $admin, 'dispatch_admin_ajax' ) );
@@ -133,6 +134,7 @@ class Go_Deliver {
 			'gd_add_sub_user',
 			'gd_remove_sub_user',
 			'gd_get_available_jobs',
+			'gd_update_mover_profile',
 		);
 
 		foreach ( $ajax_actions_auth as $action ) {
@@ -175,6 +177,7 @@ class Go_Deliver {
 			'gd_add_sub_user'        => array( 'Go_Deliver_Sub_Users', 'ajax_add_sub_user' ),
 			'gd_remove_sub_user'     => array( 'Go_Deliver_Sub_Users', 'ajax_remove_sub_user' ),
 			'gd_get_available_jobs'  => array( 'Go_Deliver_Jobs', 'ajax_get_available_jobs' ),
+			'gd_update_mover_profile' => array( 'Go_Deliver_Mover_Reg', 'ajax_update_mover_profile' ),
 		);
 
 		if ( isset( $handler_map[ $action ] ) ) {

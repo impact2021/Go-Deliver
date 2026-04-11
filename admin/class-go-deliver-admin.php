@@ -618,12 +618,13 @@ class Go_Deliver_Admin {
 		$action = isset( $_POST['action'] ) ? sanitize_key( $_POST['action'] ) : '';
 
 		$map = array(
-			'gd_approve_mover'          => 'ajax_approve_mover',
-			'gd_reject_mover'           => 'ajax_reject_mover',
-			'gd_suspend_mover'          => 'ajax_suspend_mover',
-			'gd_adjust_wallet'          => 'ajax_adjust_wallet',
-			'gd_update_document_status' => 'ajax_update_document_status',
-			'gd_save_form_fields'       => 'ajax_save_form_fields',
+			'gd_approve_mover'                => 'ajax_approve_mover',
+			'gd_reject_mover'                 => 'ajax_reject_mover',
+			'gd_suspend_mover'                => 'ajax_suspend_mover',
+			'gd_adjust_wallet'                => 'ajax_adjust_wallet',
+			'gd_update_document_status'       => 'ajax_update_document_status',
+			'gd_save_form_fields'             => 'ajax_save_form_fields',
+			'gd_admin_update_mover_profile'   => 'ajax_admin_update_mover_profile',
 		);
 
 		if ( isset( $map[ $action ] ) ) {
@@ -770,30 +771,78 @@ class Go_Deliver_Admin {
 	}
 
 	/**
-	 * AJAX: save the dynamic form field configuration.
-	 *
-	 * The admin JS sends nonce = gdAdmin.nonce ('gd_admin_nonce').
-	 * The nonce is already verified in dispatch_admin_ajax(), so we delegate
-	 * directly to the form builder's save_fields() method.
+	 * AJAX: update a mover's profile fields (admin-initiated).
 	 */
-	private function ajax_save_form_fields() {
-		$raw_fields = isset( $_POST['fields'] ) ? wp_unslash( $_POST['fields'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-
-		if ( is_string( $raw_fields ) ) {
-			$raw_fields = json_decode( $raw_fields, true );
+	private function ajax_admin_update_mover_profile() {
+		$user_id = absint( $_POST['user_id'] ?? 0 );
+		if ( ! $user_id || ! get_userdata( $user_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'User not found.', 'go-deliver' ) ) );
 		}
 
-		if ( ! is_array( $raw_fields ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid fields data.', 'go-deliver' ) ) );
+		// Core WP user fields.
+		$first_name = sanitize_text_field( wp_unslash( $_POST['first_name'] ?? '' ) );
+		$last_name  = sanitize_text_field( wp_unslash( $_POST['last_name'] ?? '' ) );
+		$email      = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) );
+
+		if ( $email && ! is_email( $email ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid email address.', 'go-deliver' ) ) );
 		}
 
-		$builder = new Go_Deliver_Form_Builder();
-		$result  = $builder->save_fields( $raw_fields );
-
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		// Check email uniqueness (only if changed).
+		if ( $email ) {
+			$existing = get_user_by( 'email', $email );
+			if ( $existing && (int) $existing->ID !== $user_id ) {
+				wp_send_json_error( array( 'message' => __( 'That email address is already in use.', 'go-deliver' ) ) );
+			}
 		}
 
-		wp_send_json_success( array( 'message' => __( 'Form fields saved.', 'go-deliver' ) ) );
+		$user_data = array( 'ID' => $user_id );
+		if ( $first_name ) {
+			$user_data['first_name']    = $first_name;
+			$user_data['display_name']  = $first_name . ( $last_name ? ' ' . $last_name : '' );
+		}
+		if ( $last_name ) {
+			$user_data['last_name'] = $last_name;
+		}
+		if ( $email ) {
+			$user_data['user_email'] = $email;
+		}
+
+		if ( count( $user_data ) > 1 ) {
+			$result = wp_update_user( $user_data );
+			if ( is_wp_error( $result ) ) {
+				wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			}
+		}
+
+		// User meta fields.
+		$phone      = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+		$suburb     = sanitize_text_field( wp_unslash( $_POST['base_suburb'] ?? '' ) );
+		$base_lat   = isset( $_POST['base_lat'] ) && '' !== $_POST['base_lat'] ? (float) $_POST['base_lat'] : null;
+		$base_lng   = isset( $_POST['base_lng'] ) && '' !== $_POST['base_lng'] ? (float) $_POST['base_lng'] : null;
+		$radius     = isset( $_POST['radius'] ) ? absint( $_POST['radius'] ) : null;
+
+		// Job types – restrict to the known set.
+		$valid_types = array( 'trademe_pickup', 'item', 'move', 'vehicle', 'boat', 'piano', 'pet', 'junk', 'other' );
+		$raw_types   = isset( $_POST['job_types'] ) && is_array( $_POST['job_types'] )
+			? array_map( 'sanitize_key', wp_unslash( $_POST['job_types'] ) )
+			: array();
+		$job_types = array_values( array_intersect( $raw_types, $valid_types ) );
+
+		update_user_meta( $user_id, 'gd_phone', $phone );
+		update_user_meta( $user_id, 'gd_mover_base_suburb', $suburb );
+		if ( null !== $base_lat ) {
+			update_user_meta( $user_id, 'gd_mover_base_lat', $base_lat );
+		}
+		if ( null !== $base_lng ) {
+			update_user_meta( $user_id, 'gd_mover_base_lng', $base_lng );
+		}
+		if ( null !== $radius ) {
+			update_user_meta( $user_id, 'gd_mover_radius', $radius );
+		}
+		update_user_meta( $user_id, 'gd_mover_job_types', $job_types );
+
+		wp_send_json_success( array( 'message' => __( 'Profile updated successfully.', 'go-deliver' ) ) );
 	}
 }
+
