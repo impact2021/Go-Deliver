@@ -541,4 +541,85 @@
 		return escHtml( str );
 	}
 
+	// =========================================================================
+	// Admin location fields – Google Places autocomplete
+	// =========================================================================
+
+	function gdInitAdminLocationFields() {
+		if ( ! gdAdmin.hasGooglePlaces ) {
+			return;
+		}
+		if ( typeof google === 'undefined' || ! google.maps || ! google.maps.places ) {
+			return;
+		}
+
+		$( '.gd-admin-location-field' ).each( function () {
+			var $wrap    = $( this );
+			var $address = $wrap.find( '.gd-admin-address-input' );
+			var $suburb  = $wrap.find( '.gd-admin-suburb-input' );
+			var $lat     = $wrap.find( '.gd-admin-lat-input' );
+			var $lng     = $wrap.find( '.gd-admin-lng-input' );
+
+			// Attach autocomplete to the Full Address input.
+			var ac = new google.maps.places.Autocomplete(
+				$address[0],
+				{ types: [ 'address' ] }
+			);
+
+			// Clear stale coordinates when the user edits the address manually.
+			$address.on( 'input', function () {
+				$lat.val( '' );
+				$lng.val( '' );
+			} );
+
+			ac.addListener( 'place_changed', function () {
+				var place = ac.getPlace();
+
+				if ( place.geometry && place.geometry.location ) {
+					$lat.val( place.geometry.location.lat().toFixed( 6 ) );
+					$lng.val( place.geometry.location.lng().toFixed( 6 ) );
+				}
+
+				var fullAddress = place.formatted_address || $address.val();
+				$address.val( fullAddress );
+
+				// Populate the suburb field from the locality component.
+				if ( place.address_components ) {
+					var suburb = '';
+					place.address_components.forEach( function ( comp ) {
+						if ( ! suburb && comp.types && (
+							comp.types.indexOf( 'sublocality' ) !== -1 ||
+							comp.types.indexOf( 'locality' ) !== -1 ||
+							comp.types.indexOf( 'neighborhood' ) !== -1
+						) ) {
+							suburb = comp.long_name;
+						}
+					} );
+					if ( suburb ) {
+						$suburb.val( suburb );
+					}
+				}
+			} );
+		} );
+	}
+
+	// Initialise when Google Maps is available – it may load asynchronously.
+	if ( gdAdmin.hasGooglePlaces ) {
+		if ( typeof google !== 'undefined' && google.maps && google.maps.places ) {
+			gdInitAdminLocationFields();
+		} else {
+			var gdMapsMaxRetries    = 50; // 50 × 200 ms = 10 s timeout
+			var gdMapsRetries       = 0;
+			var gdMapsCheckInterval = setInterval( function () {
+				gdMapsRetries++;
+				if ( typeof google !== 'undefined' && google.maps && google.maps.places ) {
+					clearInterval( gdMapsCheckInterval );
+					gdInitAdminLocationFields();
+				} else if ( gdMapsRetries >= gdMapsMaxRetries ) {
+					clearInterval( gdMapsCheckInterval );
+				}
+			}, 200 );
+		}
+	}
+
 }( jQuery ) );

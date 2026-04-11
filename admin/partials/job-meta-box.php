@@ -130,7 +130,7 @@ $job_types    = $form_builder->get_flat_job_types();
 <!-- ── Pickup Location ─────────────────────────────────────────────────── -->
 <div class="gd-mb-section">
 	<h3><?php esc_html_e( 'Pickup Location', 'go-deliver' ); ?></h3>
-	<div class="gd-mb-row">
+	<div class="gd-mb-row gd-admin-location-field">
 
 		<div class="gd-mb-field">
 			<label for="gd_admin_pickup_suburb"><?php esc_html_e( 'Suburb', 'go-deliver' ); ?></label>
@@ -138,6 +138,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				type="text"
 				id="gd_admin_pickup_suburb"
 				name="gd_pickup_suburb"
+				class="gd-admin-suburb-input"
 				value="<?php echo esc_attr( $pickup_suburb ); ?>"
 				placeholder="<?php esc_attr_e( 'e.g. Auckland CBD', 'go-deliver' ); ?>"
 			>
@@ -149,6 +150,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				type="text"
 				id="gd_admin_pickup_address"
 				name="gd_pickup_address"
+				class="gd-admin-address-input"
 				value="<?php echo esc_attr( $pickup_address ); ?>"
 				placeholder="<?php esc_attr_e( 'Street address', 'go-deliver' ); ?>"
 			>
@@ -160,6 +162,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				type="number"
 				id="gd_admin_pickup_lat"
 				name="gd_pickup_lat"
+				class="gd-admin-lat-input"
 				value="<?php echo esc_attr( $pickup_lat ); ?>"
 				step="any"
 				placeholder="0.000000"
@@ -173,6 +176,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				type="number"
 				id="gd_admin_pickup_lng"
 				name="gd_pickup_lng"
+				class="gd-admin-lng-input"
 				value="<?php echo esc_attr( $pickup_lng ); ?>"
 				step="any"
 				placeholder="0.000000"
@@ -186,7 +190,7 @@ $job_types    = $form_builder->get_flat_job_types();
 <!-- ── Dropoff Location ────────────────────────────────────────────────── -->
 <div class="gd-mb-section">
 	<h3><?php esc_html_e( 'Dropoff Location', 'go-deliver' ); ?></h3>
-	<div class="gd-mb-row">
+	<div class="gd-mb-row gd-admin-location-field">
 
 		<div class="gd-mb-field">
 			<label for="gd_admin_dropoff_suburb"><?php esc_html_e( 'Suburb', 'go-deliver' ); ?></label>
@@ -194,6 +198,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				type="text"
 				id="gd_admin_dropoff_suburb"
 				name="gd_dropoff_suburb"
+				class="gd-admin-suburb-input"
 				value="<?php echo esc_attr( $dropoff_suburb ); ?>"
 				placeholder="<?php esc_attr_e( 'e.g. Christchurch', 'go-deliver' ); ?>"
 			>
@@ -205,6 +210,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				type="text"
 				id="gd_admin_dropoff_address"
 				name="gd_dropoff_address"
+				class="gd-admin-address-input"
 				value="<?php echo esc_attr( $dropoff_address ); ?>"
 				placeholder="<?php esc_attr_e( 'Street address', 'go-deliver' ); ?>"
 			>
@@ -216,6 +222,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				type="number"
 				id="gd_admin_dropoff_lat"
 				name="gd_dropoff_lat"
+				class="gd-admin-lat-input"
 				value="<?php echo esc_attr( $dropoff_lat ); ?>"
 				step="any"
 				placeholder="0.000000"
@@ -229,6 +236,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				type="number"
 				id="gd_admin_dropoff_lng"
 				name="gd_dropoff_lng"
+				class="gd-admin-lng-input"
 				value="<?php echo esc_attr( $dropoff_lng ); ?>"
 				step="any"
 				placeholder="0.000000"

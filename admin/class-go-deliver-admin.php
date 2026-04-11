@@ -92,6 +92,15 @@ class Go_Deliver_Admin {
 			'go-deliver-shortcodes',
 			array( $this, 'render_shortcodes_page' )
 		);
+
+		add_submenu_page(
+			'go-deliver',
+			__( 'Docs', 'go-deliver' ),
+			__( 'Docs', 'go-deliver' ),
+			'manage_options',
+			'go-deliver-docs',
+			array( $this, 'render_docs_page' )
+		);
 	}
 
 	/**
@@ -258,6 +267,18 @@ class Go_Deliver_Admin {
 			GD_VERSION
 		);
 
+		$google_maps_key = get_option( 'gd_google_maps_api_key', '' );
+
+		if ( $google_maps_key && $is_job_edit ) {
+			wp_enqueue_script(
+				'google-maps-places-admin',
+				'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode( $google_maps_key ) . '&libraries=places',
+				array(),
+				null,
+				true
+			);
+		}
+
 		wp_enqueue_script(
 			'go-deliver-admin',
 			GD_PLUGIN_URL . 'admin/js/go-deliver-admin.js',
@@ -270,8 +291,9 @@ class Go_Deliver_Admin {
 			'go-deliver-admin',
 			'gdAdmin',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'gd_admin_nonce' ),
+				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'gd_admin_nonce' ),
+				'hasGooglePlaces' => ( $google_maps_key && $is_job_edit ) ? '1' : '',
 			)
 		);
 	}
@@ -297,6 +319,8 @@ class Go_Deliver_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
 		}
+
+		global $wpdb;
 
 		$per_page     = 20;
 		$current_page = max( 1, isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -337,6 +361,42 @@ class Go_Deliver_Admin {
 		$jobs        = $query->posts;
 		$total_pages = $query->max_num_pages;
 
+		// Batch-fetch bid statistics (count, average, best price) for all jobs
+		// on this page in a single query to avoid N+1 database hits.
+		$bid_stats = array();
+		if ( ! empty( $jobs ) ) {
+			$job_ids      = array_map( 'intval', wp_list_pluck( $jobs, 'ID' ) );
+			$placeholders = implode( ',', array_fill( 0, count( $job_ids ), '%d' ) );
+
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT
+					    CAST(jm.meta_value AS UNSIGNED) AS job_id,
+					    COUNT(DISTINCT p.ID)                              AS bid_count,
+					    AVG(CAST(am.meta_value AS DECIMAL(10,2)))         AS avg_price,
+					    MIN(CAST(am.meta_value AS DECIMAL(10,2)))         AS best_price
+					FROM {$wpdb->posts} p
+					INNER JOIN {$wpdb->postmeta} jm
+					    ON p.ID = jm.post_id AND jm.meta_key = 'gd_job_id'
+					INNER JOIN {$wpdb->postmeta} sm
+					    ON p.ID = sm.post_id AND sm.meta_key = 'gd_status' AND sm.meta_value != 'withdrawn'
+					INNER JOIN {$wpdb->postmeta} am
+					    ON p.ID = am.post_id AND am.meta_key = 'gd_amount'
+					WHERE p.post_type   = 'gd_quote'
+					  AND p.post_status = 'publish'
+					  AND jm.meta_value IN ({$placeholders})
+					GROUP BY jm.meta_value",
+					$job_ids
+				)
+			);
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+
+			foreach ( $rows as $row ) {
+				$bid_stats[ (int) $row->job_id ] = $row;
+			}
+		}
+
 		require GD_PLUGIN_DIR . 'admin/partials/jobs-list.php';
 		wp_reset_postdata();
 	}
@@ -358,7 +418,14 @@ class Go_Deliver_Admin {
 			}
 			$documents    = Go_Deliver_DB::get_documents( $uid );
 			$transactions = Go_Deliver_DB::get_transactions( $uid );
-			$status_log   = array();
+			// Read status log stored as user meta by ajax_set_mover_status().
+			$raw_log    = get_user_meta( $uid, 'gd_mover_status_log', true );
+			$status_log = array();
+			if ( is_array( $raw_log ) ) {
+				foreach ( $raw_log as $entry ) {
+					$status_log[] = (object) $entry;
+				}
+			}
 			require GD_PLUGIN_DIR . 'admin/partials/mover-approval.php';
 			return;
 		}
@@ -490,6 +557,16 @@ class Go_Deliver_Admin {
 	}
 
 	/**
+	 * Render the docs page.
+	 */
+	public function render_docs_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
+		}
+		require GD_PLUGIN_DIR . 'admin/partials/docs.php';
+	}
+
+	/**
 	 * Add the Go Deliver plugin version and last-updated info to the admin bar.
 	 *
 	 * @param WP_Admin_Bar $wp_admin_bar The admin bar instance.
@@ -519,5 +596,204 @@ class Go_Deliver_Admin {
 				),
 			)
 		);
+	}
+
+	// =========================================================================
+	// Admin AJAX dispatcher
+	// =========================================================================
+
+	/**
+	 * Central dispatcher for admin-only AJAX actions.
+	 *
+	 * All actions share the gd_admin_nonce nonce. Each action maps to a private
+	 * handler method on this class.
+	 */
+	public function dispatch_admin_ajax() {
+		check_ajax_referer( 'gd_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+		}
+
+		$action = isset( $_POST['action'] ) ? sanitize_key( $_POST['action'] ) : '';
+
+		$map = array(
+			'gd_approve_mover'          => 'ajax_approve_mover',
+			'gd_reject_mover'           => 'ajax_reject_mover',
+			'gd_suspend_mover'          => 'ajax_suspend_mover',
+			'gd_adjust_wallet'          => 'ajax_adjust_wallet',
+			'gd_update_document_status' => 'ajax_update_document_status',
+			'gd_save_form_fields'       => 'ajax_save_form_fields',
+		);
+
+		if ( isset( $map[ $action ] ) ) {
+			$this->{$map[ $action ]}();
+			return;
+		}
+
+		wp_send_json_error( array( 'message' => __( 'Unknown action.', 'go-deliver' ) ), 400 );
+	}
+
+	// =========================================================================
+	// Admin AJAX handlers
+	// =========================================================================
+
+	/**
+	 * AJAX: approve a mover.
+	 */
+	private function ajax_approve_mover() {
+		$this->ajax_set_mover_status( 'approved' );
+	}
+
+	/**
+	 * AJAX: reject a mover.
+	 */
+	private function ajax_reject_mover() {
+		$this->ajax_set_mover_status( 'rejected' );
+	}
+
+	/**
+	 * AJAX: suspend a mover.
+	 */
+	private function ajax_suspend_mover() {
+		$this->ajax_set_mover_status( 'suspended' );
+	}
+
+	/**
+	 * Shared helper: update gd_mover_status for a user and record the change.
+	 *
+	 * @param string $new_status Target status ('approved'|'rejected'|'suspended').
+	 */
+	private function ajax_set_mover_status( $new_status ) {
+		$valid = array( 'approved', 'rejected', 'suspended' );
+		if ( ! in_array( $new_status, $valid, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid status.', 'go-deliver' ) ) );
+		}
+
+		$user_id = absint( $_POST['user_id'] ?? 0 );
+		if ( ! $user_id || ! get_userdata( $user_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'User not found.', 'go-deliver' ) ) );
+		}
+
+		$reason     = sanitize_textarea_field( wp_unslash( $_POST['reason'] ?? '' ) );
+		$old_status = get_user_meta( $user_id, 'gd_mover_status', true ) ?: 'pending';
+
+		update_user_meta( $user_id, 'gd_mover_status', $new_status );
+
+		// Append a log entry to user meta so status history is preserved.
+		$log = get_user_meta( $user_id, 'gd_mover_status_log', true );
+		if ( ! is_array( $log ) ) {
+			$log = array();
+		}
+		$log[] = array(
+			'old_status' => $old_status,
+			'new_status' => $new_status,
+			'reason'     => $reason,
+			'admin_id'   => get_current_user_id(),
+			'changed_at' => current_time( 'mysql' ),
+		);
+		update_user_meta( $user_id, 'gd_mover_status_log', $log );
+
+		/* translators: %s: new mover status */
+		$message = sprintf( __( 'Mover status updated to %s.', 'go-deliver' ), $new_status );
+
+		wp_send_json_success(
+			array(
+				'message' => $message,
+				'status'  => $new_status,
+			)
+		);
+	}
+
+	/**
+	 * AJAX: adjust a mover's wallet balance.
+	 */
+	private function ajax_adjust_wallet() {
+		$user_id = absint( $_POST['user_id'] ?? 0 );
+		if ( ! $user_id || ! get_userdata( $user_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'User not found.', 'go-deliver' ) ) );
+		}
+
+		$amount = isset( $_POST['amount'] ) ? (float) $_POST['amount'] : null;
+		if ( null === $amount || 0.0 === $amount ) {
+			wp_send_json_error( array( 'message' => __( 'Amount must be a non-zero number.', 'go-deliver' ) ) );
+		}
+
+		$description = sanitize_text_field( wp_unslash( $_POST['description'] ?? '' ) );
+
+		$current_balance = Go_Deliver_DB::get_wallet_balance( $user_id );
+		$new_balance     = round( $current_balance + $amount, 2 );
+
+		if ( $new_balance < 0 ) {
+			wp_send_json_error( array( 'message' => __( 'Adjustment would result in a negative balance.', 'go-deliver' ) ) );
+		}
+
+		Go_Deliver_DB::update_wallet_balance( $user_id, $new_balance );
+		Go_Deliver_DB::log_transaction(
+			$user_id,
+			'adjustment',
+			$amount,
+			$description ?: __( 'Admin manual adjustment', 'go-deliver' )
+		);
+
+		wp_send_json_success(
+			array(
+				'message' => __( 'Wallet updated.', 'go-deliver' ),
+				'balance' => $new_balance,
+			)
+		);
+	}
+
+	/**
+	 * AJAX: approve or reject a single mover document.
+	 */
+	private function ajax_update_document_status() {
+		$doc_id = absint( $_POST['doc_id'] ?? 0 );
+		$status = sanitize_key( $_POST['status'] ?? '' );
+
+		if ( ! $doc_id ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid document ID.', 'go-deliver' ) ) );
+		}
+
+		$allowed = array( 'approved', 'rejected', 'pending' );
+		if ( ! in_array( $status, $allowed, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid status.', 'go-deliver' ) ) );
+		}
+
+		$result = Go_Deliver_DB::update_document_status( $doc_id, $status );
+
+		if ( false === $result ) {
+			wp_send_json_error( array( 'message' => __( 'Failed to update document status.', 'go-deliver' ) ) );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Document status updated.', 'go-deliver' ) ) );
+	}
+
+	/**
+	 * AJAX: save the dynamic form field configuration.
+	 *
+	 * The admin JS sends nonce = gdAdmin.nonce ('gd_admin_nonce').
+	 * The nonce is already verified in dispatch_admin_ajax(), so we delegate
+	 * directly to the form builder's save_fields() method.
+	 */
+	private function ajax_save_form_fields() {
+		$raw_fields = isset( $_POST['fields'] ) ? wp_unslash( $_POST['fields'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( is_string( $raw_fields ) ) {
+			$raw_fields = json_decode( $raw_fields, true );
+		}
+
+		if ( ! is_array( $raw_fields ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid fields data.', 'go-deliver' ) ) );
+		}
+
+		$builder = new Go_Deliver_Form_Builder();
+		$result  = $builder->save_fields( $raw_fields );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Form fields saved.', 'go-deliver' ) ) );
 	}
 }
