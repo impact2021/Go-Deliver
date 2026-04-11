@@ -633,6 +633,139 @@ wp_send_json_success( array( 'message' => __( 'Job cancelled.', 'go-deliver' ) )
 }
 
 /**
+ * AJAX: get available jobs for the mover dashboard.
+ *
+ * Returns an HTML fragment of job cards for the #gd-available-jobs-list
+ * container.  Optionally filtered by job_type.
+ */
+public function ajax_get_available_jobs() {
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+if ( ! is_user_logged_in() ) {
+wp_send_json_error( array( 'message' => __( 'Please log in to view available jobs.', 'go-deliver' ) ), 403 );
+}
+
+$user_id  = get_current_user_id();
+$is_admin = user_can( $user_id, 'manage_options' );
+
+if ( ! $is_admin ) {
+$roles        = (array) wp_get_current_user()->roles;
+$is_mover     = in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true );
+if ( ! $is_mover ) {
+wp_send_json_error( array( 'message' => __( 'Access denied.', 'go-deliver' ) ), 403 );
+}
+}
+
+$job_type_filter = isset( $_POST['job_type'] ) ? sanitize_key( wp_unslash( $_POST['job_type'] ) ) : '';
+
+$jobs = $is_admin
+? $this->get_all_open_jobs()
+: $this->get_open_jobs_for_mover( $user_id );
+
+// Apply optional job-type filter.
+if ( ! empty( $job_type_filter ) ) {
+$jobs = array_values( array_filter( $jobs, function ( $job ) use ( $job_type_filter ) {
+return isset( $job['job_type'] ) && $job['job_type'] === $job_type_filter;
+} ) );
+}
+
+if ( empty( $jobs ) ) {
+wp_send_json_success( array( 'html' => '' ) );
+}
+
+$job_type_labels = array(
+'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
+'item'           => __( 'Item', 'go-deliver' ),
+'furniture'      => __( 'Furniture', 'go-deliver' ),
+'move'           => __( 'House / Office Move', 'go-deliver' ),
+'car'            => __( 'Car', 'go-deliver' ),
+'motorcycle'     => __( 'Motorcycle', 'go-deliver' ),
+'vehicle'        => __( 'Vehicle', 'go-deliver' ),
+'other_vehicle'  => __( 'Other Vehicle', 'go-deliver' ),
+'boat'           => __( 'Boat', 'go-deliver' ),
+'piano'          => __( 'Piano', 'go-deliver' ),
+'pet'            => __( 'Pet Transport', 'go-deliver' ),
+'junk'           => __( 'Junk', 'go-deliver' ),
+'other'          => __( 'Other', 'go-deliver' ),
+);
+
+$status_labels = array(
+'open'   => __( 'Open', 'go-deliver' ),
+'locked' => __( 'Receiving Quotes', 'go-deliver' ),
+);
+
+ob_start();
+?>
+<div class="gd-jobs-grid">
+<?php foreach ( $jobs as $job ) :
+$pickup       = $job['pickup_location'] ?? array();
+$dropoff      = $job['dropoff_location'] ?? array();
+$status       = $job['status'] ?? 'open';
+$type         = $job['job_type'] ?? '';
+$label        = isset( $job_type_labels[ $type ] ) ? $job_type_labels[ $type ] : ucwords( str_replace( '_', ' ', $type ) );
+$status_label = isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : ucfirst( $status );
+$date         = ! empty( $job['date_requested'] ) ? date_i18n( get_option( 'date_format' ), strtotime( $job['date_requested'] ) ) : '';
+?>
+<div class="gd-job-card" data-job-id="<?php echo esc_attr( $job['id'] ); ?>">
+
+<div class="gd-job-card__header">
+<span class="gd-badge gd-badge--<?php echo esc_attr( $status ); ?>">
+<?php echo esc_html( $status_label ); ?>
+</span>
+<span class="gd-job-card__type"><?php echo esc_html( $label ); ?></span>
+</div>
+
+<div class="gd-job-card__body">
+<div class="gd-job-card__route">
+<div class="gd-job-card__location">
+<span class="gd-job-card__location-icon">📍</span>
+<span class="gd-job-card__location-text">
+<?php echo esc_html( $pickup['suburb'] ?? $pickup['address'] ?? __( 'Unknown', 'go-deliver' ) ); ?>
+</span>
+</div>
+<div class="gd-job-card__arrow">→</div>
+<div class="gd-job-card__location">
+<span class="gd-job-card__location-icon">🏁</span>
+<span class="gd-job-card__location-text">
+<?php echo esc_html( $dropoff['suburb'] ?? $dropoff['address'] ?? __( 'Unknown', 'go-deliver' ) ); ?>
+</span>
+</div>
+</div>
+
+<?php if ( $date ) : ?>
+<div class="gd-job-card__meta">
+<span class="gd-job-card__meta-icon">📅</span>
+<?php echo esc_html( $date ); ?>
+</div>
+<?php endif; ?>
+
+<?php if ( ! empty( $job['inventory'] ) ) : ?>
+<div class="gd-job-card__notes">
+<?php echo esc_html( wp_trim_words( $job['inventory'], 20 ) ); ?>
+</div>
+<?php endif; ?>
+</div>
+
+<div class="gd-job-card__footer">
+<button
+type="button"
+class="gd-btn gd-btn--primary gd-btn--sm gd-quote-btn"
+data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
+>
+<?php esc_html_e( 'Submit Quote', 'go-deliver' ); ?>
+</button>
+</div>
+
+</div><!-- /.gd-job-card -->
+<?php endforeach; ?>
+</div><!-- /.gd-jobs-grid -->
+<?php
+$html = ob_get_clean();
+
+wp_send_json_success( array( 'html' => $html ) );
+}
+
+/**
  * AJAX: get job details (privacy-filtered).
  */
 public function ajax_get_job_details() {
