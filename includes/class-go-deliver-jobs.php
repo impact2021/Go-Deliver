@@ -656,7 +656,7 @@ wp_send_json_error( array( 'message' => __( 'Access denied.', 'go-deliver' ) ), 
 }
 }
 
-$job_type_filter = sanitize_key( wp_unslash( $_POST['job_type'] ?? '' ) );
+$job_type_filter = isset( $_POST['job_type'] ) ? sanitize_key( wp_unslash( $_POST['job_type'] ) ) : '';
 
 $jobs = $is_admin
 ? $this->get_all_open_jobs()
