@@ -563,7 +563,7 @@
 			// Attach autocomplete to the Full Address input.
 			var ac = new google.maps.places.Autocomplete(
 				$address[0],
-				{ types: [ 'address' ] }
+				{ types: [ 'address' ], componentRestrictions: { country: 'nz' } }
 			);
 
 			// Clear stale coordinates when the user edits the address manually.
