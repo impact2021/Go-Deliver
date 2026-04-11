@@ -98,8 +98,8 @@ class Go_Deliver_Debug {
 	 * Output the debug panel HTML + CSS + JS in wp_footer.
 	 */
 	public function render_panel() {
-		$nonce = wp_create_nonce( 'gd_debug_info' );
-		$ajax  = esc_js( admin_url( 'admin-ajax.php' ) );
+		$nonce    = wp_create_nonce( 'gd_debug_info' );
+		$ajax_url = admin_url( 'admin-ajax.php' );
 		?>
 		<!-- GD Debug Panel -->
 		<style id="gd-debug-style">
@@ -165,7 +165,7 @@ class Go_Deliver_Debug {
 		( function () {
 			'use strict';
 
-			var AJAX_URL    = '<?php echo $ajax; ?>'; // phpcs:ignore
+			var AJAX_URL    = '<?php echo esc_js( esc_url( $ajax_url ) ); ?>';
 			var NONCE       = '<?php echo esc_js( $nonce ); ?>';
 			var ajaxLog     = [];
 			var errorLog    = [];
