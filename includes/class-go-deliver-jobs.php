@@ -224,6 +224,44 @@ return $jobs;
 }
 
 /**
+ * Get all open and locked jobs regardless of mover filters.
+ *
+ * Intended for admin users who should see every available job without
+ * radius or mover-status restrictions.
+ *
+ * @return array Job array.
+ */
+public function get_all_open_jobs() {
+$query = new WP_Query(
+array(
+'post_type'      => 'gd_job',
+'post_status'    => 'publish',
+'posts_per_page' => -1,
+'meta_query'     => array(
+array(
+'key'     => 'gd_job_status',
+'value'   => array( 'open', 'locked' ),
+'compare' => 'IN',
+),
+),
+'no_found_rows'  => true,
+)
+);
+
+$jobs = array();
+foreach ( $query->posts as $post ) {
+$job = $this->get_job( $post->ID );
+if ( ! is_wp_error( $job ) ) {
+$jobs[] = $job;
+}
+}
+
+wp_reset_postdata();
+
+return $jobs;
+}
+
+/**
  * Get open jobs visible to a mover (within radius and matching job types).
  *
  * @param int $mover_id Mover user ID.

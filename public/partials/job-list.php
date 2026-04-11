@@ -53,9 +53,12 @@ if ( ! $is_admin && 'approved' !== $mover_status ) {
 	return;
 }
 
-// Fetch open/locked jobs filtered by mover's radius and job types.
+// Fetch open/locked jobs. Admins see everything; movers see only jobs
+// within their configured radius and matching their job types.
 $jobs_handler = new Go_Deliver_Jobs();
-$jobs         = $jobs_handler->get_open_jobs_for_mover( $current_user_id );
+$jobs         = $is_admin
+	? $jobs_handler->get_all_open_jobs()
+	: $jobs_handler->get_open_jobs_for_mover( $current_user_id );
 
 $job_type_labels = array(
 	'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
