@@ -97,6 +97,10 @@ class Go_Deliver {
 		$notifications = new Go_Deliver_Notifications();
 		$notifications->setup_cron();
 
+		// Debug panel (admin-only, front end).
+		$debug = new Go_Deliver_Debug();
+		$debug->register_hooks();
+
 		// ---------------------------------------------------------------
 		// AJAX handlers – logged-in users.
 		// ---------------------------------------------------------------
@@ -124,6 +128,7 @@ class Go_Deliver {
 		// AJAX handlers – non-logged-in users.
 		$ajax_actions_nopriv = array(
 			'gd_submit_job',
+			'gd_register_mover',
 		);
 
 		foreach ( $ajax_actions_nopriv as $action ) {
