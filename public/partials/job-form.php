@@ -476,6 +476,28 @@ $form_builder = new Go_Deliver_Form_Builder();
 
 				<?php endif; ?>
 
+				<?php if ( ! is_user_logged_in() ) : ?>
+				<div class="gd-field-group" style="margin-top:16px;">
+					<label class="gd-checkbox-label">
+						<input type="checkbox" name="customer_terms_agreed" value="1" required id="gd-job-terms">
+						<?php
+						$customer_terms_id  = absint( get_option( 'gd_customer_terms_page_id', 0 ) );
+						$customer_terms_url = $customer_terms_id ? get_permalink( $customer_terms_id ) : '';
+						if ( $customer_terms_url ) {
+							printf(
+								/* translators: 1: opening anchor tag, 2: closing anchor tag */
+								esc_html__( 'I agree to the %1$sTerms & Conditions%2$s.', 'go-deliver' ),
+								'<a href="' . esc_url( $customer_terms_url ) . '" target="_blank" rel="noopener noreferrer">',
+								'</a>'
+							);
+						} else {
+							esc_html_e( 'I agree to the Terms & Conditions.', 'go-deliver' );
+						}
+						?>
+					</label>
+				</div>
+				<?php endif; ?>
+
 				<div class="gd-alert gd-alert--info" style="margin-top:20px;">
 					<span class="gd-alert__icon">ℹ️</span>
 					<div class="gd-alert__body">

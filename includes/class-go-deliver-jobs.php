@@ -467,6 +467,10 @@ $last_name  = sanitize_text_field( wp_unslash( $_POST['account_last_name'] ?? ''
 $email      = sanitize_email( wp_unslash( $_POST['account_email'] ?? '' ) );
 $password   = isset( $_POST['account_password'] ) ? wp_unslash( $_POST['account_password'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
+if ( empty( $_POST['customer_terms_agreed'] ) ) {
+wp_send_json_error( array( 'message' => __( 'You must agree to the Terms & Conditions to submit a job.', 'go-deliver' ) ) );
+}
+
 if ( empty( $first_name ) || empty( $last_name ) || empty( $email ) || empty( $password ) ) {
 wp_send_json_error( array( 'message' => __( 'Please fill in all account fields.', 'go-deliver' ) ) );
 }

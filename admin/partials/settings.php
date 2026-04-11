@@ -33,8 +33,10 @@ if ( isset( $_POST['gd_settings_nonce'] ) ) {
 			update_option( 'gd_quote_expiry_days', absint( $_POST['gd_quote_expiry_days'] ?? 3 ) );
 			update_option( 'gd_google_maps_api_key', sanitize_text_field( wp_unslash( $_POST['gd_google_maps_api_key'] ?? '' ) ) );
 			update_option( 'gd_job_redirect_page_id', absint( $_POST['gd_job_redirect_page_id'] ?? 0 ) );
+			update_option( 'gd_mover_reg_redirect_page_id', absint( $_POST['gd_mover_reg_redirect_page_id'] ?? 0 ) );
 			update_option( 'gd_mover_terms_page_id', absint( $_POST['gd_mover_terms_page_id'] ?? 0 ) );
 			update_option( 'gd_customer_terms_page_id', absint( $_POST['gd_customer_terms_page_id'] ?? 0 ) );
+			update_option( 'gd_debug_panel', isset( $_POST['gd_debug_panel'] ) ? 1 : 0 );
 		} elseif ( 'stripe' === $tab ) {
 			update_option( 'gd_stripe_publishable_key', sanitize_text_field( wp_unslash( $_POST['gd_stripe_publishable_key'] ?? '' ) ) );
 			if ( ! empty( $_POST['gd_stripe_secret_key'] ) ) {
@@ -58,8 +60,10 @@ $job_expiry            = absint( get_option( 'gd_job_expiry_days', 7 ) );
 $quote_expiry          = absint( get_option( 'gd_quote_expiry_days', 3 ) );
 $google_maps_key       = get_option( 'gd_google_maps_api_key', '' );
 $job_redirect_page_id  = absint( get_option( 'gd_job_redirect_page_id', 0 ) );
+$mover_reg_redirect_page_id = absint( get_option( 'gd_mover_reg_redirect_page_id', 0 ) );
 $mover_terms_page_id   = absint( get_option( 'gd_mover_terms_page_id', 0 ) );
 $customer_terms_page_id = absint( get_option( 'gd_customer_terms_page_id', 0 ) );
+$debug_panel_enabled    = (bool) get_option( 'gd_debug_panel', 1 );
 $stripe_pub         = get_option( 'gd_stripe_publishable_key', '' );
 $stripe_sec_masked  = get_option( 'gd_stripe_secret_key', '' ) ? '••••••••••••••••' : '';
 $stripe_wh_masked   = get_option( 'gd_stripe_webhook_secret', '' ) ? '••••••••••••••••' : '';
@@ -192,6 +196,81 @@ $email_from_address = get_option( 'gd_email_from_address', get_option( 'admin_em
 							<p class="description"><?php esc_html_e( 'Page to redirect customers to after a job is successfully submitted. Leave blank to reset the form instead.', 'go-deliver' ); ?></p>
 						</td>
 					</tr>
+				<tr>
+					<th scope="row">
+						<label for="gd_mover_reg_redirect_page_id"><?php esc_html_e( 'Mover Registration Redirect Page', 'go-deliver' ); ?></label>
+					</th>
+					<td>
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'gd_mover_reg_redirect_page_id',
+								'id'                => 'gd_mover_reg_redirect_page_id',
+								'selected'          => $mover_reg_redirect_page_id,
+								'show_option_none'  => __( '— Show success message (no redirect) —', 'go-deliver' ),
+								'option_none_value' => '0',
+							)
+						);
+						?>
+						<p class="description"><?php esc_html_e( 'Page to redirect movers to after registration is successfully submitted. Leave blank to show a success message instead.', 'go-deliver' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="gd_mover_terms_page_id"><?php esc_html_e( 'Mover Terms &amp; Conditions Page', 'go-deliver' ); ?></label>
+					</th>
+					<td>
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'gd_mover_terms_page_id',
+								'id'                => 'gd_mover_terms_page_id',
+								'selected'          => $mover_terms_page_id,
+								'show_option_none'  => __( '— None —', 'go-deliver' ),
+								'option_none_value' => '0',
+							)
+						);
+						?>
+						<p class="description"><?php esc_html_e( 'Page containing the Terms &amp; Conditions for movers. Linked from the mover registration form.', 'go-deliver' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="gd_customer_terms_page_id"><?php esc_html_e( 'Customer Terms &amp; Conditions Page', 'go-deliver' ); ?></label>
+					</th>
+					<td>
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'gd_customer_terms_page_id',
+								'id'                => 'gd_customer_terms_page_id',
+								'selected'          => $customer_terms_page_id,
+								'show_option_none'  => __( '— None —', 'go-deliver' ),
+								'option_none_value' => '0',
+							)
+						);
+						?>
+						<p class="description"><?php esc_html_e( 'Page containing the Terms &amp; Conditions for customers. Linked from the job submission form.', 'go-deliver' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<?php esc_html_e( 'Debug Panel', 'go-deliver' ); ?>
+					</th>
+					<td>
+						<label class="gd-toggle-label">
+							<input
+								type="checkbox"
+								id="gd_debug_panel"
+								name="gd_debug_panel"
+								value="1"
+								<?php checked( $debug_panel_enabled ); ?>
+							>
+							<?php esc_html_e( 'Show debug panel on the front end (admins only)', 'go-deliver' ); ?>
+						</label>
+						<p class="description"><?php esc_html_e( 'Displays a floating debug panel visible only to logged-in administrators. Shows AJAX request/response log, JS errors, and server info. On by default.', 'go-deliver' ); ?></p>
+					</td>
+				</tr>
 				</tbody>
 			</table>
 

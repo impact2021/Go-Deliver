@@ -49,6 +49,7 @@ require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-reviews.php';
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-mover-reg.php';
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-sub-users.php';
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-form-builder.php';
+require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-debug.php';
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver.php';
 
 // Admin and public classes are loaded conditionally inside Go_Deliver.
