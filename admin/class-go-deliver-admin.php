@@ -267,6 +267,18 @@ class Go_Deliver_Admin {
 			GD_VERSION
 		);
 
+		$google_maps_key = get_option( 'gd_google_maps_api_key', '' );
+
+		if ( $google_maps_key && $is_job_edit ) {
+			wp_enqueue_script(
+				'google-maps-places-admin',
+				'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode( $google_maps_key ) . '&libraries=places',
+				array(),
+				null,
+				true
+			);
+		}
+
 		wp_enqueue_script(
 			'go-deliver-admin',
 			GD_PLUGIN_URL . 'admin/js/go-deliver-admin.js',
@@ -279,8 +291,9 @@ class Go_Deliver_Admin {
 			'go-deliver-admin',
 			'gdAdmin',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'gd_admin_nonce' ),
+				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'gd_admin_nonce' ),
+				'hasGooglePlaces' => ( $google_maps_key && $is_job_edit ) ? '1' : '',
 			)
 		);
 	}
@@ -306,6 +319,8 @@ class Go_Deliver_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
 		}
+
+		global $wpdb;
 
 		$per_page     = 20;
 		$current_page = max( 1, isset( $_GET['paged'] ) ? absint( $_GET['paged'] ) : 1 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -345,6 +360,42 @@ class Go_Deliver_Admin {
 		$query       = new WP_Query( $query_args );
 		$jobs        = $query->posts;
 		$total_pages = $query->max_num_pages;
+
+		// Batch-fetch bid statistics (count, average, best price) for all jobs
+		// on this page in a single query to avoid N+1 database hits.
+		$bid_stats = array();
+		if ( ! empty( $jobs ) ) {
+			$job_ids      = array_map( 'intval', wp_list_pluck( $jobs, 'ID' ) );
+			$placeholders = implode( ',', array_fill( 0, count( $job_ids ), '%d' ) );
+
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT
+					    CAST(jm.meta_value AS UNSIGNED) AS job_id,
+					    COUNT(DISTINCT p.ID)                              AS bid_count,
+					    AVG(CAST(am.meta_value AS DECIMAL(10,2)))         AS avg_price,
+					    MIN(CAST(am.meta_value AS DECIMAL(10,2)))         AS best_price
+					FROM {$wpdb->posts} p
+					INNER JOIN {$wpdb->postmeta} jm
+					    ON p.ID = jm.post_id AND jm.meta_key = 'gd_job_id'
+					INNER JOIN {$wpdb->postmeta} sm
+					    ON p.ID = sm.post_id AND sm.meta_key = 'gd_status' AND sm.meta_value != 'withdrawn'
+					INNER JOIN {$wpdb->postmeta} am
+					    ON p.ID = am.post_id AND am.meta_key = 'gd_amount'
+					WHERE p.post_type   = 'gd_quote'
+					  AND p.post_status = 'publish'
+					  AND jm.meta_value IN ({$placeholders})
+					GROUP BY jm.meta_value",
+					$job_ids
+				)
+			);
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+
+			foreach ( $rows as $row ) {
+				$bid_stats[ (int) $row->job_id ] = $row;
+			}
+		}
 
 		require GD_PLUGIN_DIR . 'admin/partials/jobs-list.php';
 		wp_reset_postdata();
@@ -496,6 +547,16 @@ class Go_Deliver_Admin {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
 		}
 		require GD_PLUGIN_DIR . 'admin/partials/shortcodes.php';
+	}
+
+	/**
+	 * Render the docs page.
+	 */
+	public function render_docs_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
+		}
+		require GD_PLUGIN_DIR . 'admin/partials/docs.php';
 	}
 
 	/**
