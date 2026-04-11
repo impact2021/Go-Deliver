@@ -96,7 +96,7 @@ function gd_mover_status_badge( $status ) {
 						$sub_count = Go_Deliver_DB::count_sub_users( $uid );
 						$reg_date  = esc_html( date_i18n( 'd M Y', strtotime( $mover->user_registered ) ) );
 						$detail_url = add_query_arg(
-							array( 'page' => 'go-deliver-movers', 'mover_id' => $uid ),
+							array( 'page' => 'go-deliver-movers', 'user_id' => $uid ),
 							admin_url( 'admin.php' )
 						);
 					?>

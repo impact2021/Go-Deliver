@@ -653,6 +653,11 @@
 			if ( target === 'available-jobs' ) {
 				gdLoadAvailableJobs( $dashboard );
 			}
+
+			// Init location autocomplete when the profile tab is first opened.
+			if ( target === 'profile' ) {
+				gdInitLocationFields( $dashboard.find( '#gd-tab-profile' ) );
+			}
 		} );
 
 		// Load available jobs on page load if that tab is active.
@@ -697,6 +702,43 @@
 		$dashboard.on( 'submit', '#gd-quote-form', function ( e ) {
 			e.preventDefault();
 			gdSubmitQuote( $( this ) );
+		} );
+
+		// Mover profile save.
+		$dashboard.on( 'submit', '#gd-mover-profile-form', function ( e ) {
+			e.preventDefault();
+			var $form = $( this );
+			var $btn  = $form.find( '#gd-profile-save-btn' );
+
+			var jobTypes = [];
+			$form.find( 'input[name="job_types[]"]:checked' ).each( function () {
+				jobTypes.push( $( this ).val() );
+			} );
+
+			gdBtnLoading( $btn );
+
+			gdAjax(
+				'gd_update_mover_profile',
+				{
+					first_name:  $.trim( $form.find( '[name="first_name"]' ).val() ),
+					last_name:   $.trim( $form.find( '[name="last_name"]' ).val() ),
+					email:       $.trim( $form.find( '[name="email"]' ).val() ),
+					phone:       $.trim( $form.find( '[name="phone"]' ).val() ),
+					base_suburb: $.trim( $form.find( '[name="base_suburb"]' ).val() ),
+					base_lat:    $.trim( $form.find( '[name="base_lat"]' ).val() ),
+					base_lng:    $.trim( $form.find( '[name="base_lng"]' ).val() ),
+					radius:      $.trim( $form.find( '[name="radius"]' ).val() ),
+					job_types:   jobTypes,
+				},
+				function ( data ) {
+					gdBtnReset( $btn );
+					gdToast( data.message || 'Profile updated.', 'success' );
+				},
+				function ( msg ) {
+					gdBtnReset( $btn );
+					gdToast( msg, 'error' );
+				}
+			);
 		} );
 	}
 

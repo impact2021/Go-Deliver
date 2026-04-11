@@ -341,6 +341,53 @@
 	} );
 
 	// =========================================================================
+	// Mover profile edit form
+	// =========================================================================
+
+	$( document ).on( 'submit', '#gd-mover-edit-form', function ( e ) {
+		e.preventDefault();
+		var $form   = $( this );
+		var userId  = $form.data( 'user-id' );
+		var $btn    = $form.find( '#gd-mover-edit-submit' );
+
+		// Collect job_types checkboxes as array.
+		var jobTypes = [];
+		$form.find( 'input[name="job_types[]"]:checked' ).each( function () {
+			jobTypes.push( $( this ).val() );
+		} );
+
+		$btn.prop( 'disabled', true ).append( '<span class="gd-spinner-inline"></span>' );
+
+		$.post( ajaxUrl, {
+			action:      'gd_admin_update_mover_profile',
+			nonce:       nonce,
+			user_id:     userId,
+			first_name:  $.trim( $form.find( '[name="first_name"]' ).val() ),
+			last_name:   $.trim( $form.find( '[name="last_name"]' ).val() ),
+			email:       $.trim( $form.find( '[name="email"]' ).val() ),
+			phone:       $.trim( $form.find( '[name="phone"]' ).val() ),
+			base_suburb: $.trim( $form.find( '[name="base_suburb"]' ).val() ),
+			base_lat:    $.trim( $form.find( '[name="base_lat"]' ).val() ),
+			base_lng:    $.trim( $form.find( '[name="base_lng"]' ).val() ),
+			radius:      $.trim( $form.find( '[name="radius"]' ).val() ),
+			job_types:   jobTypes,
+		} )
+		.done( function ( resp ) {
+			if ( resp.success ) {
+				gdToast( resp.data.message || 'Profile updated.' );
+			} else {
+				gdToast( ( resp.data && resp.data.message ) || 'Failed to update profile.', 'error' );
+			}
+		} )
+		.fail( function () {
+			gdToast( 'Network error.', 'error' );
+		} )
+		.always( function () {
+			$btn.prop( 'disabled', false ).find( '.gd-spinner-inline' ).remove();
+		} );
+	} );
+
+	// =========================================================================
 	// Mover approval: approve / reject / suspend (AJAX, no reload)
 	// =========================================================================
 

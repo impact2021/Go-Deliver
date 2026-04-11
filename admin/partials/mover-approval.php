@@ -145,6 +145,99 @@ function gd_approval_badge( $status, $allowed, $default = 'pending' ) {
 	</div><!-- /.gd-section: mover info -->
 
 	<!-- ======================================================
+	     Edit Profile
+	     ====================================================== -->
+	<div class="gd-section">
+		<h2><?php esc_html_e( 'Edit Profile', 'go-deliver' ); ?></h2>
+
+		<form id="gd-mover-edit-form" data-user-id="<?php echo esc_attr( $uid ); ?>">
+			<table class="form-table" role="presentation">
+				<tbody>
+					<tr>
+						<th><label for="gd-edit-first-name"><?php esc_html_e( 'First Name', 'go-deliver' ); ?></label></th>
+						<td>
+							<input type="text" id="gd-edit-first-name" name="first_name" class="regular-text"
+								value="<?php echo esc_attr( $mover->first_name ); ?>">
+						</td>
+					</tr>
+					<tr>
+						<th><label for="gd-edit-last-name"><?php esc_html_e( 'Last Name', 'go-deliver' ); ?></label></th>
+						<td>
+							<input type="text" id="gd-edit-last-name" name="last_name" class="regular-text"
+								value="<?php echo esc_attr( $mover->last_name ); ?>">
+						</td>
+					</tr>
+					<tr>
+						<th><label for="gd-edit-email"><?php esc_html_e( 'Email', 'go-deliver' ); ?></label></th>
+						<td>
+							<input type="email" id="gd-edit-email" name="email" class="regular-text"
+								value="<?php echo esc_attr( $mover->user_email ); ?>">
+						</td>
+					</tr>
+					<tr>
+						<th><label for="gd-edit-phone"><?php esc_html_e( 'Phone', 'go-deliver' ); ?></label></th>
+						<td>
+							<input type="text" id="gd-edit-phone" name="phone" class="regular-text"
+								value="<?php echo esc_attr( get_user_meta( $uid, 'gd_phone', true ) ); ?>">
+						</td>
+					</tr>
+					<tr>
+						<th><label for="gd-edit-base-suburb"><?php esc_html_e( 'Base Suburb', 'go-deliver' ); ?></label></th>
+						<td>
+							<input type="text" id="gd-edit-base-suburb" name="base_suburb" class="regular-text"
+								value="<?php echo esc_attr( get_user_meta( $uid, 'gd_mover_base_suburb', true ) ); ?>">
+							<input type="hidden" id="gd-edit-base-lat" name="base_lat"
+								value="<?php echo esc_attr( get_user_meta( $uid, 'gd_mover_base_lat', true ) ); ?>">
+							<input type="hidden" id="gd-edit-base-lng" name="base_lng"
+								value="<?php echo esc_attr( get_user_meta( $uid, 'gd_mover_base_lng', true ) ); ?>">
+							<p class="description"><?php esc_html_e( 'Enter the suburb/city the mover operates from.', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th><label for="gd-edit-radius"><?php esc_html_e( 'Service Radius (km)', 'go-deliver' ); ?></label></th>
+						<td>
+							<input type="number" id="gd-edit-radius" name="radius" class="small-text" min="0" step="1"
+								value="<?php echo esc_attr( get_user_meta( $uid, 'gd_mover_radius', true ) ); ?>">
+						</td>
+					</tr>
+					<tr>
+						<th><?php esc_html_e( 'Job Types', 'go-deliver' ); ?></th>
+						<td>
+							<?php
+							$saved_job_types  = (array) get_user_meta( $uid, 'gd_mover_job_types', true );
+							$job_type_options = array(
+								'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
+								'item'           => __( 'Item', 'go-deliver' ),
+								'move'           => __( 'Move', 'go-deliver' ),
+								'vehicle'        => __( 'Vehicle', 'go-deliver' ),
+								'boat'           => __( 'Boat', 'go-deliver' ),
+								'piano'          => __( 'Piano', 'go-deliver' ),
+								'pet'            => __( 'Pet', 'go-deliver' ),
+								'junk'           => __( 'Junk', 'go-deliver' ),
+								'other'          => __( 'Other', 'go-deliver' ),
+							);
+							foreach ( $job_type_options as $slug => $label ) :
+							?>
+								<label style="display:inline-flex;align-items:center;gap:6px;margin-right:14px;margin-bottom:6px;">
+									<input type="checkbox" name="job_types[]" value="<?php echo esc_attr( $slug ); ?>"
+										<?php checked( in_array( $slug, $saved_job_types, true ) ); ?>>
+									<?php echo esc_html( $label ); ?>
+								</label>
+							<?php endforeach; ?>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p class="submit">
+				<button type="submit" class="button button-primary" id="gd-mover-edit-submit">
+					<?php esc_html_e( 'Save Changes', 'go-deliver' ); ?>
+				</button>
+			</p>
+		</form>
+	</div><!-- /.gd-section: edit profile -->
+
+	<!-- ======================================================
 	     Mover Actions
 	     ====================================================== -->
 	<div class="gd-section">

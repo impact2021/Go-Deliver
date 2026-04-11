@@ -311,72 +311,151 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 			</div>
 			<div class="gd-section-card__body">
 
-				<div class="gd-profile-section">
-					<h3 class="gd-profile-section__title"><?php esc_html_e( 'Service Area', 'go-deliver' ); ?></h3>
-					<div class="gd-job-detail__grid">
-						<div class="gd-job-detail__field">
-							<div class="gd-job-detail__field-label"><?php esc_html_e( 'Base Location', 'go-deliver' ); ?></div>
-							<div class="gd-job-detail__field-value"><?php echo $base_suburb ?: '—'; ?></div>
-						</div>
-						<div class="gd-job-detail__field">
-							<div class="gd-job-detail__field-label"><?php esc_html_e( 'Service Radius', 'go-deliver' ); ?></div>
-							<div class="gd-job-detail__field-value">
-								<?php echo $radius ? esc_html( $radius ) . ' km' : '—'; ?>
-							</div>
-						</div>
-						<?php if ( $base_lat && $base_lng ) : ?>
-							<div class="gd-job-detail__field">
-								<div class="gd-job-detail__field-label"><?php esc_html_e( 'Coordinates', 'go-deliver' ); ?></div>
-								<div class="gd-job-detail__field-value">
-									<?php echo esc_html( number_format( $base_lat, 5 ) . ', ' . number_format( $base_lng, 5 ) ); ?>
-								</div>
-							</div>
-						<?php endif; ?>
-					</div>
-				</div>
+				<form id="gd-mover-profile-form" novalidate>
+					<?php wp_nonce_field( 'gd_public_nonce', '_wpnonce', false ); ?>
 
-				<div class="gd-profile-section">
-					<h3 class="gd-profile-section__title"><?php esc_html_e( 'Job Types', 'go-deliver' ); ?></h3>
-					<?php if ( ! empty( $job_types ) ) : ?>
-						<div style="display:flex;flex-wrap:wrap;gap:8px;">
-							<?php foreach ( $job_types as $jt ) : ?>
-								<span class="gd-badge gd-badge--accepted"><?php echo esc_html( $jt ); ?></span>
+					<div class="gd-profile-section">
+						<h3 class="gd-profile-section__title"><?php esc_html_e( 'Personal Details', 'go-deliver' ); ?></h3>
+
+						<div class="gd-job-detail__grid">
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-profile-first-name">
+									<?php esc_html_e( 'First Name', 'go-deliver' ); ?>
+								</label>
+								<input
+									type="text"
+									id="gd-profile-first-name"
+									name="first_name"
+									class="gd-input"
+									value="<?php echo esc_attr( $current_user->first_name ); ?>"
+								>
+							</div>
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-profile-last-name">
+									<?php esc_html_e( 'Last Name', 'go-deliver' ); ?>
+								</label>
+								<input
+									type="text"
+									id="gd-profile-last-name"
+									name="last_name"
+									class="gd-input"
+									value="<?php echo esc_attr( $current_user->last_name ); ?>"
+								>
+							</div>
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-profile-email">
+									<?php esc_html_e( 'Email', 'go-deliver' ); ?>
+								</label>
+								<input
+									type="email"
+									id="gd-profile-email"
+									name="email"
+									class="gd-input"
+									value="<?php echo esc_attr( $current_user->user_email ); ?>"
+								>
+							</div>
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-profile-phone">
+									<?php esc_html_e( 'Phone', 'go-deliver' ); ?>
+								</label>
+								<input
+									type="text"
+									id="gd-profile-phone"
+									name="phone"
+									class="gd-input"
+									value="<?php echo esc_attr( get_user_meta( $user_id, 'gd_phone', true ) ); ?>"
+								>
+							</div>
+						</div>
+					</div>
+
+					<div class="gd-profile-section">
+						<h3 class="gd-profile-section__title"><?php esc_html_e( 'Service Area', 'go-deliver' ); ?></h3>
+
+						<div class="gd-job-detail__grid">
+							<div class="gd-job-detail__field gd-location-field" style="grid-column:1/-1;">
+								<label class="gd-job-detail__field-label" for="gd-profile-base-suburb">
+									<?php esc_html_e( 'Base Suburb / City', 'go-deliver' ); ?>
+								</label>
+								<input
+									type="text"
+									id="gd-profile-base-suburb"
+									name="base_suburb"
+									class="gd-input gd-suburb-input"
+									value="<?php echo esc_attr( $base_suburb ); ?>"
+									placeholder="<?php esc_attr_e( 'Start typing your suburb…', 'go-deliver' ); ?>"
+								>
+								<input type="hidden" name="base_address" class="gd-address-input">
+								<input type="hidden" id="gd-profile-base-lat" name="base_lat" class="gd-lat-input" value="<?php echo esc_attr( $base_lat ?: '' ); ?>">
+								<input type="hidden" id="gd-profile-base-lng" name="base_lng" class="gd-lng-input" value="<?php echo esc_attr( $base_lng ?: '' ); ?>">
+							</div>
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-profile-radius">
+									<?php esc_html_e( 'Service Radius (km)', 'go-deliver' ); ?>
+								</label>
+								<input
+									type="number"
+									id="gd-profile-radius"
+									name="radius"
+									class="gd-input"
+									min="0"
+									step="1"
+									value="<?php echo esc_attr( $radius ?: '' ); ?>"
+								>
+							</div>
+						</div>
+					</div>
+
+					<div class="gd-profile-section">
+						<h3 class="gd-profile-section__title"><?php esc_html_e( 'Job Types', 'go-deliver' ); ?></h3>
+
+						<div class="gd-checkbox-group">
+							<?php
+							$profile_job_types = array(
+								'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
+								'item'           => __( 'Item', 'go-deliver' ),
+								'move'           => __( 'Move', 'go-deliver' ),
+								'vehicle'        => __( 'Vehicle', 'go-deliver' ),
+								'boat'           => __( 'Boat', 'go-deliver' ),
+								'piano'          => __( 'Piano', 'go-deliver' ),
+								'pet'            => __( 'Pet', 'go-deliver' ),
+								'junk'           => __( 'Junk', 'go-deliver' ),
+								'other'          => __( 'Other', 'go-deliver' ),
+							);
+							foreach ( $profile_job_types as $slug => $label ) :
+							?>
+								<label class="gd-checkbox-label">
+									<input
+										type="checkbox"
+										name="job_types[]"
+										value="<?php echo esc_attr( $slug ); ?>"
+										<?php checked( in_array( $slug, $job_types, true ) ); ?>
+									>
+									<?php echo esc_html( $label ); ?>
+								</label>
 							<?php endforeach; ?>
 						</div>
-					<?php else : ?>
-						<p class="gd-text-muted"><?php esc_html_e( 'No job types specified.', 'go-deliver' ); ?></p>
-					<?php endif; ?>
-				</div>
+					</div>
 
-				<div class="gd-profile-section">
-					<h3 class="gd-profile-section__title"><?php esc_html_e( 'Account', 'go-deliver' ); ?></h3>
-					<div class="gd-job-detail__grid">
-						<div class="gd-job-detail__field">
-							<div class="gd-job-detail__field-label"><?php esc_html_e( 'Name', 'go-deliver' ); ?></div>
-							<div class="gd-job-detail__field-value"><?php echo esc_html( $current_user->display_name ); ?></div>
-						</div>
-						<div class="gd-job-detail__field">
-							<div class="gd-job-detail__field-label"><?php esc_html_e( 'Email', 'go-deliver' ); ?></div>
-							<div class="gd-job-detail__field-value"><?php echo esc_html( $current_user->user_email ); ?></div>
-						</div>
-						<div class="gd-job-detail__field">
-							<div class="gd-job-detail__field-label"><?php esc_html_e( 'Phone', 'go-deliver' ); ?></div>
-							<div class="gd-job-detail__field-value">
-								<?php echo esc_html( get_user_meta( $user_id, 'gd_phone', true ) ?: '—' ); ?>
-							</div>
-						</div>
-						<div class="gd-job-detail__field">
-							<div class="gd-job-detail__field-label"><?php esc_html_e( 'Status', 'go-deliver' ); ?></div>
-							<div class="gd-job-detail__field-value">
-								<span class="gd-badge gd-badge--approved"><?php esc_html_e( 'Approved', 'go-deliver' ); ?></span>
+					<div class="gd-profile-section">
+						<h3 class="gd-profile-section__title"><?php esc_html_e( 'Account', 'go-deliver' ); ?></h3>
+						<div class="gd-job-detail__grid">
+							<div class="gd-job-detail__field">
+								<div class="gd-job-detail__field-label"><?php esc_html_e( 'Status', 'go-deliver' ); ?></div>
+								<div class="gd-job-detail__field-value">
+									<span class="gd-badge gd-badge--approved"><?php esc_html_e( 'Approved', 'go-deliver' ); ?></span>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
 
-				<p class="gd-text-muted gd-text-sm">
-					<?php esc_html_e( 'To update your profile details, please contact support.', 'go-deliver' ); ?>
-				</p>
+					<div style="margin-top:16px;">
+						<button type="submit" id="gd-profile-save-btn" class="gd-btn gd-btn--primary">
+							<?php esc_html_e( 'Save Changes', 'go-deliver' ); ?>
+						</button>
+					</div>
+
+				</form>
 
 			</div>
 		</div>
