@@ -442,7 +442,7 @@
 			if ( gdPublic.hasGooglePlaces && typeof google !== 'undefined' && google.maps && google.maps.places ) {
 				var autocomplete = new google.maps.places.Autocomplete(
 					$suburb[ 0 ],
-					{ types: [ 'geocode' ] }
+					{ types: [ 'geocode' ], componentRestrictions: { country: 'nz' } }
 				);
 
 				// Clear stale coordinates whenever the user edits the text.
