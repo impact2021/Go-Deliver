@@ -11,7 +11,7 @@
  * Plugin Name:       Go Deliver
  * Plugin URI:        https://godeliver.com
  * Description:       A moving marketplace plugin connecting customers with professional movers.
- * Version:           1.1.0
+ * Version:           1.2.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Go Deliver
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'GD_VERSION', '1.1.0' );
+define( 'GD_VERSION', '1.2.0' );
 define( 'GD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'GD_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );

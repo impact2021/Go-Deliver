@@ -1,7 +1,7 @@
 /* global gdPublic */
 /**
  * Go Deliver – Public-Facing JavaScript
- * Version: 1.0.0
+ * Version: 1.2.0
  */
 ( function ( $ ) {
 	'use strict';
@@ -1165,7 +1165,8 @@
 
 			var formData = new FormData( this );
 			formData.append( 'action', 'gd_register_mover' );
-			formData.append( 'nonce', gdPublic.nonce );
+			// Note: the form already contains the correct wp_nonce_field
+			// for 'gd_mover_registration' - do not overwrite it with gdPublic.nonce.
 
 			$.ajax( {
 				url:         gdPublic.ajaxUrl,
