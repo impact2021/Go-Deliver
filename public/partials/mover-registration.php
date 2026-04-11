@@ -156,8 +156,10 @@ if ( is_user_logged_in() ) {
 							name="phone"
 							required
 							autocomplete="tel"
-							placeholder="<?php esc_attr_e( 'e.g. 0400 000 000', 'go-deliver' ); ?>"
+							placeholder="<?php esc_attr_e( 'e.g. 021 123 4567', 'go-deliver' ); ?>"
+							pattern="^(\+?64|0)[2-9][\d\s\-]{6,11}$"
 						>
+						<span class="gd-field-hint"><?php esc_html_e( 'NZ mobile or landline, e.g. 021 123 4567 or 09 123 4567.', 'go-deliver' ); ?></span>
 					</div>
 
 					<div class="gd-field-row">
