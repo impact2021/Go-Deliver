@@ -45,10 +45,6 @@ if ( is_user_logged_in() ) {
 	<div class="gd-registration-form" id="gd-mover-registration-form-wrap">
 
 		<div class="gd-registration-form__header">
-			<div class="gd-registration-form__logo">🚚 <?php esc_html_e( 'Go Deliver', 'go-deliver' ); ?></div>
-			<p class="gd-registration-form__subtitle">
-				<?php esc_html_e( 'Register as a professional mover and start receiving job leads.', 'go-deliver' ); ?>
-			</p>
 
 			<!-- Progress Bar -->
 			<div class="gd-progress-bar" style="margin-top:16px;">

@@ -25,7 +25,6 @@ $form_builder = new Go_Deliver_Form_Builder();
 <div class="gd-job-form" id="gd-job-form-wrap">
 
 	<div class="gd-job-form__header">
-		<h1 class="gd-job-form__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h1>
 
 		<!-- Step progress indicators -->
 		<div class="gd-steps">

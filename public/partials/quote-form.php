@@ -82,8 +82,6 @@ $balance        = $wallet->get_balance( $current_user_id );
 ?>
 <div class="gd-quote-form" id="gd-quote-form-wrap">
 
-	<h3 class="gd-quote-form__title"><?php esc_html_e( 'Submit Your Quote', 'go-deliver' ); ?></h3>
-
 	<?php if ( $balance < 10 ) : ?>
 		<div class="gd-alert gd-alert--warning">
 			<span class="gd-alert__icon">⚠️</span>

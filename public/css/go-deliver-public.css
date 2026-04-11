@@ -318,7 +318,6 @@
    ----------------------------------------------------------------------------- */
 .gd-job-form {
 	background: var(--gd-white);
-	border: 1px solid var(--gd-border);
 	border-radius: var(--gd-radius-lg);
 	overflow: hidden;
 }
@@ -1119,9 +1118,7 @@
    ----------------------------------------------------------------------------- */
 .gd-registration-form {
 	background: var(--gd-white);
-	border: 1px solid var(--gd-border);
 	border-radius: var(--gd-radius-lg);
-	box-shadow: var(--gd-shadow-md);
 	overflow: hidden;
 	max-width: 680px;
 	margin: 0 auto;
@@ -1396,7 +1393,6 @@
    ----------------------------------------------------------------------------- */
 .gd-quote-form {
 	background: var(--gd-bg);
-	border: 1.5px solid var(--gd-border);
 	border-radius: var(--gd-radius);
 	padding: 24px;
 	margin-top: 20px;
@@ -1452,10 +1448,8 @@
 
 .gd-topup-page__form {
 	background: var(--gd-white);
-	border: 1px solid var(--gd-border);
 	border-radius: var(--gd-radius-lg);
 	padding: 28px;
-	box-shadow: var(--gd-shadow);
 }
 
 .gd-topup-page__form-title {

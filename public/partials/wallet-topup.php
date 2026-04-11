@@ -84,7 +84,6 @@ $transactions = $wallet->get_transactions( $user_id, 10 );
 
 		<!-- Top-up Form -->
 		<div class="gd-topup-page__form">
-			<h2 class="gd-topup-page__form-title"><?php esc_html_e( 'Add Funds', 'go-deliver' ); ?></h2>
 
 			<?php if ( empty( $stripe->get_publishable_key() ) ) : ?>
 				<div class="gd-alert gd-alert--warning">
