@@ -33,6 +33,8 @@ if ( isset( $_POST['gd_settings_nonce'] ) ) {
 			update_option( 'gd_quote_expiry_days', absint( $_POST['gd_quote_expiry_days'] ?? 3 ) );
 			update_option( 'gd_google_maps_api_key', sanitize_text_field( wp_unslash( $_POST['gd_google_maps_api_key'] ?? '' ) ) );
 			update_option( 'gd_job_redirect_page_id', absint( $_POST['gd_job_redirect_page_id'] ?? 0 ) );
+			update_option( 'gd_mover_terms_page_id', absint( $_POST['gd_mover_terms_page_id'] ?? 0 ) );
+			update_option( 'gd_customer_terms_page_id', absint( $_POST['gd_customer_terms_page_id'] ?? 0 ) );
 		} elseif ( 'stripe' === $tab ) {
 			update_option( 'gd_stripe_publishable_key', sanitize_text_field( wp_unslash( $_POST['gd_stripe_publishable_key'] ?? '' ) ) );
 			if ( ! empty( $_POST['gd_stripe_secret_key'] ) ) {
@@ -56,6 +58,8 @@ $job_expiry            = absint( get_option( 'gd_job_expiry_days', 7 ) );
 $quote_expiry          = absint( get_option( 'gd_quote_expiry_days', 3 ) );
 $google_maps_key       = get_option( 'gd_google_maps_api_key', '' );
 $job_redirect_page_id  = absint( get_option( 'gd_job_redirect_page_id', 0 ) );
+$mover_terms_page_id   = absint( get_option( 'gd_mover_terms_page_id', 0 ) );
+$customer_terms_page_id = absint( get_option( 'gd_customer_terms_page_id', 0 ) );
 $stripe_pub         = get_option( 'gd_stripe_publishable_key', '' );
 $stripe_sec_masked  = get_option( 'gd_stripe_secret_key', '' ) ? '••••••••••••••••' : '';
 $stripe_wh_masked   = get_option( 'gd_stripe_webhook_secret', '' ) ? '••••••••••••••••' : '';
