@@ -60,6 +60,7 @@ class Go_Deliver {
 		add_action( 'admin_enqueue_scripts', array( $admin, 'enqueue_scripts' ) );
 		add_action( 'add_meta_boxes_gd_job', array( $admin, 'add_job_meta_boxes' ) );
 		add_action( 'save_post_gd_job', array( $admin, 'save_job_meta' ) );
+		add_action( 'admin_bar_menu', array( $admin, 'add_admin_bar_menu' ), 100 );
 	}
 
 	/**
