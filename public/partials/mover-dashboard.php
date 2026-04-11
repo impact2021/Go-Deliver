@@ -25,8 +25,9 @@ if ( ! is_user_logged_in() ) {
 $current_user = wp_get_current_user();
 $is_mover     = in_array( 'gd_mover', (array) $current_user->roles, true );
 $is_mover_sub = in_array( 'gd_mover_sub', (array) $current_user->roles, true );
+$is_admin     = current_user_can( 'manage_options' );
 
-if ( ! $is_mover && ! $is_mover_sub ) {
+if ( ! $is_mover && ! $is_mover_sub && ! $is_admin ) {
 	echo '<div class="gd-wrap"><div class="gd-alert gd-alert--warning"><span class="gd-alert__icon">⚠️</span><div class="gd-alert__body">' .
 	     esc_html__( 'This page is for registered movers only.', 'go-deliver' ) .
 	     '</div></div></div>';
