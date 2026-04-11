@@ -192,6 +192,44 @@ $email_from_address = get_option( 'gd_email_from_address', get_option( 'admin_em
 							<p class="description"><?php esc_html_e( 'Page to redirect customers to after a job is successfully submitted. Leave blank to reset the form instead.', 'go-deliver' ); ?></p>
 						</td>
 					</tr>
+				<tr>
+					<th scope="row">
+						<label for="gd_mover_terms_page_id"><?php esc_html_e( 'Mover Terms &amp; Conditions Page', 'go-deliver' ); ?></label>
+					</th>
+					<td>
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'gd_mover_terms_page_id',
+								'id'                => 'gd_mover_terms_page_id',
+								'selected'          => $mover_terms_page_id,
+								'show_option_none'  => __( '— None —', 'go-deliver' ),
+								'option_none_value' => '0',
+							)
+						);
+						?>
+						<p class="description"><?php esc_html_e( 'Page containing the Terms &amp; Conditions for movers. Linked from the mover registration form.', 'go-deliver' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row">
+						<label for="gd_customer_terms_page_id"><?php esc_html_e( 'Customer Terms &amp; Conditions Page', 'go-deliver' ); ?></label>
+					</th>
+					<td>
+						<?php
+						wp_dropdown_pages(
+							array(
+								'name'              => 'gd_customer_terms_page_id',
+								'id'                => 'gd_customer_terms_page_id',
+								'selected'          => $customer_terms_page_id,
+								'show_option_none'  => __( '— None —', 'go-deliver' ),
+								'option_none_value' => '0',
+							)
+						);
+						?>
+						<p class="description"><?php esc_html_e( 'Page containing the Terms &amp; Conditions for customers. Linked from the job submission form.', 'go-deliver' ); ?></p>
+					</td>
+				</tr>
 				</tbody>
 			</table>
 
