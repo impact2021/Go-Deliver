@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $form_builder = new Go_Deliver_Form_Builder();
 ?>
 <div class="gd-wrap">
-<?php if ( is_user_logged_in() && ! current_user_can( 'gd_submit_jobs' ) ) : ?>
+<?php if ( is_user_logged_in() && ! current_user_can( 'gd_submit_jobs' ) && ! current_user_can( 'manage_options' ) ) : ?>
 	<div class="gd-alert gd-alert--warning">
 		<span class="gd-alert__icon">⚠️</span>
 		<div class="gd-alert__body">

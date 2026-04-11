@@ -29,9 +29,10 @@ $current_user_id = get_current_user_id();
 $user            = wp_get_current_user();
 $roles           = (array) $user->roles;
 $is_mover        = in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true );
+$is_admin        = current_user_can( 'manage_options' );
 
 // Non-movers – access denied.
-if ( ! $is_mover ) {
+if ( ! $is_mover && ! $is_admin ) {
 	echo '<div class="gd-wrap"><div class="gd-alert gd-alert--warning"><span class="gd-alert__icon">⚠️</span><div class="gd-alert__body">'
 		. esc_html__( 'This page is for registered movers only.', 'go-deliver' )
 		. '</div></div></div>';
@@ -41,7 +42,7 @@ if ( ! $is_mover ) {
 $mover_status = get_user_meta( $current_user_id, 'gd_mover_status', true );
 
 // Pending / rejected / suspended movers.
-if ( 'approved' !== $mover_status ) {
+if ( ! $is_admin && 'approved' !== $mover_status ) {
 	$messages = array(
 		'pending'   => __( 'Your mover application is under review. You will be notified once approved.', 'go-deliver' ),
 		'rejected'  => __( 'Your mover application was not approved. Please contact support for more information.', 'go-deliver' ),
