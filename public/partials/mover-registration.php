@@ -363,10 +363,18 @@ if ( is_user_logged_in() ) {
 						<label class="gd-checkbox-label">
 							<input type="checkbox" name="terms_agreed" value="1" required id="gd-reg-terms">
 							<?php
-							printf(
-								/* translators: 1: terms URL */
-								esc_html__( 'I agree to the Terms & Conditions and understand the platform fee structure.', 'go-deliver' )
-							);
+							$mover_terms_id  = absint( get_option( 'gd_mover_terms_page_id', 0 ) );
+							$mover_terms_url = $mover_terms_id ? get_permalink( $mover_terms_id ) : '';
+							if ( $mover_terms_url ) {
+								printf(
+									/* translators: 1: opening anchor tag, 2: closing anchor tag */
+									esc_html__( 'I agree to the %1$sTerms & Conditions%2$s and understand the platform fee structure.', 'go-deliver' ),
+									'<a href="' . esc_url( $mover_terms_url ) . '" target="_blank" rel="noopener noreferrer">',
+									'</a>'
+								);
+							} else {
+								esc_html_e( 'I agree to the Terms & Conditions and understand the platform fee structure.', 'go-deliver' );
+							}
 							?>
 						</label>
 					</div>

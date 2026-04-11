@@ -251,6 +251,15 @@
 
 			$section.find( '[required]:visible' ).each( function () {
 				var $f = $( this );
+				if ( $f.is( 'input[type="checkbox"]' ) ) {
+					if ( ! $f.is( ':checked' ) ) {
+						gdFieldError( $f, gdEscape( $f.closest( 'label' ).text().trim() ) + ' is required.' );
+						valid = false;
+					} else {
+						gdClearFieldError( $f );
+					}
+					return;
+				}
 				if ( ! $.trim( $f.val() ) ) {
 					gdFieldError( $f, $f.prev( 'label' ).text().replace( /\*/g, '' ).trim() + ' is required.' );
 					valid = false;
@@ -1116,7 +1125,12 @@
 			$section.find( '[required]:visible' ).each( function () {
 				var $f = $( this );
 				if ( $f.is( 'input[type="checkbox"]' ) ) {
-					// Groups handled separately.
+					if ( ! $f.is( ':checked' ) ) {
+						gdFieldError( $f, gdEscape( $f.closest( 'label' ).text().trim() ) + ' is required.' );
+						valid = false;
+					} else {
+						gdClearFieldError( $f );
+					}
 					return;
 				}
 				if ( ! $.trim( $f.val() ) ) {
