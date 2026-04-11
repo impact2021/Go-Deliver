@@ -132,7 +132,13 @@ $status_labels = array(
 					<div class="gd-job-card__location">
 						<span class="gd-job-card__location-label"><?php esc_html_e( 'From', 'go-deliver' ); ?></span>
 						<span class="gd-job-card__location-value">
-							<?php echo $pickup_suburb ? esc_html( $pickup_suburb ) : '<span class="gd-muted">' . esc_html__( 'Not set', 'go-deliver' ) . '</span>'; ?>
+							<?php
+							if ( $pickup_suburb ) {
+								echo esc_html( $pickup_suburb );
+							} else {
+								echo '<span class="gd-muted">' . esc_html__( 'Not set', 'go-deliver' ) . '</span>';
+							}
+							?>
 						</span>
 					</div>
 					<?php if ( $dropoff_suburb ) : ?>

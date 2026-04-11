@@ -608,11 +608,15 @@
 		if ( typeof google !== 'undefined' && google.maps && google.maps.places ) {
 			gdInitAdminLocationFields();
 		} else {
-			// Retry once the Maps script fires its callback (it just loads async).
+			var gdMapsMaxRetries    = 50; // 50 × 200 ms = 10 s timeout
+			var gdMapsRetries       = 0;
 			var gdMapsCheckInterval = setInterval( function () {
+				gdMapsRetries++;
 				if ( typeof google !== 'undefined' && google.maps && google.maps.places ) {
 					clearInterval( gdMapsCheckInterval );
 					gdInitAdminLocationFields();
+				} else if ( gdMapsRetries >= gdMapsMaxRetries ) {
+					clearInterval( gdMapsCheckInterval );
 				}
 			}, 200 );
 		}
