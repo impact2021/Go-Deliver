@@ -1121,10 +1121,7 @@
 	background: var(--gd-white);
 	border: 1px solid var(--gd-border);
 	border-radius: var(--gd-radius-lg);
-	box-shadow: var(--gd-shadow-md);
 	overflow: hidden;
-	max-width: 680px;
-	margin: 0 auto;
 }
 
 .gd-registration-form__header {
