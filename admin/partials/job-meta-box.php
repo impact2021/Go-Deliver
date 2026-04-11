@@ -167,7 +167,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				step="any"
 				placeholder="0.000000"
 			>
-			<span class="description"><?php esc_html_e( 'Optional', 'go-deliver' ); ?></span>
+			<span class="description"><?php esc_html_e( 'Auto-filled from address', 'go-deliver' ); ?></span>
 		</div>
 
 		<div class="gd-mb-field" style="flex: 0 1 120px;">
@@ -181,7 +181,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				step="any"
 				placeholder="0.000000"
 			>
-			<span class="description"><?php esc_html_e( 'Optional', 'go-deliver' ); ?></span>
+			<span class="description"><?php esc_html_e( 'Auto-filled from address', 'go-deliver' ); ?></span>
 		</div>
 
 	</div>
@@ -227,7 +227,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				step="any"
 				placeholder="0.000000"
 			>
-			<span class="description"><?php esc_html_e( 'Optional', 'go-deliver' ); ?></span>
+			<span class="description"><?php esc_html_e( 'Auto-filled from address', 'go-deliver' ); ?></span>
 		</div>
 
 		<div class="gd-mb-field" style="flex: 0 1 120px;">
@@ -241,7 +241,7 @@ $job_types    = $form_builder->get_flat_job_types();
 				step="any"
 				placeholder="0.000000"
 			>
-			<span class="description"><?php esc_html_e( 'Optional', 'go-deliver' ); ?></span>
+			<span class="description"><?php esc_html_e( 'Auto-filled from address', 'go-deliver' ); ?></span>
 		</div>
 
 	</div>

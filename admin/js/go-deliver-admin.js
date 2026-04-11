@@ -589,7 +589,7 @@
 	}
 
 	// =========================================================================
-	// Admin location fields – Google Places autocomplete
+	// Admin location fields – Google Places autocomplete + Nominatim fallback
 	// =========================================================================
 
 	function gdInitAdminLocationFields() {
@@ -649,6 +649,58 @@
 			} );
 		} );
 	}
+
+	/**
+	 * Nominatim fallback geocoding for admin location fields.
+	 * Runs on blur of either the suburb or address field when lat/lng are empty.
+	 */
+	function gdInitAdminLocationFallback() {
+		$( '.gd-admin-location-field' ).each( function () {
+			var $wrap    = $( this );
+			var $address = $wrap.find( '.gd-admin-address-input' );
+			var $suburb  = $wrap.find( '.gd-admin-suburb-input' );
+			var $lat     = $wrap.find( '.gd-admin-lat-input' );
+			var $lng     = $wrap.find( '.gd-admin-lng-input' );
+
+			function gdNominatimGeocode( query ) {
+				if ( ! query || ( $lat.val() && $lng.val() ) ) { return; }
+				$.getJSON(
+					'https://nominatim.openstreetmap.org/search',
+					{
+						q:              query + ', New Zealand',
+						format:         'json',
+						limit:          1,
+						addressdetails: 1,
+					},
+					function ( results ) {
+						if ( results && results.length ) {
+							var place = results[ 0 ];
+							$lat.val( parseFloat( place.lat ).toFixed( 6 ) );
+							$lng.val( parseFloat( place.lon ).toFixed( 6 ) );
+						}
+					}
+				);
+			}
+
+			// Clear stale coordinates when the user edits either field.
+			$address.add( $suburb ).on( 'input', function () {
+				$lat.val( '' );
+				$lng.val( '' );
+			} );
+
+			// Geocode on blur using whichever field has content.
+			$address.on( 'blur', function () {
+				gdNominatimGeocode( $.trim( $address.val() ) );
+			} );
+
+			$suburb.on( 'blur', function () {
+				gdNominatimGeocode( $.trim( $suburb.val() ) );
+			} );
+		} );
+	}
+
+	// Always attach the Nominatim fallback (it skips fields that already have coords).
+	gdInitAdminLocationFallback();
 
 	// Initialise when Google Maps is available – it may load asynchronously.
 	if ( gdAdmin.hasGooglePlaces ) {
