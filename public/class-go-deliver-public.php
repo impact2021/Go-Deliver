@@ -50,14 +50,18 @@ class Go_Deliver_Public {
 		$job_redirect_page_id = absint( get_option( 'gd_job_redirect_page_id', 0 ) );
 		$dashboard_url        = $job_redirect_page_id ? get_permalink( $job_redirect_page_id ) : '';
 
+		$mover_reg_redirect_page_id = absint( get_option( 'gd_mover_reg_redirect_page_id', 0 ) );
+		$mover_reg_redirect_url     = $mover_reg_redirect_page_id ? get_permalink( $mover_reg_redirect_page_id ) : '';
+
 		wp_localize_script(
 			'go-deliver-public',
 			'gdPublic',
 			array(
-				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
-				'nonce'           => wp_create_nonce( 'gd_public_nonce' ),
-				'hasGooglePlaces' => $google_maps_key ? '1' : '',
-				'dashboardUrl'    => $dashboard_url ? esc_url( $dashboard_url ) : '',
+				'ajaxUrl'               => admin_url( 'admin-ajax.php' ),
+				'nonce'                 => wp_create_nonce( 'gd_public_nonce' ),
+				'hasGooglePlaces'       => $google_maps_key ? '1' : '',
+				'dashboardUrl'          => $dashboard_url ? esc_url( $dashboard_url ) : '',
+				'moverRegRedirectUrl'   => $mover_reg_redirect_url ? esc_url( $mover_reg_redirect_url ) : '',
 			)
 		);
 	}

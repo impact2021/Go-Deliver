@@ -1192,8 +1192,13 @@
 				success: function ( response ) {
 					gdBtnReset( $btn );
 					if ( response.success ) {
-						$form.hide();
-						$( '#gd-registration-success' ).show();
+						if ( gdPublic.moverRegRedirectUrl ) {
+							window.location.href = gdPublic.moverRegRedirectUrl;
+						} else {
+							$( '#gd-mover-registration-form-wrap' ).hide();
+							$( '#gd-registration-success' ).show();
+							$( 'html, body' ).animate( { scrollTop: $( '#gd-registration-success' ).offset().top - 20 }, 300 );
+						}
 					} else {
 						var msg = ( response.data && response.data.message ) ? response.data.message : 'Registration failed.';
 						gdToast( msg, 'error' );

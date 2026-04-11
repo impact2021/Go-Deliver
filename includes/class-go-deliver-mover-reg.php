@@ -306,6 +306,10 @@ return $attachment_id;
 public function ajax_register_mover() {
 check_ajax_referer( 'gd_mover_registration', 'nonce' );
 
+if ( empty( $_POST['terms_agreed'] ) ) {
+wp_send_json_error( array( 'message' => __( 'You must agree to the Terms & Conditions to register.', 'go-deliver' ) ) );
+}
+
 $data = array(
 'username'    => sanitize_user( wp_unslash( $_POST['username'] ?? '' ) ),
 'email'       => sanitize_email( wp_unslash( $_POST['email'] ?? '' ) ),
