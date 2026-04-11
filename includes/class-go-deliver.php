@@ -61,6 +61,19 @@ class Go_Deliver {
 		add_action( 'add_meta_boxes_gd_job', array( $admin, 'add_job_meta_boxes' ) );
 		add_action( 'save_post_gd_job', array( $admin, 'save_job_meta' ) );
 		add_action( 'admin_bar_menu', array( $admin, 'add_admin_bar_menu' ), 100 );
+
+		// Admin-only AJAX handlers.
+		$admin_ajax_actions = array(
+			'gd_approve_mover',
+			'gd_reject_mover',
+			'gd_suspend_mover',
+			'gd_adjust_wallet',
+			'gd_update_document_status',
+			'gd_save_form_fields',
+		);
+		foreach ( $admin_ajax_actions as $action ) {
+			add_action( 'wp_ajax_' . $action, array( $admin, 'dispatch_admin_ajax' ) );
+		}
 	}
 
 	/**

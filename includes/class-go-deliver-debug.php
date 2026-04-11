@@ -30,7 +30,9 @@ class Go_Deliver_Debug {
 			return;
 		}
 
-		add_action( 'wp_footer', array( $this, 'render_panel' ), 9999 );
+		// Front-end and admin pages use different footer hooks.
+		add_action( 'wp_footer',    array( $this, 'render_panel' ), 9999 );
+		add_action( 'admin_footer', array( $this, 'render_panel' ), 9999 );
 		add_action( 'wp_ajax_gd_debug_info', array( $this, 'ajax_debug_info' ) );
 	}
 
