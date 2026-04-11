@@ -716,6 +716,89 @@
 }
 
 /* ==========================================================================
+   Docs page
+   ========================================================================== */
+
+.gd-docs-steps {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	counter-reset: gd-step;
+}
+
+.gd-docs-steps > li {
+	position: relative;
+	padding: 0 0 24px 56px;
+	counter-increment: gd-step;
+}
+
+.gd-docs-steps > li::before {
+	content: counter(gd-step);
+	position: absolute;
+	left: 0;
+	top: 2px;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: #2271b1;
+	color: #fff;
+	font-size: 14px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.gd-docs-steps > li:last-child {
+	padding-bottom: 0;
+}
+
+.gd-docs-steps h3 {
+	margin: 0 0 8px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+}
+
+.gd-docs-steps p {
+	margin: 0 0 8px;
+	color: #3c434a;
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.gd-docs-list {
+	margin: 6px 0 8px 20px;
+	padding: 0;
+	font-size: 13px;
+	color: #3c434a;
+}
+
+.gd-docs-list li {
+	margin-bottom: 4px;
+	line-height: 1.5;
+}
+
+.gd-docs-note {
+	background: #f0f6fc;
+	border-left: 4px solid #2271b1;
+	padding: 10px 12px;
+	border-radius: 0 4px 4px 0;
+	display: flex;
+	gap: 8px;
+	align-items: flex-start;
+	font-size: 13px;
+	color: #3c434a;
+}
+
+.gd-docs-note .dashicons {
+	flex-shrink: 0;
+	color: #2271b1;
+	margin-top: 1px;
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 

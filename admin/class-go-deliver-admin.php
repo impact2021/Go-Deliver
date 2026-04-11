@@ -92,6 +92,15 @@ class Go_Deliver_Admin {
 			'go-deliver-shortcodes',
 			array( $this, 'render_shortcodes_page' )
 		);
+
+		add_submenu_page(
+			'go-deliver',
+			__( 'Docs', 'go-deliver' ),
+			__( 'Docs', 'go-deliver' ),
+			'manage_options',
+			'go-deliver-docs',
+			array( $this, 'render_docs_page' )
+		);
 	}
 
 	/**
