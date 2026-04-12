@@ -126,6 +126,9 @@ class Go_Deliver {
 		// Block WP admin area access for non-admin users.
 		add_action( 'admin_init', array( $this, 'block_admin_for_non_admins' ) );
 
+		// Hide the admin bar on the front end for non-admin users.
+		add_filter( 'show_admin_bar', array( $this, 'hide_admin_bar_for_non_admins' ) );
+
 		// ---------------------------------------------------------------
 		// AJAX handlers – logged-in users.
 		// ---------------------------------------------------------------
@@ -273,6 +276,22 @@ class Go_Deliver {
 			wp_safe_redirect( $page_id ? get_permalink( $page_id ) : home_url() );
 			exit;
 		}
+	}
+
+	/**
+	 * Hide the WordPress admin bar for non-admin users.
+	 *
+	 * Filters the show_admin_bar value so that customers and movers never see
+	 * the black admin toolbar on the front end.
+	 *
+	 * @param bool $show Whether the admin bar should be shown.
+	 * @return bool
+	 */
+	public function hide_admin_bar_for_non_admins( $show ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return false;
+		}
+		return $show;
 	}
 
 	/**
