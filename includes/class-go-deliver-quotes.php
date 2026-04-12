@@ -484,4 +484,88 @@ wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 
 wp_send_json_success( array( 'message' => __( 'Quote withdrawn.', 'go-deliver' ) ) );
 }
+
+/**
+ * AJAX: return the mover's My Quotes tab HTML for live refresh after submission.
+ */
+public function ajax_get_my_quotes() {
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+if ( ! is_user_logged_in() ) {
+wp_send_json_error( array( 'message' => __( 'Please log in.', 'go-deliver' ) ), 403 );
+}
+
+$user_id = get_current_user_id();
+$quotes  = $this->get_quotes_for_mover( $user_id );
+$fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
+
+ob_start();
+if ( empty( $quotes ) ) {
+echo '<div class="gd-empty-state">';
+echo '<div class="gd-empty-state__icon">📝</div>';
+echo '<p class="gd-empty-state__text">' . esc_html__( "You haven't submitted any quotes yet.", 'go-deliver' ) . '</p>';
+echo '</div>';
+} else {
+foreach ( $quotes as $quote ) {
+$q_id     = $quote['id'];
+$q_status = esc_attr( $quote['status'] ?: 'pending' );
+$q_amount = (float) $quote['amount'];
+$q_message = esc_html( $quote['message'] );
+$q_job_id  = (int) $quote['job_id'];
+$q_date    = esc_html( get_the_date( 'd M Y', $q_id ) );
+$job_suburb = $q_job_id ? esc_html( get_post_meta( $q_job_id, 'gd_pickup_suburb', true ) ) : '';
+$job_type   = $q_job_id ? esc_html( get_post_meta( $q_job_id, 'gd_job_type', true ) ?: get_post_meta( $q_job_id, 'gd_form_data_item_type', true ) ) : '';
+?>
+<div class="gd-mover-card">
+<div class="gd-mover-card__header">
+<div>
+<div class="gd-mover-card__job-type"><?php echo $job_type ?: esc_html__( 'Moving Job', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__suburb"><?php echo $job_suburb ?: '—'; ?></div>
+</div>
+<div style="text-align:right;">
+<div style="font-size:22px;font-weight:800;color:var(--gd-primary);">
+$<?php echo esc_html( number_format( $q_amount, 0 ) ); ?>
+</div>
+<span class="gd-badge gd-badge--<?php echo esc_attr( $q_status ); ?>">
+<?php echo esc_html( ucfirst( $q_status ) ); ?>
+</span>
+</div>
+</div>
+<?php if ( $q_message ) : ?>
+<p style="font-size:13px;color:var(--gd-text-muted);margin:8px 0;"><?php echo $q_message; ?></p>
+<?php endif; ?>
+<div class="gd-mover-card__info-grid">
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Quoted', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $q_date; ?></div>
+</div>
+<?php if ( 'accepted' === $q_status ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Fee Charged', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value">
+$<?php echo esc_html( number_format( (float) get_post_meta( $q_id, 'gd_fee_amount', true ), 2 ) ); ?>
+</div>
+</div>
+<?php endif; ?>
+</div>
+<div class="gd-mover-card__actions">
+<?php if ( $q_job_id ) : ?>
+<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-job-view-btn" data-job-id="<?php echo esc_attr( $q_job_id ); ?>">
+<?php esc_html_e( 'View Job', 'go-deliver' ); ?>
+</button>
+<?php endif; ?>
+<?php if ( 'pending' === $q_status ) : ?>
+<button type="button" class="gd-btn gd-btn--danger gd-btn--sm gd-withdraw-quote-btn" data-quote-id="<?php echo esc_attr( $q_id ); ?>">
+<?php esc_html_e( 'Withdraw Quote', 'go-deliver' ); ?>
+</button>
+<?php endif; ?>
+</div>
+</div>
+<?php
+}
+}
+$html = ob_get_clean();
+
+wp_send_json_success( array( 'html' => $html ) );
+}
 }

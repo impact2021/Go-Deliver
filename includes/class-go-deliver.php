@@ -129,12 +129,14 @@ class Go_Deliver {
 			'gd_stripe_topup',
 			'gd_register_mover',
 			'gd_submit_review',
+			'gd_get_job_detail',
 			'gd_get_job_details',
 			'gd_cancel_job',
 			'gd_add_sub_user',
 			'gd_remove_sub_user',
 			'gd_get_available_jobs',
 			'gd_update_mover_profile',
+			'gd_get_my_quotes',
 		);
 
 		foreach ( $ajax_actions_auth as $action ) {
@@ -172,12 +174,14 @@ class Go_Deliver {
 			'gd_stripe_topup'        => array( 'Go_Deliver_Stripe', 'ajax_create_topup_session' ),
 			'gd_register_mover'      => array( 'Go_Deliver_Mover_Reg', 'ajax_register_mover' ),
 			'gd_submit_review'       => array( 'Go_Deliver_Reviews', 'ajax_submit_review' ),
+			'gd_get_job_detail'      => array( 'Go_Deliver_Jobs', 'ajax_get_job_detail_html' ),
 			'gd_get_job_details'     => array( 'Go_Deliver_Jobs', 'ajax_get_job_details' ),
 			'gd_cancel_job'          => array( 'Go_Deliver_Jobs', 'ajax_cancel_job' ),
 			'gd_add_sub_user'        => array( 'Go_Deliver_Sub_Users', 'ajax_add_sub_user' ),
 			'gd_remove_sub_user'     => array( 'Go_Deliver_Sub_Users', 'ajax_remove_sub_user' ),
 			'gd_get_available_jobs'  => array( 'Go_Deliver_Jobs', 'ajax_get_available_jobs' ),
 			'gd_update_mover_profile' => array( 'Go_Deliver_Mover_Reg', 'ajax_update_mover_profile' ),
+			'gd_get_my_quotes'       => array( 'Go_Deliver_Quotes', 'ajax_get_my_quotes' ),
 		);
 
 		if ( isset( $handler_map[ $action ] ) ) {
