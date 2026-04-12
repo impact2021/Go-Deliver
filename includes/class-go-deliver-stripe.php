@@ -123,8 +123,7 @@ return $session;
  * Register the webhook listener on the init hook.
  */
 public function register_hooks() {
-add_action( 'init',              array( $this, 'handle_webhook' ) );
-add_action( 'wp_ajax_gd_stripe_topup', array( $this, 'ajax_create_topup_session' ) );
+add_action( 'init', array( $this, 'handle_webhook' ) );
 }
 
 /**
