@@ -2,7 +2,7 @@
 /**
  * Admin Docs Page partial.
  *
- * Tabs: Google Maps API | (more tabs can be added here)
+ * Tabs: Google Maps API | Stripe
  *
  * @package Go_Deliver
  */
@@ -19,6 +19,9 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'google-map
 	<nav class="gd-tabs" aria-label="<?php esc_attr_e( 'Docs tabs', 'go-deliver' ); ?>">
 		<a href="#google-maps" class="gd-tab-link<?php echo 'google-maps' === $active_tab ? ' is-active' : ''; ?>" data-tab="google-maps">
 			<?php esc_html_e( 'Google Maps API Setup', 'go-deliver' ); ?>
+		</a>
+		<a href="#stripe" class="gd-tab-link<?php echo 'stripe' === $active_tab ? ' is-active' : ''; ?>" data-tab="stripe">
+			<?php esc_html_e( 'Stripe Setup', 'go-deliver' ); ?>
 		</a>
 	</nav>
 
@@ -132,5 +135,128 @@ $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'google-map
 		</div><!-- /.gd-section -->
 
 	</div><!-- /#gd-tab-google-maps -->
+
+	<!-- ======================================================
+	     Stripe Setup Tab
+	     ====================================================== -->
+	<div id="gd-tab-stripe" class="gd-tab-panel<?php echo 'stripe' === $active_tab ? ' is-active' : ''; ?>">
+
+		<div class="gd-section">
+			<h2><?php esc_html_e( 'How to Set Up Stripe', 'go-deliver' ); ?></h2>
+
+			<p><?php esc_html_e( 'Go Deliver uses Stripe to process wallet top-up payments. Follow the steps below to obtain your API keys and configure the webhook so that payments are credited to customer wallets automatically.', 'go-deliver' ); ?></p>
+
+			<ol class="gd-docs-steps">
+
+				<li>
+					<h3><?php esc_html_e( 'Create or Sign In to Your Stripe Account', 'go-deliver' ); ?></h3>
+					<p>
+						<?php
+						printf(
+							/* translators: %s: hyperlink to Stripe dashboard */
+							esc_html__( 'Go to %s and sign in, or create a free account if you do not have one yet.', 'go-deliver' ),
+							'<a href="https://dashboard.stripe.com/" target="_blank" rel="noopener noreferrer">dashboard.stripe.com</a>'
+						);
+						?>
+					</p>
+				</li>
+
+				<li>
+					<h3><?php esc_html_e( 'Get Your API Keys', 'go-deliver' ); ?></h3>
+					<p><?php esc_html_e( 'In the Stripe Dashboard, navigate to "Developers" → "API keys". You will see two keys:', 'go-deliver' ); ?></p>
+					<ul class="gd-docs-list">
+						<li>
+							<strong><?php esc_html_e( 'Publishable key', 'go-deliver' ); ?></strong> –
+							<?php esc_html_e( 'Starts with pk_live_ (or pk_test_ in test mode). This key is safe to expose in browser-side code.', 'go-deliver' ); ?>
+						</li>
+						<li>
+							<strong><?php esc_html_e( 'Secret key', 'go-deliver' ); ?></strong> –
+							<?php esc_html_e( 'Starts with sk_live_ (or sk_test_ in test mode). Keep this key private — it is stored securely on the server and never exposed to browsers.', 'go-deliver' ); ?>
+						</li>
+					</ul>
+					<p class="gd-docs-note">
+						<span class="dashicons dashicons-info" aria-hidden="true"></span>
+						<?php esc_html_e( 'Use test-mode keys (pk_test_ / sk_test_) while developing and switch to live keys only when you are ready to accept real payments.', 'go-deliver' ); ?>
+					</p>
+				</li>
+
+				<li>
+					<h3><?php esc_html_e( 'Add the Webhook Endpoint in Stripe', 'go-deliver' ); ?></h3>
+					<p><?php esc_html_e( "Go Deliver listens for the checkout.session.completed event to credit a customer's wallet after a successful payment. You must register the webhook URL with Stripe:", 'go-deliver' ); ?></p>
+					<ol class="gd-docs-list">
+						<li><?php esc_html_e( 'In the Stripe Dashboard, go to "Developers" → "Webhooks" and click "Add endpoint".', 'go-deliver' ); ?></li>
+						<li>
+							<?php esc_html_e( 'Set the Endpoint URL to:', 'go-deliver' ); ?>
+							<br>
+							<code><?php echo esc_html( home_url( '/?gd_stripe_webhook=1' ) ); ?></code>
+						</li>
+						<li>
+							<?php esc_html_e( 'Under "Select events to listen to", add:', 'go-deliver' ); ?>
+							<code>checkout.session.completed</code>
+						</li>
+						<li><?php esc_html_e( 'Click "Add endpoint" to save.', 'go-deliver' ); ?></li>
+					</ol>
+				</li>
+
+				<li>
+					<h3><?php esc_html_e( 'Copy the Webhook Signing Secret', 'go-deliver' ); ?></h3>
+					<p><?php esc_html_e( 'After creating the endpoint, Stripe will display a "Signing secret" (starts with whsec_). Click "Reveal" and copy this value — you will need it in the next step.', 'go-deliver' ); ?></p>
+					<p class="gd-docs-note">
+						<span class="dashicons dashicons-warning" aria-hidden="true"></span>
+						<?php esc_html_e( 'The signing secret is shown only once. If you lose it, you can roll a new one from the webhook details page in your Stripe Dashboard.', 'go-deliver' ); ?>
+					</p>
+				</li>
+
+				<li>
+					<h3><?php esc_html_e( 'Add the Keys to Go Deliver Settings', 'go-deliver' ); ?></h3>
+					<p>
+						<?php
+						printf(
+							/* translators: %s: hyperlink to Settings → Stripe tab */
+							esc_html__( 'Open the %s page and fill in the three fields under the "Stripe" tab:', 'go-deliver' ),
+							'<a href="' . esc_url( admin_url( 'admin.php?page=go-deliver-settings&tab=stripe' ) ) . '">' . esc_html__( 'Settings', 'go-deliver' ) . '</a>'
+						);
+						?>
+					</p>
+					<ul class="gd-docs-list">
+						<li><strong><?php esc_html_e( 'Publishable Key', 'go-deliver' ); ?></strong> – <?php esc_html_e( 'Paste your pk_live_ (or pk_test_) key.', 'go-deliver' ); ?></li>
+						<li><strong><?php esc_html_e( 'Secret Key', 'go-deliver' ); ?></strong> – <?php esc_html_e( 'Paste your sk_live_ (or sk_test_) key.', 'go-deliver' ); ?></li>
+						<li><strong><?php esc_html_e( 'Webhook Secret', 'go-deliver' ); ?></strong> – <?php esc_html_e( 'Paste the whsec_ signing secret you copied in step 4.', 'go-deliver' ); ?></li>
+					</ul>
+					<p><?php esc_html_e( 'Click "Save Stripe Settings" when done.', 'go-deliver' ); ?></p>
+				</li>
+
+				<li>
+					<h3><?php esc_html_e( 'Verify It Is Working', 'go-deliver' ); ?></h3>
+					<p><?php esc_html_e( "Use Stripe's test-mode cards to place a test top-up from the customer wallet page. Confirm that the wallet balance increases and that the event appears in the Stripe Dashboard under \"Developers\" → \"Webhooks\" → your endpoint → \"Recent deliveries\".", 'go-deliver' ); ?></p>
+					<?php
+					$has_pub = (bool) get_option( 'gd_stripe_publishable_key', '' );
+					$has_sec = (bool) get_option( 'gd_stripe_secret_key', '' );
+					$has_wh  = (bool) get_option( 'gd_stripe_webhook_secret', '' );
+					if ( $has_pub && $has_sec && $has_wh ) :
+						?>
+						<div class="notice notice-success inline" style="margin-top:10px;">
+							<p><?php esc_html_e( 'All three Stripe keys are saved. Stripe payments should be active.', 'go-deliver' ); ?></p>
+						</div>
+					<?php else : ?>
+						<div class="notice notice-warning inline" style="margin-top:10px;">
+							<p>
+								<strong><?php esc_html_e( 'One or more Stripe keys are missing.', 'go-deliver' ); ?></strong>
+								<?php
+								printf(
+									/* translators: %s: hyperlink to Settings → Stripe tab */
+									esc_html__( 'Go to %s to add the missing keys.', 'go-deliver' ),
+									'<a href="' . esc_url( admin_url( 'admin.php?page=go-deliver-settings&tab=stripe' ) ) . '">' . esc_html__( 'Settings', 'go-deliver' ) . '</a>'
+								);
+								?>
+							</p>
+						</div>
+					<?php endif; ?>
+				</li>
+
+			</ol>
+		</div><!-- /.gd-section -->
+
+	</div><!-- /#gd-tab-stripe -->
 
 </div><!-- /.gd-admin-wrap -->
