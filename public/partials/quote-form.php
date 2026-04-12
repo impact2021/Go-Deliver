@@ -113,7 +113,6 @@ $balance        = $wallet->get_balance( $current_user_id );
 	</p>
 
 	<form id="gd-quote-form" method="post" novalidate>
-		<?php wp_nonce_field( 'gd_submit_quote', 'gd_submit_quote_nonce' ); ?>
 		<input type="hidden" name="action" value="gd_submit_quote">
 		<input type="hidden" name="job_id" value="<?php echo esc_attr( $job_id ); ?>">
 
