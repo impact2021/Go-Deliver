@@ -463,6 +463,7 @@
 					$lng.val( '' );
 					$address.val( '' );
 					$suburbHidden.val( '' );
+					gdClearFieldError( $suburb );
 				} );
 
 				autocomplete.addListener( 'place_changed', function () {
@@ -511,6 +512,7 @@
 				$lng.val( '' );
 				$address.val( '' );
 				$suburbHidden.val( '' );
+				gdClearFieldError( $suburb );
 			} );
 
 			$suburb.on( 'blur', function () {
