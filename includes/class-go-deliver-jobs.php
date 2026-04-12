@@ -795,6 +795,36 @@ $photos[] = absint( $photo_id );
 }
 }
 
+// Also handle directly-uploaded files from the job_photos[] file input.
+if ( ! empty( $_FILES['job_photos']['name'] ) ) {
+if ( ! function_exists( 'media_handle_upload' ) ) {
+require_once ABSPATH . 'wp-admin/includes/media.php';
+require_once ABSPATH . 'wp-admin/includes/file.php';
+require_once ABSPATH . 'wp-admin/includes/image.php';
+}
+// Normalise the $_FILES array so we can iterate individual files.
+$file_count = is_array( $_FILES['job_photos']['name'] ) ? count( $_FILES['job_photos']['name'] ) : 1;
+for ( $i = 0; $i < $file_count; $i++ ) {
+$single_file = array(
+'name'     => is_array( $_FILES['job_photos']['name'] )     ? $_FILES['job_photos']['name'][ $i ]     : $_FILES['job_photos']['name'],
+'type'     => is_array( $_FILES['job_photos']['type'] )     ? $_FILES['job_photos']['type'][ $i ]     : $_FILES['job_photos']['type'],
+'tmp_name' => is_array( $_FILES['job_photos']['tmp_name'] ) ? $_FILES['job_photos']['tmp_name'][ $i ] : $_FILES['job_photos']['tmp_name'],
+'error'    => is_array( $_FILES['job_photos']['error'] )    ? $_FILES['job_photos']['error'][ $i ]    : $_FILES['job_photos']['error'],
+'size'     => is_array( $_FILES['job_photos']['size'] )     ? $_FILES['job_photos']['size'][ $i ]     : $_FILES['job_photos']['size'],
+);
+if ( UPLOAD_ERR_OK !== (int) $single_file['error'] || empty( $single_file['tmp_name'] ) ) {
+continue;
+}
+// Temporarily place the normalised file where media_handle_upload can find it.
+$_FILES['gd_job_photo_tmp'] = $single_file;
+$attachment_id = media_handle_upload( 'gd_job_photo_tmp', 0 );
+if ( ! is_wp_error( $attachment_id ) ) {
+$photos[] = $attachment_id;
+}
+}
+unset( $_FILES['gd_job_photo_tmp'] );
+}
+
 $listing_title = sanitize_text_field( wp_unslash( $_POST['listing_title'] ?? '' ) );
 if ( empty( $listing_title ) ) {
 wp_send_json_error( array( 'message' => __( 'Please give your listing a title.', 'go-deliver' ) ) );

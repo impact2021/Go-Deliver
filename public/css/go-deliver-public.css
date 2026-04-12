@@ -2118,47 +2118,38 @@
 	margin: 8px 0 0;
 }
 
-/* Responsive grid
+/* Single-column layout
    --------------------------------------------------------------------------- */
 #gd-job-list .gd-jobs-grid,
 #gd-available-jobs-list .gd-jobs-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-	gap: 24px;
+	grid-template-columns: 1fr;
+	gap: 16px;
 }
 
 /* Card base
    --------------------------------------------------------------------------- */
 #gd-job-list .gd-job-card,
 #gd-available-jobs-list .gd-job-card {
-	background: linear-gradient(145deg, var(--gd-job-card-bg) 0%, #3d2314 100%);
+	background: var(--gd-job-card-bg);
 	border: 1px solid rgba(201, 162, 39, 0.30);
 	border-radius: 14px;
-	padding: 24px;
+	padding: 20px 24px;
 	margin-bottom: 0;
 	color: #f5efe6;
-	transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+	transition: border-color 200ms ease;
 	position: relative;
 	overflow: hidden;
 }
 
-/* Subtle gold radial glow in the top-right corner */
+/* Remove radial glow decoration */
 #gd-job-list .gd-job-card::before,
 #gd-available-jobs-list .gd-job-card::before {
-	content: '';
-	position: absolute;
-	top: -40px;
-	right: -40px;
-	width: 120px;
-	height: 120px;
-	background: radial-gradient(circle, rgba(201, 162, 39, 0.18) 0%, transparent 70%);
-	pointer-events: none;
+	content: none;
 }
 
 #gd-job-list .gd-job-card:hover,
 #gd-available-jobs-list .gd-job-card:hover {
-	transform: translateY(-5px);
-	box-shadow: 0 20px 45px rgba(0, 0, 0, 0.40), 0 0 0 1px rgba(201, 162, 39, 0.55);
 	border-color: rgba(201, 162, 39, 0.55);
 }
 
@@ -2282,15 +2273,18 @@
 	border-top: 1px solid rgba(201, 162, 39, 0.20);
 	padding-top: 16px;
 	margin-top: 16px;
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	flex-wrap: wrap;
 }
 
 /* CTA button */
 #gd-job-list .gd-btn--primary.gd-quote-btn,
 #gd-available-jobs-list .gd-btn--primary.gd-quote-btn {
 	display: flex;
-	width: 100%;
 	justify-content: center;
-	background: linear-gradient(135deg, var(--gd-job-card-accent) 0%, #a8831c 100%);
+	background: var(--gd-job-card-accent);
 	color: var(--gd-job-card-bg);
 	border: none;
 	font-weight: 700;
@@ -2299,14 +2293,12 @@
 	text-transform: uppercase;
 	border-radius: 8px;
 	padding: 11px 20px;
-	box-shadow: 0 4px 14px rgba(201, 162, 39, 0.35);
-	transition: filter 180ms ease, transform 180ms ease;
+	transition: filter 180ms ease;
 }
 
 #gd-job-list .gd-btn--primary.gd-quote-btn:hover,
 #gd-available-jobs-list .gd-btn--primary.gd-quote-btn:hover {
 	filter: brightness(1.12);
-	transform: translateY(-1px);
 }
 
 /* Empty state
@@ -2315,7 +2307,7 @@
 #gd-available-jobs-list .gd-empty-state {
 	text-align: center;
 	padding: 60px 24px;
-	background: linear-gradient(145deg, var(--gd-job-card-bg) 0%, #3d2314 100%);
+	background: var(--gd-job-card-bg);
 	border-radius: 16px;
 	border: 1px solid rgba(201, 162, 39, 0.25);
 	color: #f5efe6;
@@ -2345,11 +2337,6 @@
 /* Responsive tweaks for the jobs board
    --------------------------------------------------------------------------- */
 @media (max-width: 600px) {
-	#gd-job-list .gd-jobs-grid,
-	#gd-available-jobs-list .gd-jobs-grid {
-		grid-template-columns: 1fr;
-	}
-
 	#gd-job-list .gd-dashboard-header__title,
 	#gd-available-jobs-list .gd-dashboard-header__title {
 		font-size: 26px;
@@ -2374,75 +2361,16 @@
 	display: inline;
 }
 
-/* Logged-out state: style the WP-generated login form */
-.gd-login-logout--logged-out #loginform {
-	margin: 0;
-	padding: 0;
-	background: transparent;
-	border: none;
-	box-shadow: none;
-}
-
-.gd-login-logout--logged-out #loginform .input {
-	display: block;
-	width: 100%;
-	padding: 10px 12px;
-	font-size: 14px;
-	border: 1px solid var(--gd-border);
-	border-radius: var(--gd-radius);
-	margin-bottom: 16px;
-	box-sizing: border-box;
-}
-
-.gd-login-logout--logged-out #loginform label {
-	display: block;
-	font-weight: 600;
-	font-size: 13px;
-	margin-bottom: 4px;
-	color: var(--gd-text);
-}
-
-.gd-login-logout--logged-out #loginform .forgetmenot {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	font-size: 13px;
-	margin-bottom: 16px;
-}
-
-.gd-login-logout--logged-out #loginform .button-primary {
-	display: block;
-	width: 100%;
-	padding: 11px;
-	font-size: 15px;
-	font-weight: 600;
-	background: var(--gd-primary);
-	color: var(--gd-white);
-	border: none;
-	border-radius: var(--gd-radius);
-	cursor: pointer;
-	transition: background 0.2s;
-}
-
-.gd-login-logout--logged-out #loginform .button-primary:hover {
-	background: var(--gd-primary-dark, var(--gd-primary));
-	opacity: 0.9;
-}
-
+/* Logged-out state */
+.gd-login-logout--logged-out .gd-login-logout__link,
 /* Logged-in state */
-.gd-login-logout--logged-in {
-	display: inline;
-	font-size: 13px;
-	color: var(--gd-text);
-}
-
-.gd-login-logout__link {
-	margin-left: 8px;
+.gd-login-logout--logged-in .gd-login-logout__link {
 	font-size: 13px;
 	color: var(--gd-primary);
 	text-decoration: none;
 }
 
-.gd-login-logout__link:hover {
+.gd-login-logout--logged-out .gd-login-logout__link:hover,
+.gd-login-logout--logged-in .gd-login-logout__link:hover {
 	text-decoration: underline;
 }
