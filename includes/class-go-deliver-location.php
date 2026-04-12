@@ -20,6 +20,9 @@ const EARTH_RADIUS_KM = 6371.0;
 /** Nominatim User-Agent — required by Nominatim usage policy. */
 const NOMINATIM_USER_AGENT = 'GoDeliver/1.0 (contact@go-deliver.co.nz)';
 
+/** Sentinel value stored when a mover covers all of New Zealand. */
+const ALL_NZ_RADIUS = 9999;
+
 // =========================================================================
 // Distance calculation.
 // =========================================================================
@@ -73,7 +76,13 @@ if ( ! is_array( $job_types ) ) {
 $job_types = array();
 }
 
-if ( ! $radius_km || ! $base_lat || ! $base_lng ) {
+if ( ! $radius_km ) {
+return array();
+}
+
+$all_nz = ( self::ALL_NZ_RADIUS === (int) $radius_km );
+
+if ( ! $all_nz && ( ! $base_lat || ! $base_lng ) ) {
 return array();
 }
 
@@ -82,6 +91,11 @@ $filtered = array();
 foreach ( $jobs as $job ) {
 // Filter by job type.
 if ( ! empty( $job_types ) && ! in_array( $job['job_type'], $job_types, true ) ) {
+continue;
+}
+
+if ( $all_nz ) {
+$filtered[] = $job;
 continue;
 }
 
@@ -100,11 +114,13 @@ $filtered[] = $job;
 }
 }
 
-// Sort by proximity.
+// Sort by proximity (All of NZ jobs won't have distance_km set).
 usort(
 $filtered,
 function ( $a, $b ) {
-return $a['distance_km'] <=> $b['distance_km'];
+$da = isset( $a['distance_km'] ) ? $a['distance_km'] : PHP_INT_MAX;
+$db = isset( $b['distance_km'] ) ? $b['distance_km'] : PHP_INT_MAX;
+return $da <=> $db;
 }
 );
 
