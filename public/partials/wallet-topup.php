@@ -191,11 +191,3 @@ $transactions = $wallet->get_transactions( $user_id, 10 );
 
 	</div><!-- /.gd-topup-page -->
 </div><!-- /.gd-wrap -->
-
-<script>
-( function ( $ ) {
-	$( '.gd-amount-preset' ).on( 'click', function () {
-		$( '#gd-topup-amount' ).val( $( this ).data( 'amount' ) ).trigger( 'focus' );
-	} );
-} )( jQuery );
-</script>

@@ -1130,6 +1130,10 @@
 		var $form = $( '#gd-topup-form' );
 		if ( ! $form.length ) { return; }
 
+		$( '.gd-amount-preset' ).on( 'click', function () {
+			$( '#gd-topup-amount' ).val( $( this ).data( 'amount' ) ).trigger( 'focus' );
+		} );
+
 		$form.on( 'submit', function ( e ) {
 			e.preventDefault();
 
