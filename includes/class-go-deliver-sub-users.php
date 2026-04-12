@@ -113,6 +113,9 @@ update_user_meta( $user_id, 'gd_can_view_financials', ! empty( $data['can_view_f
 
 Go_Deliver_DB::add_sub_user( $parent_mover_id, $user_id );
 
+// Send welcome email with a secure password-reset link to the new team member.
+Go_Deliver_Notifications::notify_team_member_added( $user_id, $parent_mover_id );
+
 return $user_id;
 }
 

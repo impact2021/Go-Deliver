@@ -156,6 +156,11 @@ class Go_Deliver_Admin {
 			: '';
 		update_post_meta( $post_id, 'gd_job_type', $job_type );
 
+		$listing_title = isset( $_POST['gd_listing_title'] )
+			? sanitize_text_field( wp_unslash( $_POST['gd_listing_title'] ) )
+			: '';
+		update_post_meta( $post_id, 'gd_listing_title', $listing_title );
+
 		$customer_id = isset( $_POST['gd_customer_id'] ) ? absint( $_POST['gd_customer_id'] ) : 0;
 		update_post_meta( $post_id, 'gd_customer_id', $customer_id );
 

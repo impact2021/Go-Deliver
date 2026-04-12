@@ -86,7 +86,7 @@ $status_labels = array(
 				}
 				$customer      = get_userdata( $customer_id );
 				$customer_name = $customer ? $customer->display_name : __( '(deleted)', 'go-deliver' );
-				$job_type      = get_post_meta( $job_id, 'gd_job_type', true );
+				$job_type      = Go_Deliver_Jobs::get_display_title( $job_id );
 				$status        = get_post_meta( $job_id, 'gd_job_status', true );
 				if ( ! in_array( $status, $valid_statuses, true ) ) {
 					$status = 'open';
@@ -120,7 +120,7 @@ $status_labels = array(
 				<header class="gd-job-card__header">
 					<div class="gd-job-card__meta">
 						<span class="gd-job-card__id">#<?php echo esc_html( $job_id ); ?></span>
-						<span class="gd-job-card__type"><?php echo $job_type ? esc_html( $job_type ) : esc_html__( 'General', 'go-deliver' ); ?></span>
+						<span class="gd-job-card__type"><?php echo esc_html( $job_type ?: __( 'General', 'go-deliver' ) ); ?></span>
 					</div>
 					<span class="gd-badge gd-badge-<?php echo esc_attr( $status ); ?>">
 						<?php echo esc_html( $status_labels[ $status ] ?? ucfirst( $status ) ); ?>

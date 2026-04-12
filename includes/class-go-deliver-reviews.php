@@ -200,6 +200,7 @@ wp_reset_postdata();
 
 $average = $count > 0 ? round( $total / $count, 2 ) : 0.0;
 update_user_meta( $mover_id, 'gd_average_rating', $average );
+update_user_meta( $mover_id, 'gd_review_count', $count );
 
 return (float) $average;
 }

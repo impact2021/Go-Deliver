@@ -2,7 +2,7 @@
 /**
  * Email: Quote submitted – sent to customer.
  *
- * Variables: $customer_first_name, $mover_first_name, $mover_rating,
+ * Variables: $customer_first_name, $mover_first_name, $mover_rating, $mover_review_count,
  *            $quote_amount, $job_type, $quotes_url, $site_name, $site_url
  *
  * @package Go_Deliver
@@ -12,7 +12,8 @@ $site_name          = isset( $site_name )          ? $site_name          : get_b
 $site_url           = isset( $site_url )           ? $site_url           : home_url();
 $customer_first_name = isset( $customer_first_name ) ? $customer_first_name : '';
 $mover_first_name   = isset( $mover_first_name )   ? $mover_first_name   : __( 'A mover', 'go-deliver' );
-$mover_rating       = isset( $mover_rating )       ? (float) $mover_rating : 0.0;
+$mover_rating        = isset( $mover_rating )        ? (float) $mover_rating : 0.0;
+$mover_review_count  = isset( $mover_review_count )  ? (int) $mover_review_count : 0;
 $quote_amount       = isset( $quote_amount )       ? (float) $quote_amount : 0;
 $job_type           = isset( $job_type )           ? $job_type           : __( 'Moving Job', 'go-deliver' );
 $quotes_url         = isset( $quotes_url )         ? $quotes_url         : home_url();
@@ -46,7 +47,7 @@ body{margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSys
 	<?php endif; ?>
 	<div class="card__mover"><?php echo esc_html( $mover_first_name ); ?></div>
 	<?php if ( $mover_rating > 0 ) : ?>
-	<div style="color:#64748b;font-size:13px;margin-bottom:12px;"><?php printf( esc_html__( 'Rating: %s / 5', 'go-deliver' ), esc_html( number_format( $mover_rating, 1 ) ) ); ?></div>
+	<div style="color:#64748b;font-size:13px;margin-bottom:12px;"><?php printf( esc_html( _n( 'Rating: %1$s/5.0 from %2$d authenticated review', 'Rating: %1$s/5.0 from %2$d authenticated reviews', $mover_review_count, 'go-deliver' ) ), esc_html( number_format( $mover_rating, 1 ) ), $mover_review_count ); ?></div>
 	<?php endif; ?>
 	<div class="card__amount">$<?php echo esc_html( number_format( $quote_amount, 0 ) ); ?></div>
 	<div style="color:#64748b;font-size:13px;margin-top:4px;"><?php esc_html_e( 'Quoted amount', 'go-deliver' ); ?></div>

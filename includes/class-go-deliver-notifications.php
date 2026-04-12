@@ -163,7 +163,7 @@ class Go_Deliver_Notifications {
 		}
 
 		$sender   = get_userdata( (int) $sender_id );
-		$job_type = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 
 		$messaging_page_id = (int) get_option( 'gd_messaging_page_id', 0 );
 		$conversation_url  = $messaging_page_id
@@ -292,7 +292,7 @@ class Go_Deliver_Notifications {
 		$accepted_quote_id = (int) get_post_meta( (int) $job_id, 'gd_accepted_quote_id', true );
 		$mover_id          = $accepted_quote_id ? (int) get_post_meta( $accepted_quote_id, 'gd_mover_id', true ) : 0;
 		$mover             = $mover_id ? get_userdata( $mover_id ) : null;
-		$job_type          = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type          = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 		$site_name         = get_bloginfo( 'name' );
 
 		$dashboard_page_id = (int) get_option( 'gd_customer_dashboard_page_id', 0 );
@@ -335,7 +335,7 @@ class Go_Deliver_Notifications {
 		$mover_id  = (int) get_post_meta( (int) $quote_id, 'gd_mover_id', true );
 		$mover     = get_userdata( $mover_id );
 		$amount    = (float) get_post_meta( (int) $quote_id, 'gd_amount', true );
-		$job_type  = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type  = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 		$site_name = get_bloginfo( 'name' );
 
 		// Link to the customer's own dashboard where they can view quotes.
@@ -356,6 +356,7 @@ class Go_Deliver_Notifications {
 				'customer_first_name' => $customer->first_name,
 				'mover_first_name'    => $mover ? $mover->first_name : __( 'A mover', 'go-deliver' ),
 				'mover_rating'        => $mover ? (float) get_user_meta( $mover_id, 'gd_average_rating', true ) : 0.0,
+				'mover_review_count'  => $mover ? (int) get_user_meta( $mover_id, 'gd_review_count', true ) : 0,
 				'quote_amount'        => $amount,
 				'job_type'            => $job_type,
 				'quotes_url'          => $quotes_url,
@@ -380,7 +381,7 @@ class Go_Deliver_Notifications {
 		$job_id       = (int) get_post_meta( (int) $quote_id, 'gd_job_id', true );
 		$quote_amount = (float) get_post_meta( (int) $quote_id, 'gd_amount', true );
 		$fee_amount   = (float) get_post_meta( (int) $quote_id, 'gd_fee_amount', true );
-		$job_type     = get_post_meta( $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type     = Go_Deliver_Jobs::get_display_title( $job_id );
 		$site_name    = get_bloginfo( 'name' );
 
 		$pickup_location  = json_decode( get_post_meta( $job_id, 'gd_pickup_location', true ), true ) ?: array();
@@ -443,7 +444,7 @@ class Go_Deliver_Notifications {
 		}
 
 		$site_name     = get_bloginfo( 'name' );
-		$job_type      = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type      = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 		$pickup_suburb = get_post_meta( (int) $job_id, 'gd_pickup_suburb', true );
 		$date_requested = get_post_meta( (int) $job_id, 'gd_date_requested', true );
 
@@ -548,6 +549,84 @@ class Go_Deliver_Notifications {
 		$html = ob_get_clean();
 
 		wp_mail( $to, wp_strip_all_tags( $subject ), $html, $headers );
+	}
+
+	/**
+	 * Send a welcome email to a newly added team member (sub-user).
+	 *
+	 * Called by Go_Deliver_Sub_Users::add_sub_user() after the WP user
+	 * account has been created so the new member receives their credentials
+	 * and a link to the mover dashboard.
+	 *
+	 * A password-reset link is generated so the member can set their own
+	 * password securely — the plaintext password is never sent in the email.
+	 *
+	 * @param int $sub_user_id      WordPress user ID of the new team member.
+	 * @param int $parent_mover_id  WordPress user ID of the mover who added them.
+	 */
+	public static function notify_team_member_added( $sub_user_id, $parent_mover_id ) {
+		$member = get_userdata( (int) $sub_user_id );
+		$mover  = get_userdata( (int) $parent_mover_id );
+
+		if ( ! $member || ! $member->user_email ) {
+			return;
+		}
+
+		$site_name     = get_bloginfo( 'name' );
+		$site_url      = home_url();
+		$team_name     = $mover ? trim( $mover->first_name . ' ' . $mover->last_name ) : '';
+		if ( ! $team_name && $mover ) {
+			$team_name = $mover->display_name;
+		}
+
+		$first_name    = trim( $member->first_name );
+		$dashboard_url = get_option( 'gd_mover_dashboard_url', home_url() );
+
+		// Generate a secure one-time password-reset link.
+		$reset_key  = get_password_reset_key( $member );
+		$reset_url  = $reset_key instanceof WP_Error ? wp_login_url() : add_query_arg(
+			array(
+				'action' => 'rp',
+				'key'    => rawurlencode( $reset_key ),
+				'login'  => rawurlencode( $member->user_login ),
+			),
+			wp_login_url()
+		);
+
+		$from_name    = get_option( 'gd_email_from_name', $site_name );
+		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			sprintf( 'From: %s <%s>', $from_name, $from_address ),
+		);
+
+		/* translators: %s: site name */
+		$subject       = sprintf( __( "You've been added to a team on %s", 'go-deliver' ), $site_name );
+		$template_path = GD_PLUGIN_DIR . 'templates/emails/team-member-added.php';
+
+		if ( ! file_exists( $template_path ) ) {
+			return;
+		}
+
+		$vars = array(
+			'member_first_name' => $first_name ?: $member->user_login,
+			'member_username'   => $member->user_login,
+			'reset_url'         => $reset_url,
+			'team_name'         => $team_name,
+			'login_url'         => wp_login_url( $dashboard_url ),
+			'dashboard_url'     => $dashboard_url,
+			'site_name'         => $site_name,
+			'site_url'          => $site_url,
+		);
+
+		ob_start();
+		// phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- intentional for template rendering, keys are caller-controlled.
+		extract( $vars, EXTR_SKIP );
+		include $template_path;
+		$html = ob_get_clean();
+
+		wp_mail( $member->user_email, wp_strip_all_tags( $subject ), $html, $headers );
 	}
 
 	/**

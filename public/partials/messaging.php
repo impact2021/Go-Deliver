@@ -54,7 +54,7 @@ if ( ! $job ) {
 	return;
 }
 
-$job_type   = esc_html( get_post_meta( $job_id, 'gd_job_type', true ) ?: get_post_meta( $job_id, 'gd_form_data_item_type', true ) ?: __( 'Moving Job', 'go-deliver' ) );
+$job_type   = esc_html( Go_Deliver_Jobs::get_display_title( $job_id ) );
 $job_suburb = esc_html( get_post_meta( $job_id, 'gd_pickup_suburb', true ) );
 
 // Determine the other party's name for the header.
