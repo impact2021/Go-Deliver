@@ -1202,6 +1202,9 @@
 			if ( ! $hidden.length ) {
 				$hidden = $widget.siblings( 'input[type="hidden"][name="rating"]' );
 			}
+			if ( ! $hidden.length ) {
+				$hidden = $widget.closest( 'form' ).find( 'input[type="hidden"][name="rating"]' );
+			}
 
 			$widget.find( 'label' ).on( 'click', function () {
 				var val = $( this ).prev( 'input[type="radio"]' ).val();
