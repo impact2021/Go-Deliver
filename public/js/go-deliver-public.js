@@ -1464,6 +1464,25 @@
 	}
 
 	// =========================================================================
+	// Read-more toggle for job card additional information
+	// =========================================================================
+
+	$( document ).on( 'click', '.gd-read-more-btn', function () {
+		var $btn   = $( this );
+		var $short = $btn.prevAll( '.gd-read-more-short' ).first();
+		var $full  = $btn.prevAll( '.gd-read-more-full' ).first();
+		if ( $btn.hasClass( 'gd-read-more-btn--expanded' ) ) {
+			$full.addClass( 'gd-hidden' );
+			$short.removeClass( 'gd-hidden' );
+			$btn.text( gdPublic.readMore || 'Read more' ).removeClass( 'gd-read-more-btn--expanded' );
+		} else {
+			$short.addClass( 'gd-hidden' );
+			$full.removeClass( 'gd-hidden' );
+			$btn.text( gdPublic.readLess || 'Read less' ).addClass( 'gd-read-more-btn--expanded' );
+		}
+	} );
+
+	// =========================================================================
 	// Document ready
 	// =========================================================================
 
