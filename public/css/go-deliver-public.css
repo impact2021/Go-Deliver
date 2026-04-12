@@ -2422,12 +2422,7 @@
    Login / Logout shortcode  [gd_login_logout]
    ============================================================ */
 .gd-login-logout {
-	max-width: 420px;
-	margin: 0 auto;
-	padding: 32px 24px;
-	background: var(--gd-white);
-	border: 1px solid var(--gd-border);
-	border-radius: var(--gd-radius-lg);
+	display: inline;
 }
 
 /* Logged-out state: style the WP-generated login form */
@@ -2487,15 +2482,18 @@
 
 /* Logged-in state */
 .gd-login-logout--logged-in {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	flex-wrap: wrap;
+	display: inline;
+	font-size: 13px;
+	color: var(--gd-text);
 }
 
-.gd-login-logout__greeting {
-	margin: 0;
-	font-size: 15px;
-	color: var(--gd-text);
+.gd-login-logout__link {
+	margin-left: 8px;
+	font-size: 13px;
+	color: var(--gd-primary);
+	text-decoration: none;
+}
+
+.gd-login-logout__link:hover {
+	text-decoration: underline;
 }
