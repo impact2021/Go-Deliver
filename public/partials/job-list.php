@@ -64,6 +64,7 @@ $job_type_labels = array(
 	'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
 	'item'           => __( 'Item', 'go-deliver' ),
 	'furniture'      => __( 'Furniture', 'go-deliver' ),
+	'item_packed'    => __( 'Packed Item', 'go-deliver' ),
 	'move'           => __( 'House / Office Move', 'go-deliver' ),
 	'car'            => __( 'Car', 'go-deliver' ),
 	'motorcycle'     => __( 'Motorcycle', 'go-deliver' ),
@@ -72,6 +73,7 @@ $job_type_labels = array(
 	'boat'           => __( 'Boat', 'go-deliver' ),
 	'piano'          => __( 'Piano', 'go-deliver' ),
 	'pet'            => __( 'Pet Transport', 'go-deliver' ),
+	'junk'           => __( 'Junk Removal', 'go-deliver' ),
 	'other'          => __( 'Other', 'go-deliver' ),
 );
 

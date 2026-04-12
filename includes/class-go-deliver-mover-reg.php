@@ -421,7 +421,7 @@ $base_lat = isset( $_POST['base_lat'] ) && '' !== $_POST['base_lat'] ? (float) $
 $base_lng = isset( $_POST['base_lng'] ) && '' !== $_POST['base_lng'] ? (float) $_POST['base_lng'] : null;
 $radius   = isset( $_POST['radius'] ) && '' !== $_POST['radius'] ? absint( $_POST['radius'] ) : null;
 
-$valid_types = array( 'trademe_pickup', 'item', 'move', 'vehicle', 'boat', 'piano', 'pet', 'junk', 'other' );
+$valid_types = array( 'trademe_pickup', 'item', 'furniture', 'item_packed', 'move', 'vehicle', 'car', 'motorcycle', 'other_vehicle', 'boat', 'piano', 'pet', 'junk', 'other' );
 $raw_types   = isset( $_POST['job_types'] ) && is_array( $_POST['job_types'] )
 ? array_map( 'sanitize_key', wp_unslash( $_POST['job_types'] ) )
 : array();
