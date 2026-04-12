@@ -217,6 +217,50 @@ class Go_Deliver_Notifications {
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Email the customer when a mover marks a job as completed.
+	 *
+	 * Prompts the customer to leave a review for the mover.
+	 *
+	 * @param int $job_id gd_job post ID.
+	 */
+	public function notify_customer_job_completed( $job_id ) {
+		$customer_id = (int) get_post_meta( (int) $job_id, 'gd_customer_id', true );
+		$customer    = get_userdata( $customer_id );
+		if ( ! $customer || ! $customer->user_email ) {
+			return;
+		}
+
+		$accepted_quote_id = (int) get_post_meta( (int) $job_id, 'gd_accepted_quote_id', true );
+		$mover_id          = $accepted_quote_id ? (int) get_post_meta( $accepted_quote_id, 'gd_mover_id', true ) : 0;
+		$mover             = $mover_id ? get_userdata( $mover_id ) : null;
+		$job_type          = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$site_name         = get_bloginfo( 'name' );
+
+		$dashboard_page_id = (int) get_option( 'gd_customer_dashboard_page_id', 0 );
+		$review_url        = $dashboard_page_id ? get_permalink( $dashboard_page_id ) : home_url();
+
+		$subject = sprintf(
+			/* translators: %s: site name */
+			__( 'Your Move is Complete – Please Leave a Review – %s', 'go-deliver' ),
+			$site_name
+		);
+
+		$this->send_html_email(
+			$customer->user_email,
+			$subject,
+			GD_PLUGIN_DIR . 'templates/emails/job-completed.php',
+			array(
+				'customer_first_name' => $customer->first_name,
+				'mover_first_name'    => $mover ? $mover->first_name : __( 'Your mover', 'go-deliver' ),
+				'job_type'            => $job_type,
+				'review_url'          => $review_url,
+				'site_name'           => $site_name,
+				'site_url'            => home_url(),
+			)
+		);
+	}
+
+	/**
 	 * Email the customer when a mover submits a new quote on their job.
 	 *
 	 * @param int $job_id   gd_job post ID.

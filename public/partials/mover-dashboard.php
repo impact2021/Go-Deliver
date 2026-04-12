@@ -221,6 +221,11 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 		<div class="gd-tab" data-tab="profile" role="tab" tabindex="0">
 			<?php esc_html_e( 'Profile', 'go-deliver' ); ?>
 		</div>
+		<?php if ( $is_mover ) : ?>
+		<div class="gd-tab" data-tab="team" role="tab" tabindex="0">
+			<?php esc_html_e( 'Team Members', 'go-deliver' ); ?>
+		</div>
+		<?php endif; ?>
 	</div>
 
 	<!-- Tab: Available Jobs -->
@@ -354,6 +359,7 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 				$q_fee       = (float) get_post_meta( $q_id, 'gd_fee_amount', true );
 				$q_job_id    = (int) get_post_meta( $q_id, 'gd_job_id', true );
 				$q_date      = esc_html( get_the_date( 'd M Y', $q_id ) );
+				$q_job_status = $q_job_id ? get_post_meta( $q_job_id, 'gd_job_status', true ) : '';
 
 				$raw_job_type    = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_job_type', true ) ?: get_post_meta( $q_job_id, 'gd_form_data_item_type', true ) ) : '';
 				$raw_pickup      = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_pickup_address', true ) ?: get_post_meta( $q_job_id, 'gd_pickup_suburb', true ) ) : '';
@@ -381,7 +387,11 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 							<div style="font-size:22px;font-weight:800;color:var(--gd-primary);">
 								$<?php echo esc_html( number_format( $q_amount, 0 ) ); ?>
 							</div>
-							<span class="gd-badge gd-badge--accepted"><?php esc_html_e( 'Accepted', 'go-deliver' ); ?></span>
+							<?php if ( 'completed' === $q_job_status ) : ?>
+								<span class="gd-badge gd-badge--accepted">✓ <?php esc_html_e( 'Completed', 'go-deliver' ); ?></span>
+							<?php else : ?>
+								<span class="gd-badge gd-badge--accepted"><?php esc_html_e( 'Accepted', 'go-deliver' ); ?></span>
+							<?php endif; ?>
 						</div>
 					</div>
 
@@ -442,6 +452,15 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 							<a href="<?php echo $msg_url; ?>" class="gd-btn gd-btn--primary gd-btn--sm">
 								💬 <?php esc_html_e( 'Open Messaging', 'go-deliver' ); ?>
 							</a>
+						<?php endif; ?>
+						<?php if ( $q_job_id && 'accepted' === $q_job_status ) : ?>
+							<button
+								type="button"
+								class="gd-btn gd-btn--success gd-btn--sm gd-complete-job-btn"
+								data-job-id="<?php echo esc_attr( $q_job_id ); ?>"
+							>
+								✓ <?php esc_html_e( 'Mark as Complete', 'go-deliver' ); ?>
+							</button>
 						<?php endif; ?>
 					</div>
 				</div>
@@ -626,6 +645,121 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 			</div>
 		</div>
 	</div><!-- /#gd-tab-profile -->
+
+	<?php if ( $is_mover ) :
+		$sub_users_handler = new Go_Deliver_Sub_Users();
+		$sub_user_list     = $sub_users_handler->get_sub_users( $user_id );
+		$sub_user_count    = count( $sub_user_list );
+		$can_add_more      = $sub_user_count < Go_Deliver_Sub_Users::MAX_SUB_USERS;
+	?>
+	<!-- Tab: Team Members -->
+	<div class="gd-tab-panel" id="gd-tab-team" role="tabpanel" style="display:none;">
+		<div class="gd-section-card">
+			<div class="gd-section-card__header">
+				<h2 class="gd-section-card__title"><?php esc_html_e( 'Team Members', 'go-deliver' ); ?></h2>
+			</div>
+			<div class="gd-section-card__body">
+
+				<p style="margin-bottom:16px;color:var(--gd-text-muted);font-size:14px;">
+					<?php printf(
+						/* translators: 1: current count, 2: max count */
+						esc_html__( 'You have %1$d of %2$d team member slots used. Team members share your wallet balance, job-posting ability, and messaging access.', 'go-deliver' ),
+						$sub_user_count,
+						Go_Deliver_Sub_Users::MAX_SUB_USERS
+					); ?>
+				</p>
+
+				<?php if ( ! empty( $sub_user_list ) ) : ?>
+					<div class="gd-team-list" style="margin-bottom:24px;">
+						<?php foreach ( $sub_user_list as $su_row ) :
+							$su_user   = get_userdata( (int) $su_row->user_id );
+							if ( ! $su_user ) continue;
+							$su_name   = trim( $su_user->first_name . ' ' . $su_user->last_name ) ?: $su_user->user_login;
+						?>
+							<div class="gd-mover-card" style="margin-bottom:8px;" id="gd-sub-user-<?php echo esc_attr( $su_row->user_id ); ?>">
+								<div class="gd-mover-card__header">
+									<div>
+										<div class="gd-mover-card__job-type"><?php echo esc_html( $su_name ); ?></div>
+										<div class="gd-mover-card__suburb"><?php echo esc_html( $su_user->user_email ); ?></div>
+									</div>
+									<div>
+										<button
+											type="button"
+											class="gd-btn gd-btn--danger gd-btn--sm gd-remove-sub-user-btn"
+											data-sub-user-id="<?php echo esc_attr( $su_row->user_id ); ?>"
+										>
+											<?php esc_html_e( 'Remove', 'go-deliver' ); ?>
+										</button>
+									</div>
+								</div>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php else : ?>
+					<div class="gd-empty-state" style="padding:20px 0;">
+						<div class="gd-empty-state__icon">👥</div>
+						<p class="gd-empty-state__text"><?php esc_html_e( 'No team members yet.', 'go-deliver' ); ?></p>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( $can_add_more ) : ?>
+					<h3 style="margin:8px 0 16px;font-size:16px;"><?php esc_html_e( 'Add Team Member', 'go-deliver' ); ?></h3>
+					<form id="gd-add-sub-user-form" novalidate>
+						<div id="gd-add-sub-user-msg" style="display:none;" class="gd-alert" role="alert"></div>
+
+						<div class="gd-job-detail__grid">
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-su-first-name">
+									<?php esc_html_e( 'First Name', 'go-deliver' ); ?> <span class="gd-required">*</span>
+								</label>
+								<input type="text" id="gd-su-first-name" name="first_name" class="gd-input" required>
+							</div>
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-su-last-name">
+									<?php esc_html_e( 'Last Name', 'go-deliver' ); ?>
+								</label>
+								<input type="text" id="gd-su-last-name" name="last_name" class="gd-input">
+							</div>
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-su-username">
+									<?php esc_html_e( 'Username', 'go-deliver' ); ?> <span class="gd-required">*</span>
+								</label>
+								<input type="text" id="gd-su-username" name="username" class="gd-input" required autocomplete="off">
+							</div>
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-su-email">
+									<?php esc_html_e( 'Email', 'go-deliver' ); ?> <span class="gd-required">*</span>
+								</label>
+								<input type="email" id="gd-su-email" name="email" class="gd-input" required autocomplete="off">
+							</div>
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-su-password">
+									<?php esc_html_e( 'Password', 'go-deliver' ); ?> <span class="gd-required">*</span>
+								</label>
+								<input type="password" id="gd-su-password" name="password" class="gd-input" required autocomplete="new-password">
+							</div>
+						</div>
+
+						<div style="margin-top:16px;">
+							<button type="submit" class="gd-btn gd-btn--primary" id="gd-add-sub-user-btn">
+								<?php esc_html_e( 'Add Team Member', 'go-deliver' ); ?>
+							</button>
+						</div>
+					</form>
+				<?php else : ?>
+					<p class="gd-alert gd-alert--warning" style="margin-top:16px;">
+						<?php printf(
+							/* translators: %d: max sub-users */
+							esc_html__( 'You have reached the maximum of %d team members.', 'go-deliver' ),
+							Go_Deliver_Sub_Users::MAX_SUB_USERS
+						); ?>
+					</p>
+				<?php endif; ?>
+
+			</div>
+		</div>
+	</div><!-- /#gd-tab-team -->
+	<?php endif; ?>
 
 </div><!-- /.gd-wrap -->
 
