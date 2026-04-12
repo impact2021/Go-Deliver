@@ -526,7 +526,7 @@ $q_message = esc_html( $quote['message'] );
 $q_job_id  = (int) $quote['job_id'];
 $q_date    = esc_html( get_the_date( 'd M Y', $q_id ) );
 $job_suburb = $q_job_id ? esc_html( get_post_meta( $q_job_id, 'gd_pickup_suburb', true ) ) : '';
-$job_type   = $q_job_id ? esc_html( get_post_meta( $q_job_id, 'gd_job_type', true ) ?: get_post_meta( $q_job_id, 'gd_form_data_item_type', true ) ) : '';
+$job_type   = $q_job_id ? esc_html( Go_Deliver_Jobs::get_display_title( $q_job_id ) ) : '';
 ?>
 <div class="gd-mover-card">
 <div class="gd-mover-card__header">

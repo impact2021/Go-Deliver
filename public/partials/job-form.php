@@ -76,6 +76,25 @@ $form_builder = new Go_Deliver_Form_Builder();
 					<?php $form_builder->render_flat_job_type_dropdown(); ?>
 				</div>
 
+				<div class="gd-field-group">
+					<label for="gd_listing_title">
+						<?php esc_html_e( 'Listing title', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<input
+						type="text"
+						id="gd_listing_title"
+						name="listing_title"
+						maxlength="80"
+						placeholder="<?php esc_attr_e( 'e.g. Double bed, Queen size', 'go-deliver' ); ?>"
+						autocomplete="off"
+						required
+					>
+					<span class="gd-field-hint">
+						<?php esc_html_e( 'A short description of what you need moved. Do not include phone numbers or addresses — these are shared privately once a quote is accepted.', 'go-deliver' ); ?>
+					</span>
+				</div>
+
 				<!-- Vehicle: Make & Model (shown for car / motorcycle / vehicle / other_vehicle) -->
 				<div class="gd-field-group gd-type-field" data-job-type-show="car,motorcycle,vehicle,other_vehicle" style="display:none;">
 					<label for="gd_vehicle_make">

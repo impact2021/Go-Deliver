@@ -144,8 +144,16 @@ foreach ( $jobs as $job ) {
 				$dropoff     = esc_html( get_post_meta( $job_id, 'gd_dropoff_address', true ) ) ?: esc_html( get_post_meta( $job_id, 'gd_dropoff_suburb', true ) );
 				$date_req    = esc_html( get_post_meta( $job_id, 'gd_date_requested', true ) );
 				$quote_count = (int) get_post_meta( $job_id, 'gd_quote_count', true );
-				$job_type    = esc_html( get_post_meta( $job_id, 'gd_job_type', true ) ?: get_post_meta( $job_id, 'gd_form_data_item_type', true ) );
+				$display_title = esc_html( Go_Deliver_Jobs::get_display_title( $job_id ) );
 				$created     = esc_html( get_the_date( 'd M Y', $job_id ) );
+
+				// Expiry date for open/locked jobs.
+				$expiry_label = '';
+				if ( in_array( $status, array( 'open', 'locked' ), true ) ) {
+					$expiry_days  = (int) get_option( 'gd_job_expiry_days', 14 );
+					$expiry_ts    = strtotime( get_post_field( 'post_date', $job_id ) ) + $expiry_days * DAY_IN_SECONDS;
+					$expiry_label = date_i18n( 'd M Y', $expiry_ts );
+				}
 
 				// Fetch accepted quote (if any).
 				$accepted_quote_id  = get_post_meta( $job_id, 'gd_accepted_quote_id', true );
@@ -159,8 +167,13 @@ foreach ( $jobs as $job ) {
 					<div class="gd-job-card__header">
 						<div class="gd-job-card__icon">🚚</div>
 						<div class="gd-job-card__title">
-							<h3 class="gd-job-card__type"><?php echo $job_type ?: esc_html__( 'Moving Job', 'go-deliver' ); ?></h3>
-							<p class="gd-job-card__meta"><?php esc_html_e( 'Posted', 'go-deliver' ); ?> <?php echo $created; ?></p>
+							<h3 class="gd-job-card__type"><?php echo $display_title ?: esc_html__( 'Moving Job', 'go-deliver' ); ?></h3>
+							<p class="gd-job-card__meta">
+								<?php esc_html_e( 'Posted', 'go-deliver' ); ?> <?php echo $created; ?>
+								<?php if ( $expiry_label ) : ?>
+									(<?php printf( esc_html__( 'listing expires %s', 'go-deliver' ), esc_html( $expiry_label ) ); ?>)
+								<?php endif; ?>
+							</p>
 						</div>
 						<span class="gd-badge gd-badge--<?php echo esc_attr( $status ); ?>">
 							<?php echo esc_html( $status_label ); ?>

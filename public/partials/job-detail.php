@@ -101,7 +101,7 @@ $photos = json_decode( get_post_meta( $job_id, 'gd_photos', true ), true ) ?: ar
 	<div class="gd-job-detail__header">
 		<div>
 			<h2 style="margin:0 0 6px;font-size:20px;font-weight:700;">
-				<?php echo $job_type ?: esc_html__( 'Moving Job', 'go-deliver' ); ?>
+				<?php echo esc_html( Go_Deliver_Jobs::get_display_title( $job_id ) ); ?>
 				<span style="font-size:14px;color:var(--gd-text-muted);font-weight:400;">#<?php echo esc_html( $job_id ); ?></span>
 			</h2>
 			<p style="margin:0;color:var(--gd-text-muted);font-size:14px;">
@@ -111,6 +111,17 @@ $photos = json_decode( get_post_meta( $job_id, 'gd_photos', true ), true ) ?: ar
 					esc_html__( 'Posted %s', 'go-deliver' ),
 					esc_html( get_the_date( 'd M Y', $job_id ) )
 				);
+				if ( in_array( $job_status, array( 'open', 'locked' ), true ) ) {
+					$expiry_days = (int) get_option( 'gd_job_expiry_days', 14 );
+					$expiry_ts   = strtotime( get_post_field( 'post_date', $job_id ) ) + $expiry_days * DAY_IN_SECONDS;
+					echo ' (';
+					printf(
+						/* translators: %s: expiry date */
+						esc_html__( 'listing expires %s', 'go-deliver' ),
+						esc_html( date_i18n( 'd M Y', $expiry_ts ) )
+					);
+					echo ')';
+				}
 				?>
 			</p>
 		</div>

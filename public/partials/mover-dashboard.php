@@ -286,7 +286,7 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 				$q_job_id   = (int) get_post_meta( $q_id, 'gd_job_id', true );
 				$q_date     = esc_html( get_the_date( 'd M Y', $q_id ) );
 				$job_suburb = $q_job_id ? esc_html( get_post_meta( $q_job_id, 'gd_pickup_suburb', true ) ) : '';
-				$job_type   = $q_job_id ? esc_html( get_post_meta( $q_job_id, 'gd_job_type', true ) ?: get_post_meta( $q_job_id, 'gd_form_data_item_type', true ) ) : '';
+				$job_type   = $q_job_id ? esc_html( Go_Deliver_Jobs::get_display_title( $q_job_id ) ) : '';
 				$fee        = $q_amount > 0 ? ( $q_amount * $fee_percentage / 100 ) : 0;
 			?>
 				<div class="gd-mover-card">
@@ -366,7 +366,7 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 				$q_date      = esc_html( get_the_date( 'd M Y', $q_id ) );
 				$q_job_status = $q_job_id ? get_post_meta( $q_job_id, 'gd_job_status', true ) : '';
 
-				$raw_job_type    = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_job_type', true ) ?: get_post_meta( $q_job_id, 'gd_form_data_item_type', true ) ) : '';
+				$raw_job_type    = $q_job_id ? Go_Deliver_Jobs::get_display_title( $q_job_id ) : '';
 				$raw_pickup      = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_pickup_address', true ) ?: get_post_meta( $q_job_id, 'gd_pickup_suburb', true ) ) : '';
 				$raw_dropoff     = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_dropoff_address', true ) ?: get_post_meta( $q_job_id, 'gd_dropoff_suburb', true ) ) : '';
 				$job_type        = esc_html( $raw_job_type );

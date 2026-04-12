@@ -18,6 +18,80 @@ class Go_Deliver_Jobs {
 const VALID_STATUSES = array( 'open', 'locked', 'accepted', 'completed', 'expired', 'cancelled' );
 
 // =========================================================================
+// Static helpers.
+// =========================================================================
+
+/**
+ * Human-readable labels for every job-type slug.
+ *
+ * @return array<string,string>
+ */
+public static function get_type_labels(): array {
+return array(
+'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
+'item'           => __( 'Item', 'go-deliver' ),
+'furniture'      => __( 'Furniture', 'go-deliver' ),
+'item_packed'    => __( 'Packed Item', 'go-deliver' ),
+'move'           => __( 'House / Office Move', 'go-deliver' ),
+'car'            => __( 'Car', 'go-deliver' ),
+'motorcycle'     => __( 'Motorcycle', 'go-deliver' ),
+'vehicle'        => __( 'Vehicle', 'go-deliver' ),
+'other_vehicle'  => __( 'Other Vehicle', 'go-deliver' ),
+'boat'           => __( 'Boat', 'go-deliver' ),
+'piano'          => __( 'Piano', 'go-deliver' ),
+'pet'            => __( 'Pet Transport', 'go-deliver' ),
+'junk'           => __( 'Junk Removal', 'go-deliver' ),
+'other'          => __( 'Other', 'go-deliver' ),
+);
+}
+
+/**
+ * Return the display title for a job.
+ *
+ * Uses the customer-supplied listing title when available; otherwise
+ * translates the job-type slug to a human-readable label.
+ *
+ * @param int $job_id Post ID.
+ * @return string
+ */
+public static function get_display_title( int $job_id ): string {
+$listing_title = trim( (string) get_post_meta( $job_id, 'gd_listing_title', true ) );
+if ( '' !== $listing_title ) {
+return $listing_title;
+}
+$type   = (string) get_post_meta( $job_id, 'gd_job_type', true );
+$labels = self::get_type_labels();
+return $labels[ $type ] ?? ( $type ? ucwords( str_replace( '_', ' ', $type ) ) : __( 'Moving Job', 'go-deliver' ) );
+}
+
+/**
+ * Return true if $text appears to contain a phone number or street address.
+ *
+ * Phone detection: strip common separators, then look for 7+ consecutive
+ * digits (covers NZ, AU, and most international formats).
+ *
+ * Address detection: house number + one or two words + recognised street
+ * type (Street, Road, Avenue, etc.).
+ *
+ * @param string $text Input to inspect.
+ * @return bool
+ */
+private static function contains_contact_info( string $text ): bool {
+// Phone numbers.
+if ( preg_match( '/\d{7,}/', preg_replace( '/[\s\-\.\(\)\+]/', '', $text ) ) ) {
+return true;
+}
+// Street addresses.
+if ( preg_match(
+'/\b\d+\s+\w+(?:\s+\w+)?\s+(?:Street|St|Road|Rd|Avenue|Ave|Drive|Dr|Place|Pl|Way|Lane|Ln|Crescent|Cres|Boulevard|Blvd|Court|Ct|Terrace|Tce|Close|Cl|Grove|Gr|Highway|Hwy)\b/i',
+$text
+) ) {
+return true;
+}
+return false;
+}
+
+// =========================================================================
 // Registration helpers.
 // =========================================================================
 
@@ -109,6 +183,7 @@ $photos[] = (int) $photo_id;
 }
 
 update_post_meta( $post_id, 'gd_job_type',             $job_type );
+update_post_meta( $post_id, 'gd_listing_title',        sanitize_text_field( $data['listing_title'] ?? '' ) );
 update_post_meta( $post_id, 'gd_pickup_location',      wp_json_encode( $sanitized_pickup ) );
 update_post_meta( $post_id, 'gd_dropoff_location',     wp_json_encode( $sanitized_dropoff ) );
 update_post_meta( $post_id, 'gd_pickup_suburb',        $sanitized_pickup['suburb'] );
@@ -199,6 +274,7 @@ $meta = get_post_meta( $post->ID );
 $job = array(
 'id'                   => $post->ID,
 'job_type'             => get_post_meta( $post->ID, 'gd_job_type', true ),
+'listing_title'        => get_post_meta( $post->ID, 'gd_listing_title', true ),
 'pickup_location'      => json_decode( get_post_meta( $post->ID, 'gd_pickup_location', true ), true ) ?: array(),
 'dropoff_location'     => json_decode( get_post_meta( $post->ID, 'gd_dropoff_location', true ), true ) ?: array(),
 'date_requested'       => get_post_meta( $post->ID, 'gd_date_requested', true ),
@@ -715,14 +791,31 @@ $photos[] = absint( $photo_id );
 }
 }
 
+$listing_title = sanitize_text_field( wp_unslash( $_POST['listing_title'] ?? '' ) );
+if ( empty( $listing_title ) ) {
+wp_send_json_error( array( 'message' => __( 'Please give your listing a title.', 'go-deliver' ) ) );
+}
+if ( mb_strlen( $listing_title ) > 80 ) {
+wp_send_json_error( array( 'message' => __( 'Listing title must be 80 characters or fewer.', 'go-deliver' ) ) );
+}
+if ( self::contains_contact_info( $listing_title ) ) {
+wp_send_json_error( array( 'message' => __( 'Your listing title may not include a phone number or street address. Please remove contact details — they are shared privately after a quote is accepted.', 'go-deliver' ) ) );
+}
+
+$inventory_raw = wp_kses_post( wp_unslash( $_POST['inventory'] ?? '' ) );
+if ( self::contains_contact_info( wp_strip_all_tags( $inventory_raw ) ) ) {
+wp_send_json_error( array( 'message' => __( 'The "More information" field may not include a phone number or street address. Contact details are shared privately after a quote is accepted.', 'go-deliver' ) ) );
+}
+
 $data = array(
 'job_type'             => sanitize_text_field( wp_unslash( $_POST['job_type'] ?? $form_data['item_type'] ?? '' ) ),
+'listing_title'        => $listing_title,
 'pickup_location'      => $pickup_location,
 'dropoff_location'     => $dropoff_location,
 'date_requested'       => sanitize_text_field( wp_unslash( $_POST['date_requested'] ?? '' ) ),
 'labour_pickup'        => ! empty( $_POST['labour_pickup'] ),
 'labour_dropoff'       => ! empty( $_POST['labour_dropoff'] ),
-'inventory'            => wp_kses_post( wp_unslash( $_POST['inventory'] ?? '' ) ),
+'inventory'            => $inventory_raw,
 'special_instructions' => wp_kses_post( wp_unslash( $_POST['special_instructions'] ?? '' ) ),
 'customer_id'          => $current_user_id,
 'access_notes'         => sanitize_text_field( wp_unslash( $_POST['access_notes'] ?? '' ) ),
@@ -804,26 +897,14 @@ if ( empty( $jobs ) ) {
 wp_send_json_success( array( 'html' => '' ) );
 }
 
-$job_type_labels = array(
-'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
-'item'           => __( 'Item', 'go-deliver' ),
-'furniture'      => __( 'Furniture', 'go-deliver' ),
-'move'           => __( 'House / Office Move', 'go-deliver' ),
-'car'            => __( 'Car', 'go-deliver' ),
-'motorcycle'     => __( 'Motorcycle', 'go-deliver' ),
-'vehicle'        => __( 'Vehicle', 'go-deliver' ),
-'other_vehicle'  => __( 'Other Vehicle', 'go-deliver' ),
-'boat'           => __( 'Boat', 'go-deliver' ),
-'piano'          => __( 'Piano', 'go-deliver' ),
-'pet'            => __( 'Pet Transport', 'go-deliver' ),
-'junk'           => __( 'Junk', 'go-deliver' ),
-'other'          => __( 'Other', 'go-deliver' ),
-);
+$job_type_labels = self::get_type_labels();
 
 $status_labels = array(
 'open'   => __( 'New', 'go-deliver' ),
 'locked' => __( 'Receiving Quotes', 'go-deliver' ),
 );
+
+$expiry_days = (int) get_option( 'gd_job_expiry_days', 14 );
 
 ob_start();
 ?>
@@ -833,9 +914,13 @@ $pickup       = $job['pickup_location'] ?? array();
 $dropoff      = $job['dropoff_location'] ?? array();
 $status       = $job['status'] ?? 'open';
 $type         = $job['job_type'] ?? '';
-$label        = isset( $job_type_labels[ $type ] ) ? $job_type_labels[ $type ] : ucwords( str_replace( '_', ' ', $type ) );
+$listing_title = ! empty( $job['listing_title'] ) ? $job['listing_title'] : null;
+$label        = $listing_title ?? ( isset( $job_type_labels[ $type ] ) ? $job_type_labels[ $type ] : ucwords( str_replace( '_', ' ', $type ) ) );
 $status_label = isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : ucfirst( $status );
 $date         = ! empty( $job['date_requested'] ) ? date_i18n( get_option( 'date_format' ), strtotime( $job['date_requested'] ) ) : '';
+$photos       = ! empty( $job['photos'] ) && is_array( $job['photos'] ) ? $job['photos'] : array();
+$created_at   = $job['created_at'] ?? '';
+$expiry_str   = $created_at ? date_i18n( 'd M Y', strtotime( $created_at ) + $expiry_days * DAY_IN_SECONDS ) : '';
 ?>
 <div class="gd-job-card" data-job-id="<?php echo esc_attr( $job['id'] ); ?>">
 
@@ -870,9 +955,33 @@ $date         = ! empty( $job['date_requested'] ) ? date_i18n( get_option( 'date
 </div>
 <?php endif; ?>
 
+<?php if ( $expiry_str ) : ?>
+<div class="gd-job-card__meta">
+<span class="gd-job-card__meta-icon">⏰</span>
+<?php printf( esc_html__( 'Listing expires %s', 'go-deliver' ), esc_html( $expiry_str ) ); ?>
+</div>
+<?php endif; ?>
+
 <?php if ( ! empty( $job['inventory'] ) ) : ?>
 <div class="gd-job-card__notes">
 <?php echo esc_html( wp_trim_words( $job['inventory'], 20 ) ); ?>
+</div>
+<?php endif; ?>
+
+<?php if ( ! empty( $photos ) ) : ?>
+<div class="gd-photo-gallery" style="margin-top:10px;">
+<?php foreach ( array_slice( $photos, 0, 4 ) as $photo_id ) :
+$full_url  = wp_get_attachment_url( (int) $photo_id );
+$thumb_src = wp_get_attachment_image_src( (int) $photo_id, 'thumbnail' );
+if ( $full_url ) :
+$thumb_url = $thumb_src ? $thumb_src[0] : $full_url;
+?>
+<div class="gd-photo-gallery__item">
+<a href="<?php echo esc_url( $full_url ); ?>" target="_blank" rel="noopener" class="gd-photo-gallery__link">
+<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php esc_attr_e( 'Job photo', 'go-deliver' ); ?>" loading="lazy">
+</a>
+</div>
+<?php endif; endforeach; ?>
 </div>
 <?php endif; ?>
 </div>

@@ -163,7 +163,7 @@ class Go_Deliver_Notifications {
 		}
 
 		$sender   = get_userdata( (int) $sender_id );
-		$job_type = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 
 		$messaging_page_id = (int) get_option( 'gd_messaging_page_id', 0 );
 		$conversation_url  = $messaging_page_id
@@ -292,7 +292,7 @@ class Go_Deliver_Notifications {
 		$accepted_quote_id = (int) get_post_meta( (int) $job_id, 'gd_accepted_quote_id', true );
 		$mover_id          = $accepted_quote_id ? (int) get_post_meta( $accepted_quote_id, 'gd_mover_id', true ) : 0;
 		$mover             = $mover_id ? get_userdata( $mover_id ) : null;
-		$job_type          = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type          = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 		$site_name         = get_bloginfo( 'name' );
 
 		$dashboard_page_id = (int) get_option( 'gd_customer_dashboard_page_id', 0 );
@@ -335,7 +335,7 @@ class Go_Deliver_Notifications {
 		$mover_id  = (int) get_post_meta( (int) $quote_id, 'gd_mover_id', true );
 		$mover     = get_userdata( $mover_id );
 		$amount    = (float) get_post_meta( (int) $quote_id, 'gd_amount', true );
-		$job_type  = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type  = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 		$site_name = get_bloginfo( 'name' );
 
 		// Link to the customer's own dashboard where they can view quotes.
@@ -381,7 +381,7 @@ class Go_Deliver_Notifications {
 		$job_id       = (int) get_post_meta( (int) $quote_id, 'gd_job_id', true );
 		$quote_amount = (float) get_post_meta( (int) $quote_id, 'gd_amount', true );
 		$fee_amount   = (float) get_post_meta( (int) $quote_id, 'gd_fee_amount', true );
-		$job_type     = get_post_meta( $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type     = Go_Deliver_Jobs::get_display_title( $job_id );
 		$site_name    = get_bloginfo( 'name' );
 
 		$pickup_location  = json_decode( get_post_meta( $job_id, 'gd_pickup_location', true ), true ) ?: array();
@@ -444,7 +444,7 @@ class Go_Deliver_Notifications {
 		}
 
 		$site_name     = get_bloginfo( 'name' );
-		$job_type      = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+		$job_type      = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 		$pickup_suburb = get_post_meta( (int) $job_id, 'gd_pickup_suburb', true );
 		$date_requested = get_post_meta( (int) $job_id, 'gd_date_requested', true );
 

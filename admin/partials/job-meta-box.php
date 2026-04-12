@@ -16,6 +16,7 @@ wp_nonce_field( 'gd_save_job_meta', 'gd_job_meta_nonce' );
 
 // Fetch existing meta values.
 $job_type             = get_post_meta( $post->ID, 'gd_job_type', true );
+$listing_title        = get_post_meta( $post->ID, 'gd_listing_title', true );
 $status               = get_post_meta( $post->ID, 'gd_job_status', true );
 $customer_id          = (int) get_post_meta( $post->ID, 'gd_customer_id', true );
 $date_requested       = get_post_meta( $post->ID, 'gd_date_requested', true );
@@ -89,6 +90,19 @@ $job_types    = $form_builder->get_flat_job_types();
 					</option>
 				<?php endforeach; ?>
 			</select>
+		</div>
+
+		<div class="gd-mb-field">
+			<label for="gd_admin_listing_title"><?php esc_html_e( 'Listing Title', 'go-deliver' ); ?></label>
+			<input
+				type="text"
+				id="gd_admin_listing_title"
+				name="gd_listing_title"
+				value="<?php echo esc_attr( $listing_title ); ?>"
+				maxlength="80"
+				placeholder="<?php esc_attr_e( 'e.g. Double bed, Queen size', 'go-deliver' ); ?>"
+			>
+			<span class="description"><?php esc_html_e( 'Short customer-supplied title shown on cards and listings.', 'go-deliver' ); ?></span>
 		</div>
 
 		<div class="gd-mb-field">
