@@ -23,7 +23,7 @@ $site_name         = isset( $site_name )         ? $site_name         : get_blog
 $site_url          = isset( $site_url )          ? $site_url          : home_url();
 $member_first_name = isset( $member_first_name ) ? $member_first_name : '';
 $member_username   = isset( $member_username )   ? $member_username   : '';
-$member_password   = isset( $member_password )   ? $member_password   : '';
+$reset_url         = isset( $reset_url )         ? $reset_url         : wp_login_url();
 $team_name         = isset( $team_name )         ? $team_name         : '';
 $login_url         = isset( $login_url )         ? $login_url         : wp_login_url();
 $dashboard_url     = isset( $dashboard_url )     ? $dashboard_url     : home_url();
@@ -101,27 +101,21 @@ $dashboard_url     = isset( $dashboard_url )     ? $dashboard_url     : home_url
 				<span class="email-detail-label"><?php esc_html_e( 'Username', 'go-deliver' ); ?></span>
 				<span class="email-detail-value"><?php echo esc_html( $member_username ); ?></span>
 			</div>
-			<?php if ( $member_password ) : ?>
 			<div class="email-detail-row">
-				<span class="email-detail-label"><?php esc_html_e( 'Password', 'go-deliver' ); ?></span>
-				<span class="email-detail-value"><?php echo esc_html( $member_password ); ?></span>
-			</div>
-			<?php endif; ?>
-			<div class="email-detail-row">
-				<span class="email-detail-label"><?php esc_html_e( 'Login URL', 'go-deliver' ); ?></span>
-				<span class="email-detail-value"><a href="<?php echo esc_url( $login_url ); ?>"><?php echo esc_url( $login_url ); ?></a></span>
+				<span class="email-detail-label"><?php esc_html_e( 'Set Password', 'go-deliver' ); ?></span>
+				<span class="email-detail-value">
+					<a href="<?php echo esc_url( $reset_url ); ?>"><?php esc_html_e( 'Click here to set your password', 'go-deliver' ); ?></a>
+				</span>
 			</div>
 		</div>
 
-		<?php if ( $member_password ) : ?>
 		<div class="email-notice">
-			<?php esc_html_e( 'For your security, please log in and change your password as soon as possible.', 'go-deliver' ); ?>
+			<?php esc_html_e( 'The password-setup link above expires after 24 hours. Please set your password before it expires.', 'go-deliver' ); ?>
 		</div>
-		<?php endif; ?>
 
 		<div class="email-cta">
-			<a href="<?php echo esc_url( $dashboard_url ); ?>" class="email-cta__btn">
-				<?php esc_html_e( 'Go to Dashboard', 'go-deliver' ); ?>
+			<a href="<?php echo esc_url( $reset_url ); ?>" class="email-cta__btn">
+				<?php esc_html_e( 'Set Your Password', 'go-deliver' ); ?>
 			</a>
 		</div>
 	</div>

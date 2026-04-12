@@ -558,11 +558,13 @@ class Go_Deliver_Notifications {
 	 * account has been created so the new member receives their credentials
 	 * and a link to the mover dashboard.
 	 *
-	 * @param int    $sub_user_id      WordPress user ID of the new team member.
-	 * @param int    $parent_mover_id  WordPress user ID of the mover who added them.
-	 * @param string $plaintext_password The password that was set (not yet hashed).
+	 * A password-reset link is generated so the member can set their own
+	 * password securely — the plaintext password is never sent in the email.
+	 *
+	 * @param int $sub_user_id      WordPress user ID of the new team member.
+	 * @param int $parent_mover_id  WordPress user ID of the mover who added them.
 	 */
-	public static function notify_team_member_added( $sub_user_id, $parent_mover_id, $plaintext_password = '' ) {
+	public static function notify_team_member_added( $sub_user_id, $parent_mover_id ) {
 		$member = get_userdata( (int) $sub_user_id );
 		$mover  = get_userdata( (int) $parent_mover_id );
 
@@ -579,6 +581,17 @@ class Go_Deliver_Notifications {
 
 		$first_name    = trim( $member->first_name );
 		$dashboard_url = get_option( 'gd_mover_dashboard_url', home_url() );
+
+		// Generate a secure one-time password-reset link.
+		$reset_key  = get_password_reset_key( $member );
+		$reset_url  = $reset_key instanceof WP_Error ? wp_login_url() : add_query_arg(
+			array(
+				'action' => 'rp',
+				'key'    => rawurlencode( $reset_key ),
+				'login'  => rawurlencode( $member->user_login ),
+			),
+			wp_login_url()
+		);
 
 		$from_name    = get_option( 'gd_email_from_name', $site_name );
 		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
@@ -599,7 +612,7 @@ class Go_Deliver_Notifications {
 		$vars = array(
 			'member_first_name' => $first_name ?: $member->user_login,
 			'member_username'   => $member->user_login,
-			'member_password'   => $plaintext_password,
+			'reset_url'         => $reset_url,
 			'team_name'         => $team_name,
 			'login_url'         => wp_login_url( $dashboard_url ),
 			'dashboard_url'     => $dashboard_url,
