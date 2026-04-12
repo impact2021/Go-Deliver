@@ -165,7 +165,7 @@ if ( ! empty( $location['lat'] ) && ! empty( $location['lng'] ) ) {
 return $location;
 }
 
-$address_str = ! empty( $location['address'] ) ? $location['address'] : $location['suburb'];
+$address_str = ( $location['address'] ?? '' ) ?: ( $location['suburb'] ?? '' );
 if ( empty( $address_str ) ) {
 return $location;
 }
