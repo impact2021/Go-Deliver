@@ -92,6 +92,10 @@ $base_lng      = (float) get_user_meta( $user_id, 'gd_mover_base_lng', true );
 $radius        = (int) get_user_meta( $user_id, 'gd_mover_radius', true );
 $job_types     = (array) get_user_meta( $user_id, 'gd_mover_job_types', true );
 $avg_rating    = (float) get_user_meta( $user_id, 'gd_average_rating', true );
+$notification_frequency = get_user_meta( $user_id, 'gd_notification_frequency', true );
+if ( ! in_array( $notification_frequency, Go_Deliver_Notifications::VALID_FREQUENCIES, true ) ) {
+	$notification_frequency = 'instant';
+}
 
 // Fetch mover's submitted quotes.
 $my_quotes_query = new WP_Query( array(
@@ -434,6 +438,26 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 									<?php echo esc_html( $label ); ?>
 								</label>
 							<?php endforeach; ?>
+						</div>
+					</div>
+
+					<div class="gd-profile-section">
+						<h3 class="gd-profile-section__title"><?php esc_html_e( 'Notification Preferences', 'go-deliver' ); ?></h3>
+
+						<div class="gd-job-detail__grid">
+							<div class="gd-job-detail__field">
+								<label class="gd-job-detail__field-label" for="gd-profile-notification-frequency">
+									<?php esc_html_e( 'New Job Emails', 'go-deliver' ); ?>
+								</label>
+								<select id="gd-profile-notification-frequency" name="notification_frequency" class="gd-input">
+									<option value="instant" <?php selected( $notification_frequency, 'instant' ); ?>><?php esc_html_e( 'Immediately', 'go-deliver' ); ?></option>
+									<option value="hourly" <?php selected( $notification_frequency, 'hourly' ); ?>><?php esc_html_e( 'Hourly Digest', 'go-deliver' ); ?></option>
+									<option value="daily" <?php selected( $notification_frequency, 'daily' ); ?>><?php esc_html_e( 'Daily Digest', 'go-deliver' ); ?></option>
+								</select>
+								<p class="description" style="margin-top:4px;font-size:13px;color:var(--gd-text-muted);">
+									<?php esc_html_e( 'How often you receive email notifications when new jobs matching your profile are posted.', 'go-deliver' ); ?>
+								</p>
+							</div>
 						</div>
 					</div>
 
