@@ -191,12 +191,13 @@ $form_builder = new Go_Deliver_Form_Builder();
 					<input
 						type="text"
 						id="gd_pickup_suburb"
-						name="pickup_suburb"
+						name="pickup_display"
 						class="gd-suburb-input"
 						placeholder="<?php esc_attr_e( 'e.g. 123 Queen Street, Auckland', 'go-deliver' ); ?>"
 						required
 						autocomplete="off"
 					>
+					<input type="hidden" name="pickup_suburb" class="gd-suburb-hidden-input">
 					<input type="hidden" name="pickup_address" class="gd-address-input">
 					<input type="hidden" name="pickup_lat" class="gd-lat-input">
 					<input type="hidden" name="pickup_lng" class="gd-lng-input">
@@ -248,12 +249,13 @@ $form_builder = new Go_Deliver_Form_Builder();
 					<input
 						type="text"
 						id="gd_dropoff_suburb"
-						name="dropoff_suburb"
+						name="dropoff_display"
 						class="gd-suburb-input"
 						placeholder="<?php esc_attr_e( 'e.g. 45 High Street, Christchurch', 'go-deliver' ); ?>"
 						required
 						autocomplete="off"
 					>
+					<input type="hidden" name="dropoff_suburb" class="gd-suburb-hidden-input">
 					<input type="hidden" name="dropoff_address" class="gd-address-input">
 					<input type="hidden" name="dropoff_lat" class="gd-lat-input">
 					<input type="hidden" name="dropoff_lng" class="gd-lng-input">

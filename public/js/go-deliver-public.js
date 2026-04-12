@@ -316,6 +316,17 @@
 			e.preventDefault();
 			if ( ! validateStep( currentStep ) ) { return; }
 
+			// Ensure suburb hidden fields are populated even when the user
+			// typed an address without selecting from the autocomplete dropdown.
+			$form.find( '.gd-location-field' ).each( function () {
+				var $wrap         = $( this );
+				var $suburbHidden = $wrap.find( '.gd-suburb-hidden-input' );
+				var $suburb       = $wrap.find( '.gd-suburb-input' );
+				if ( ! $.trim( $suburbHidden.val() ) && $.trim( $suburb.val() ) ) {
+					$suburbHidden.val( $suburb.val() );
+				}
+			} );
+
 			var $btn = $form.find( '#gd-job-submit' );
 			gdBtnLoading( $btn );
 
@@ -430,11 +441,12 @@
 		$context = $context || $( document );
 
 		$context.find( '.gd-location-field' ).each( function () {
-			var $wrap    = $( this );
-			var $suburb  = $wrap.find( '.gd-suburb-input' );
-			var $address = $wrap.find( '.gd-address-input' );
-			var $lat     = $wrap.find( '.gd-lat-input' );
-			var $lng     = $wrap.find( '.gd-lng-input' );
+			var $wrap         = $( this );
+			var $suburb       = $wrap.find( '.gd-suburb-input' );
+			var $suburbHidden = $wrap.find( '.gd-suburb-hidden-input' );
+			var $address      = $wrap.find( '.gd-address-input' );
+			var $lat          = $wrap.find( '.gd-lat-input' );
+			var $lng          = $wrap.find( '.gd-lng-input' );
 
 			// ---------------------------------------------------------------
 			// Google Places Autocomplete (preferred)
@@ -450,6 +462,7 @@
 					$lat.val( '' );
 					$lng.val( '' );
 					$address.val( '' );
+					$suburbHidden.val( '' );
 				} );
 
 				autocomplete.addListener( 'place_changed', function () {
@@ -462,6 +475,10 @@
 
 					var fullAddress = place.formatted_address || $suburb.val();
 					$address.val( fullAddress );
+
+					// Show the full address in the visible field so the customer
+					// can confirm their complete address was captured correctly.
+					$suburb.val( fullAddress );
 
 					// Extract suburb/locality name from address components so that
 					// only a general area (not the full street address) is stored
@@ -478,7 +495,7 @@
 							}
 						} );
 					}
-					$suburb.val( suburbName || $suburb.val() );
+					$suburbHidden.val( suburbName || fullAddress );
 				} );
 
 				return; // Skip Nominatim fallback for this field.
@@ -493,6 +510,7 @@
 				$lat.val( '' );
 				$lng.val( '' );
 				$address.val( '' );
+				$suburbHidden.val( '' );
 			} );
 
 			$suburb.on( 'blur', function () {
@@ -513,6 +531,20 @@
 							$lat.val( parseFloat( place.lat ).toFixed( 6 ) );
 							$lng.val( parseFloat( place.lon ).toFixed( 6 ) );
 							$address.val( place.display_name || query );
+
+							// Extract suburb/locality from Nominatim address details
+							// so movers only see a general area, not the full address.
+							var addr      = place.address || {};
+							var suburbVal = addr.suburb      ||
+							                addr.city_district ||
+							                addr.city        ||
+							                addr.town        ||
+							                addr.village     ||
+							                query;
+							$suburbHidden.val( suburbVal );
+						} else {
+							// No geocoding result: fall back to the typed value.
+							$suburbHidden.val( query );
 						}
 					}
 				);

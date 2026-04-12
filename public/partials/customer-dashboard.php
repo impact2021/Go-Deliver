@@ -139,8 +139,8 @@ foreach ( $jobs as $job ) {
 					'cancelled' => __( 'Cancelled', 'go-deliver' ),
 				);
 				$status_label = isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : ucfirst( $status );
-				$pickup      = esc_html( get_post_meta( $job_id, 'gd_pickup_suburb', true ) );
-				$dropoff     = esc_html( get_post_meta( $job_id, 'gd_dropoff_suburb', true ) );
+				$pickup      = esc_html( get_post_meta( $job_id, 'gd_pickup_address', true ) ) ?: esc_html( get_post_meta( $job_id, 'gd_pickup_suburb', true ) );
+				$dropoff     = esc_html( get_post_meta( $job_id, 'gd_dropoff_address', true ) ) ?: esc_html( get_post_meta( $job_id, 'gd_dropoff_suburb', true ) );
 				$date_req    = esc_html( get_post_meta( $job_id, 'gd_date_requested', true ) );
 				$quote_count = (int) get_post_meta( $job_id, 'gd_quote_count', true );
 				$job_type    = esc_html( get_post_meta( $job_id, 'gd_job_type', true ) ?: get_post_meta( $job_id, 'gd_form_data_item_type', true ) );
