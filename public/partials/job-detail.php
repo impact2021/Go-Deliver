@@ -46,6 +46,13 @@ $is_mover     = $is_logged_in && ( $current_user && (
 
 // Job meta.
 $job_status          = esc_attr( get_post_meta( $job_id, 'gd_job_status', true ) ?: 'open' );
+$job_status_labels   = array(
+	'open'      => __( 'New', 'go-deliver' ),
+	'locked'    => __( 'Receiving Quotes', 'go-deliver' ),
+	'accepted'  => __( 'Accepted', 'go-deliver' ),
+	'expired'   => __( 'Expired', 'go-deliver' ),
+	'cancelled' => __( 'Cancelled', 'go-deliver' ),
+);
 $job_customer_id     = (int) get_post_meta( $job_id, 'gd_customer_id', true );
 $job_type            = esc_html( get_post_meta( $job_id, 'gd_job_type', true ) ?: get_post_meta( $job_id, 'gd_form_data_item_type', true ) );
 $pickup_suburb       = esc_html( get_post_meta( $job_id, 'gd_pickup_suburb', true ) );
@@ -109,7 +116,7 @@ $photos    = is_array( $photo_ids ) ? $photo_ids : array();
 			</p>
 		</div>
 		<span class="gd-badge gd-badge--<?php echo esc_attr( $job_status ); ?>" style="font-size:13px;">
-			<?php echo esc_html( ucfirst( $job_status ) ); ?>
+			<?php echo esc_html( isset( $job_status_labels[ $job_status ] ) ? $job_status_labels[ $job_status ] : ucfirst( $job_status ) ); ?>
 		</span>
 	</div>
 

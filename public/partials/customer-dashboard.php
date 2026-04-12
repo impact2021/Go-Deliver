@@ -131,6 +131,14 @@ foreach ( $jobs as $job ) {
 			<?php foreach ( $jobs as $job ) :
 				$job_id      = $job->ID;
 				$status      = esc_attr( get_post_meta( $job_id, 'gd_job_status', true ) ?: 'open' );
+				$status_labels = array(
+					'open'      => __( 'New', 'go-deliver' ),
+					'locked'    => __( 'Receiving Quotes', 'go-deliver' ),
+					'accepted'  => __( 'Accepted', 'go-deliver' ),
+					'expired'   => __( 'Expired', 'go-deliver' ),
+					'cancelled' => __( 'Cancelled', 'go-deliver' ),
+				);
+				$status_label = isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : ucfirst( $status );
 				$pickup      = esc_html( get_post_meta( $job_id, 'gd_pickup_suburb', true ) );
 				$dropoff     = esc_html( get_post_meta( $job_id, 'gd_dropoff_suburb', true ) );
 				$date_req    = esc_html( get_post_meta( $job_id, 'gd_date_requested', true ) );
@@ -154,7 +162,7 @@ foreach ( $jobs as $job ) {
 							<p class="gd-job-card__meta"><?php esc_html_e( 'Posted', 'go-deliver' ); ?> <?php echo $created; ?></p>
 						</div>
 						<span class="gd-badge gd-badge--<?php echo esc_attr( $status ); ?>">
-							<?php echo esc_html( ucfirst( $status ) ); ?>
+							<?php echo esc_html( $status_label ); ?>
 						</span>
 					</div>
 

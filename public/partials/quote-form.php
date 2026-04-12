@@ -38,9 +38,9 @@ if ( 'approved' !== $mover_status ) {
 	return;
 }
 
-// Check the job is still open.
+// Check the job is still open or receiving quotes.
 $job_status = get_post_meta( $job_id, 'gd_job_status', true );
-if ( 'open' !== $job_status ) {
+if ( ! in_array( $job_status, array( 'open', 'locked' ), true ) ) {
 	return;
 }
 
