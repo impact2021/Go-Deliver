@@ -76,7 +76,7 @@ $job_type_labels = array(
 );
 
 $status_labels = array(
-	'open'   => __( 'Open', 'go-deliver' ),
+	'open'   => __( 'New', 'go-deliver' ),
 	'locked' => __( 'Receiving Quotes', 'go-deliver' ),
 );
 ?>

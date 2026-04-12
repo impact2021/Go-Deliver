@@ -97,6 +97,10 @@ update_post_meta( $quote_id, 'gd_submitted_at',  current_time( 'mysql' ) );
 update_post_meta( $quote_id, 'gd_fee_charged',   0 );
 update_post_meta( $quote_id, 'gd_fee_amount',    0 );
 
+// Increment quote count on the job.
+$current_count = (int) get_post_meta( (int) $job_id, 'gd_quote_count', true );
+update_post_meta( (int) $job_id, 'gd_quote_count', $current_count + 1 );
+
 // Lock the job if it was the first quote.
 $jobs_handler = new Go_Deliver_Jobs();
 $jobs_handler->lock_job( $job_id );
@@ -364,6 +368,11 @@ return new WP_Error( 'invalid_quote_status', __( 'Only pending quotes can be wit
 }
 
 update_post_meta( $quote_id, 'gd_status', 'withdrawn' );
+
+// Decrement quote count on the job (floor at 0).
+$job_id        = $quote['job_id'];
+$current_count = (int) get_post_meta( (int) $job_id, 'gd_quote_count', true );
+update_post_meta( (int) $job_id, 'gd_quote_count', max( 0, $current_count - 1 ) );
 
 return true;
 }
