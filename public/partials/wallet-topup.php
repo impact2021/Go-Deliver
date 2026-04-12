@@ -170,9 +170,9 @@ $transactions = $wallet->get_transactions( $user_id, 10 );
 						</thead>
 						<tbody>
 							<?php foreach ( $transactions as $tx ) :
-								$tx_amount = isset( $tx['amount'] ) ? (float) $tx['amount'] : 0;
-								$tx_date   = isset( $tx['created_at'] ) ? esc_html( date_i18n( 'd M Y H:i', strtotime( $tx['created_at'] ) ) ) : '';
-								$tx_desc   = isset( $tx['description'] ) ? esc_html( $tx['description'] ) : '';
+								$tx_amount = isset( $tx->amount ) ? (float) $tx->amount : 0;
+								$tx_date   = isset( $tx->created_at ) ? esc_html( date_i18n( 'd M Y H:i', strtotime( $tx->created_at ) ) ) : '';
+								$tx_desc   = isset( $tx->description ) ? esc_html( $tx->description ) : '';
 								$is_credit = $tx_amount > 0;
 							?>
 								<tr>
