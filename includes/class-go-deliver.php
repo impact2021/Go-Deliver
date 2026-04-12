@@ -100,6 +100,10 @@ class Go_Deliver {
 	 * Register hooks that are needed in both admin and public contexts.
 	 */
 	public function define_common_hooks() {
+		// Stripe webhook listener.
+		$stripe = new Go_Deliver_Stripe();
+		$stripe->register_hooks();
+
 		// Post types.
 		$post_types = new Go_Deliver_Post_Types();
 		add_action( 'init', array( $post_types, 'register_post_types' ) );
