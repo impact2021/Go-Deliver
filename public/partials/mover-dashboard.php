@@ -504,7 +504,10 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 			</div>
 		<?php else : ?>
 			<?php
-			$dj_type_labels = Go_Deliver_Jobs::get_type_labels();
+			$dj_type_labels    = Go_Deliver_Jobs::get_type_labels();
+			$dj_all_ids        = array_column( $dismissed_jobs, 'id' );
+			$dj_quote_stats    = Go_Deliver_Jobs::get_quote_stats_bulk( $dj_all_ids );
+			$dj_empty_stats    = array( 'count' => 0, 'min' => null, 'max' => null );
 			foreach ( $dismissed_jobs as $dj ) :
 				$dj_pickup  = $dj['pickup_location'] ?? array();
 				$dj_dropoff = $dj['dropoff_location'] ?? array();
@@ -517,7 +520,7 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 					: '';
 				$dj_from    = esc_html( $dj_pickup['suburb'] ?? $dj_pickup['address'] ?? __( 'Unknown', 'go-deliver' ) );
 				$dj_to      = esc_html( $dj_dropoff['suburb'] ?? $dj_dropoff['address'] ?? __( 'Unknown', 'go-deliver' ) );
-				$dj_stats   = Go_Deliver_Jobs::get_quote_stats_bulk( array( $dj['id'] ) )[ $dj['id'] ];
+				$dj_stats   = $dj_quote_stats[ $dj['id'] ] ?? $dj_empty_stats;
 				$dj_q_count = (int) $dj_stats['count'];
 			?>
 				<div class="gd-mover-card gd-dismissed-card" id="gd-dismissed-job-<?php echo esc_attr( $dj['id'] ); ?>">
