@@ -27,10 +27,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'GD_VERSION', '1.2.0' );
-define( 'GD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'GD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'GD_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+if ( ! defined( 'GD_VERSION' ) ) {
+	define( 'GD_VERSION', '1.2.0' );
+}
+if ( ! defined( 'GD_PLUGIN_DIR' ) ) {
+	define( 'GD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+}
+if ( ! defined( 'GD_PLUGIN_URL' ) ) {
+	define( 'GD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
+if ( ! defined( 'GD_PLUGIN_BASENAME' ) ) {
+	define( 'GD_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
+}
 
 // Include all class files from the includes/ directory.
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-activator.php';
