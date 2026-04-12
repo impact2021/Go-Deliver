@@ -113,6 +113,7 @@ $status_labels = array(
 				$label   = $listing_title ?? ( $job_type_labels[ $type ] ?? ucwords( str_replace( '_', ' ', $type ) ) );
 				$status_label = $status_labels[ $status ] ?? ucfirst( $status );
 				$date    = ! empty( $job['date_requested'] ) ? date_i18n( get_option( 'date_format' ), strtotime( $job['date_requested'] ) ) : '';
+				$date_flexible = ! empty( $job['form_data']['date_flexible'] );
 				$photos  = ! empty( $job['photos'] ) && is_array( $job['photos'] ) ? $job['photos'] : array();
 				$created_at  = $job['created_at'] ?? '';
 				$expiry_str  = $created_at ? date_i18n( 'd M Y', strtotime( $created_at ) + $expiry_days * DAY_IN_SECONDS ) : '';
@@ -147,6 +148,9 @@ $status_labels = array(
 						<div class="gd-job-card__meta">
 							<span class="gd-job-card__meta-icon">📅</span>
 							<?php echo esc_html( $date ); ?>
+							<?php if ( $date_flexible ) : ?>
+								<span class="gd-badge gd-badge--info" style="margin-left:6px;font-size:11px;"><?php esc_html_e( 'Flexible', 'go-deliver' ); ?></span>
+							<?php endif; ?>
 						</div>
 					<?php endif; ?>
 

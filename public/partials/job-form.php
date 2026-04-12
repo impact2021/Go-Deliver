@@ -238,6 +238,36 @@ $form_builder = new Go_Deliver_Form_Builder();
 					<input type="hidden" name="dropoff_lng" class="gd-lng-input">
 				</div>
 
+				<div class="gd-field-group">
+					<label for="gd_dropoff_floors">
+						<?php esc_html_e( 'Floors / flights of stairs at delivery', 'go-deliver' ); ?>
+					</label>
+					<select id="gd_dropoff_floors" name="form_data[dropoff_floors]">
+						<option value="0"><?php esc_html_e( 'Ground floor / no stairs', 'go-deliver' ); ?></option>
+						<option value="1"><?php esc_html_e( '1 floor / flight of stairs', 'go-deliver' ); ?></option>
+						<option value="2"><?php esc_html_e( '2 floors / flights of stairs', 'go-deliver' ); ?></option>
+						<option value="3"><?php esc_html_e( '3 or more floors / flights', 'go-deliver' ); ?></option>
+					</select>
+				</div>
+
+				<div class="gd-field-group">
+					<label><?php esc_html_e( 'How many people might be needed to unload?', 'go-deliver' ); ?></label>
+					<div class="gd-radio-group">
+						<label class="gd-radio-label">
+							<input type="radio" name="form_data[dropoff_helpers]" value="self" checked>
+							<?php esc_html_e( 'I\'ll unload it myself', 'go-deliver' ); ?>
+						</label>
+						<label class="gd-radio-label">
+							<input type="radio" name="form_data[dropoff_helpers]" value="1">
+							<?php esc_html_e( 'Need 1 person to help', 'go-deliver' ); ?>
+						</label>
+						<label class="gd-radio-label">
+							<input type="radio" name="form_data[dropoff_helpers]" value="2plus">
+							<?php esc_html_e( 'Need 2+ people to help', 'go-deliver' ); ?>
+						</label>
+					</div>
+				</div>
+
 			</div><!-- /step 3 -->
 
 			<!-- ============================================================
@@ -293,7 +323,7 @@ $form_builder = new Go_Deliver_Form_Builder();
 						required
 						autocomplete="off"
 					>
-					<span class="gd-field-hint"><?php esc_html_e( 'A short title shown to movers on the listings page. Max 80 characters. Do not include phone numbers or addresses.', 'go-deliver' ); ?></span>
+					<span class="gd-field-hint"><?php esc_html_e( 'A short title shown to movers on the listings page. Max 80 characters. Do not include phone numbers, addresses, or email addresses.', 'go-deliver' ); ?></span>
 				</div>
 
 				<!-- Photo Upload -->
@@ -326,7 +356,7 @@ $form_builder = new Go_Deliver_Form_Builder();
 						rows="5"
 						placeholder="<?php esc_attr_e( 'Anything else the mover should know — dimensions, fragile items, parking details, access notes…', 'go-deliver' ); ?>"
 					></textarea>
-					<span class="gd-field-hint"><?php esc_html_e( 'The more detail you provide, the better the quotes you\'ll receive.', 'go-deliver' ); ?></span>
+					<span class="gd-field-hint"><?php esc_html_e( 'The more detail you provide, the better the quotes you\'ll receive. Do not include phone numbers, addresses, or email addresses.', 'go-deliver' ); ?></span>
 				</div>
 
 			</div><!-- /step 5 -->
