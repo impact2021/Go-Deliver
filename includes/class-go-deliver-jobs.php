@@ -94,6 +94,29 @@ return $post_id;
 $sanitized_pickup  = $this->sanitize_location( $pickup );
 $sanitized_dropoff = $this->sanitize_location( $dropoff );
 
+// Geocode missing coordinates server-side so jobs appear in mover radius searches.
+$location_handler = new Go_Deliver_Location();
+if ( ! $sanitized_pickup['lat'] || ! $sanitized_pickup['lng'] ) {
+$address_str = $sanitized_pickup['address'] ?: $sanitized_pickup['suburb'];
+if ( $address_str ) {
+$coords = $location_handler->geocode_address( $address_str );
+if ( ! is_wp_error( $coords ) ) {
+$sanitized_pickup['lat'] = $coords['lat'];
+$sanitized_pickup['lng'] = $coords['lng'];
+}
+}
+}
+if ( ! $sanitized_dropoff['lat'] || ! $sanitized_dropoff['lng'] ) {
+$address_str = $sanitized_dropoff['address'] ?: $sanitized_dropoff['suburb'];
+if ( $address_str ) {
+$coords = $location_handler->geocode_address( $address_str );
+if ( ! is_wp_error( $coords ) ) {
+$sanitized_dropoff['lat'] = $coords['lat'];
+$sanitized_dropoff['lng'] = $coords['lng'];
+}
+}
+}
+
 $form_data = isset( $data['form_data'] ) && is_array( $data['form_data'] ) ? $data['form_data'] : array();
 
 $photos = array();
