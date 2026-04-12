@@ -770,10 +770,31 @@ wp_send_json_success( array( 'html' => $html ) );
 }
 
 /**
+ * AJAX: render job detail as HTML (used by the mover-dashboard modal).
+ */
+public function ajax_get_job_detail_html() {
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+$job_id = absint( $_POST['job_id'] ?? 0 );
+if ( ! $job_id ) {
+wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
+}
+
+ob_start();
+$template = GD_PLUGIN_DIR . 'public/partials/job-detail.php';
+if ( file_exists( $template ) ) {
+include $template;
+}
+$html = ob_get_clean();
+
+wp_send_json_success( array( 'html' => $html ) );
+}
+
+/**
  * AJAX: get job details (privacy-filtered).
  */
 public function ajax_get_job_details() {
-check_ajax_referer( 'gd_get_job_details', 'nonce' );
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
 
 $job_id = absint( $_POST['job_id'] ?? $_GET['job_id'] ?? 0 );
 if ( ! $job_id ) {

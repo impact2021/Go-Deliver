@@ -678,6 +678,12 @@
 			gdOpenJobModal( jobId );
 		} );
 
+		// Submit quote button on available-jobs cards opens the job detail modal.
+		$dashboard.on( 'click', '.gd-quote-btn', function () {
+			var jobId = $( this ).data( 'job-id' );
+			gdOpenJobModal( jobId );
+		} );
+
 		// Withdraw quote.
 		$dashboard.on( 'click', '.gd-withdraw-quote-btn', function () {
 			var quoteId = $( this ).data( 'quote-id' );
