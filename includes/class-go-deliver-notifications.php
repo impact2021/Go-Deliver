@@ -88,6 +88,12 @@ class Go_Deliver_Notifications {
 
 	/**
 	 * Notify users who have unread messages older than one hour.
+	 *
+	 * A per-user meta flag `gd_unread_msg_cron_notified` is set after each
+	 * email so the same batch of unread messages never triggers more than one
+	 * email. The flag is cleared in `ajax_get_messages()` (via
+	 * `mark_messages_read`) when the user actually views the thread, ensuring
+	 * any subsequent new unread messages will generate a fresh notification.
 	 */
 	private function notify_unread_messages() {
 		global $wpdb;
@@ -101,12 +107,24 @@ class Go_Deliver_Notifications {
 		);
 
 		foreach ( $rows as $row ) {
+			$user_id = (int) $row->receiver_id;
+
+			// Skip if we already sent an unread-message cron email for this
+			// user and they haven't viewed the thread yet.
+			if ( get_user_meta( $user_id, 'gd_unread_msg_cron_notified', true ) ) {
+				continue;
+			}
+
 			/* translators: %d: number of unread messages */
 			$subject = sprintf( __( 'You have %d unread message(s)', 'go-deliver' ), (int) $row->cnt );
 			/* translators: %d: number of unread messages */
 			$message = sprintf( __( 'You have %d unread message(s) waiting for you on Go Deliver. Log in to view them.', 'go-deliver' ), (int) $row->cnt );
 
-			self::notify( $row->receiver_id, 'unread_messages', $subject, $message, true );
+			self::notify( $user_id, 'unread_messages', $subject, $message, true );
+
+			// Record that we notified this user so we don't spam them again
+			// until they view their messages (which clears this flag).
+			update_user_meta( $user_id, 'gd_unread_msg_cron_notified', 1 );
 		}
 	}
 

@@ -188,6 +188,13 @@ $status_labels = array(
 				<div class="gd-job-card__footer">
 					<button
 						type="button"
+						class="gd-btn gd-btn--outline gd-btn--sm gd-job-view-btn"
+						data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
+					>
+						<?php esc_html_e( 'View Details', 'go-deliver' ); ?>
+					</button>
+					<button
+						type="button"
 						class="gd-btn gd-btn--primary gd-btn--sm gd-quote-btn"
 						data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
 					>

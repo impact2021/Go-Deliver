@@ -155,6 +155,33 @@ class Go_Deliver_DB {
 		);
 	}
 
+	/**
+	 * Mark all unread messages addressed to a user for a given job as read.
+	 *
+	 * Called whenever a user fetches the message thread so the hourly cron
+	 * does not keep re-sending "unread messages" notifications for messages
+	 * the user has already viewed.
+	 *
+	 * @param int $job_id  ID of the related gd_job post.
+	 * @param int $user_id ID of the user viewing the thread (the receiver).
+	 * @return int|false Number of rows updated, or false on failure.
+	 */
+	public static function mark_messages_read( $job_id, $user_id ) {
+		global $wpdb;
+
+		return $wpdb->update(
+			$wpdb->prefix . 'gd_messages',
+			array( 'is_read' => 1 ),
+			array(
+				'job_id'      => (int) $job_id,
+				'receiver_id' => (int) $user_id,
+				'is_read'     => 0,
+			),
+			array( '%d' ),
+			array( '%d', '%d', '%d' )
+		);
+	}
+
 	// =========================================================================
 	// Notification helpers.
 	// =========================================================================

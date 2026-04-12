@@ -795,6 +795,49 @@ $photos[] = absint( $photo_id );
 }
 }
 
+// Also handle directly-uploaded files from the job_photos[] file input.
+if ( ! empty( $_FILES['job_photos']['name'] ) ) {
+if ( ! function_exists( 'media_handle_upload' ) ) {
+require_once ABSPATH . 'wp-admin/includes/media.php';
+require_once ABSPATH . 'wp-admin/includes/file.php';
+require_once ABSPATH . 'wp-admin/includes/image.php';
+}
+
+// Normalize the $_FILES array into a flat list of individual files
+// regardless of whether one file or multiple files were uploaded.
+$raw       = $_FILES['job_photos'];
+$file_keys = array( 'name', 'type', 'tmp_name', 'error', 'size' );
+$file_list = array();
+if ( is_array( $raw['name'] ) ) {
+$count = count( $raw['name'] );
+for ( $i = 0; $i < $count; $i++ ) {
+$entry = array();
+foreach ( $file_keys as $k ) {
+$entry[ $k ] = $raw[ $k ][ $i ] ?? '';
+}
+$file_list[] = $entry;
+}
+} else {
+$entry = array();
+foreach ( $file_keys as $k ) {
+$entry[ $k ] = $raw[ $k ] ?? '';
+}
+$file_list[] = $entry;
+}
+
+foreach ( $file_list as $single_file ) {
+if ( UPLOAD_ERR_OK !== (int) $single_file['error'] || empty( $single_file['tmp_name'] ) ) {
+continue;
+}
+$_FILES['gd_job_photo_tmp'] = $single_file;
+$attachment_id = media_handle_upload( 'gd_job_photo_tmp', 0 );
+if ( ! is_wp_error( $attachment_id ) ) {
+$photos[] = $attachment_id;
+}
+}
+unset( $_FILES['gd_job_photo_tmp'] );
+}
+
 $listing_title = sanitize_text_field( wp_unslash( $_POST['listing_title'] ?? '' ) );
 if ( empty( $listing_title ) ) {
 wp_send_json_error( array( 'message' => __( 'Please give your listing a title.', 'go-deliver' ) ) );
@@ -831,6 +874,17 @@ $result = $this->create_job( $data );
 
 if ( is_wp_error( $result ) ) {
 wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+}
+
+// Associate uploaded photo attachments with the new job post so they are
+// correctly linked in the media library.
+if ( ! empty( $photos ) ) {
+foreach ( $photos as $attachment_id ) {
+wp_update_post( array(
+'ID'          => $attachment_id,
+'post_parent' => $result,
+) );
+}
 }
 
 wp_send_json_success( array( 'job_id' => $result ) );
