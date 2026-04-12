@@ -440,6 +440,14 @@ update_user_meta( $user_id, 'gd_mover_radius', $radius );
 }
 update_user_meta( $user_id, 'gd_mover_job_types', $job_types );
 
+$valid_frequencies   = Go_Deliver_Notifications::VALID_FREQUENCIES;
+$notification_frequency = isset( $_POST['notification_frequency'] )
+	? sanitize_key( wp_unslash( $_POST['notification_frequency'] ) )
+	: '';
+if ( in_array( $notification_frequency, $valid_frequencies, true ) ) {
+	update_user_meta( $user_id, 'gd_notification_frequency', $notification_frequency );
+}
+
 wp_send_json_success( array( 'message' => __( 'Profile updated successfully.', 'go-deliver' ) ) );
 }
 }

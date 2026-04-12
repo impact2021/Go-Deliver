@@ -122,6 +122,10 @@ update_post_meta( $post_id, 'gd_photos',               wp_json_encode( $photos )
 update_post_meta( $post_id, 'gd_job_status',           'open' );
 update_post_meta( $post_id, 'gd_created_at',           current_time( 'mysql' ) );
 
+// Notify eligible movers about the new job.
+$notifications = new Go_Deliver_Notifications();
+$notifications->notify_movers_new_job( $post_id );
+
 return $post_id;
 }
 
