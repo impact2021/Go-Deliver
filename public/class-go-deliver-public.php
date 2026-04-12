@@ -62,6 +62,7 @@ class Go_Deliver_Public {
 				'hasGooglePlaces'       => $google_maps_key ? '1' : '',
 				'dashboardUrl'          => $dashboard_url ? esc_url( $dashboard_url ) : '',
 				'moverRegRedirectUrl'   => $mover_reg_redirect_url ? esc_url( $mover_reg_redirect_url ) : '',
+				'userId'                => is_user_logged_in() ? (string) get_current_user_id() : '0',
 			)
 		);
 	}

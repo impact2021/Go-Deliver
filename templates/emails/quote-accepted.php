@@ -4,7 +4,8 @@
  *
  * Variables: $mover_first_name, $job_type, $pickup_suburb, $pickup_full,
  *            $dropoff_full, $date_requested, $customer_name, $customer_phone,
- *            $customer_email, $quote_amount, $fee_amount, $site_name, $site_url
+ *            $customer_email, $quote_amount, $fee_amount, $job_url,
+ *            $site_name, $site_url
  *
  * @package Go_Deliver
  */
@@ -21,6 +22,7 @@ $customer_phone   = isset( $customer_phone )   ? $customer_phone   : '';
 $customer_email   = isset( $customer_email )   ? $customer_email   : '';
 $quote_amount     = isset( $quote_amount )     ? $quote_amount     : 0;
 $fee_amount       = isset( $fee_amount )       ? $fee_amount       : 0;
+$job_url          = isset( $job_url )          ? $job_url          : ( isset( $site_url ) ? $site_url : home_url() );
 ?>
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title><?php echo esc_html( sprintf( __( 'Quote Accepted – %s', 'go-deliver' ), $site_name ) ); ?></title>
@@ -62,7 +64,7 @@ body{margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSys
 <?php if ( $customer_email ) : ?><div class="dr"><span class="dl"><?php esc_html_e( 'Email', 'go-deliver' ); ?></span><span><?php echo esc_html( $customer_email ); ?></span></div><?php endif; ?>
 </div>
 <p class="et"><?php esc_html_e( 'Please contact the customer as soon as possible to confirm the details and arrange the move.', 'go-deliver' ); ?></p>
-<div style="text-align:center;margin-top:24px;"><a href="<?php echo esc_url( $site_url ); ?>" class="btn"><?php esc_html_e( 'Go to Dashboard', 'go-deliver' ); ?></a></div>
+<div style="text-align:center;margin-top:24px;"><a href="<?php echo esc_url( $job_url ); ?>" class="btn"><?php esc_html_e( 'View Job & Messages', 'go-deliver' ); ?></a></div>
 </div>
 <div class="ef"><p><?php printf( esc_html__( '© %s %s', 'go-deliver' ), esc_html( gmdate( 'Y' ) ), esc_html( $site_name ) ); ?></p><p><a href="<?php echo esc_url( $site_url ); ?>"><?php echo esc_html( $site_name ); ?></a></p></div>
 </div></body></html>

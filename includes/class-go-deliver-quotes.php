@@ -293,6 +293,9 @@ return $fee_charged;
 // Accept this quote.
 update_post_meta( $quote_id, 'gd_status', 'accepted' );
 
+// Store accepted quote ID on the job for quick lookups.
+update_post_meta( $job_id, 'gd_accepted_quote_id', $quote_id );
+
 // Expire other pending quotes for the same job.
 $this->expire_quotes_for_job( $job_id, $quote_id );
 
