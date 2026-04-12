@@ -356,6 +356,7 @@ class Go_Deliver_Notifications {
 				'customer_first_name' => $customer->first_name,
 				'mover_first_name'    => $mover ? $mover->first_name : __( 'A mover', 'go-deliver' ),
 				'mover_rating'        => $mover ? (float) get_user_meta( $mover_id, 'gd_average_rating', true ) : 0.0,
+				'mover_review_count'  => $mover ? (int) get_user_meta( $mover_id, 'gd_review_count', true ) : 0,
 				'quote_amount'        => $amount,
 				'job_type'            => $job_type,
 				'quotes_url'          => $quotes_url,
