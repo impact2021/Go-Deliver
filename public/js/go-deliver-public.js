@@ -625,7 +625,8 @@
 			e.preventDefault();
 			var $f   = $( this );
 			var $btn = $f.find( '[type="submit"]' );
-			var rating = $f.find( '[name="rating"]' ).val();
+			var rating = $f.find( '.gd-star-input input[type="radio"]:checked' ).val()
+			          || $f.find( '[name="rating"]' ).val();
 			if ( ! rating || parseInt( rating, 10 ) < 1 ) {
 				gdToast( 'Please select a star rating.', 'warning' );
 				return;
