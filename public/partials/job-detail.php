@@ -93,8 +93,7 @@ if ( $show_full_details && $job_customer_id ) {
 }
 
 // Photo attachments.
-$photo_ids = get_post_meta( $job_id, 'gd_photo_ids', true );
-$photos    = is_array( $photo_ids ) ? $photo_ids : array();
+$photos = json_decode( get_post_meta( $job_id, 'gd_photos', true ), true ) ?: array();
 ?>
 <div class="gd-job-detail">
 
