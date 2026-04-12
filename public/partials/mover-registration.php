@@ -198,7 +198,7 @@ if ( is_user_logged_in() ) {
 
 					<div class="gd-field-group gd-location-field">
 						<label for="gd-reg-base-suburb">
-							<?php esc_html_e( 'Base Suburb / City', 'go-deliver' ); ?>
+							<?php esc_html_e( 'Your Address', 'go-deliver' ); ?>
 							<span class="gd-required">*</span>
 						</label>
 						<input
@@ -222,11 +222,12 @@ if ( is_user_logged_in() ) {
 						</label>
 						<select id="gd-reg-radius" name="radius" required>
 							<option value=""><?php esc_html_e( '-- Select radius --', 'go-deliver' ); ?></option>
-							<?php foreach ( array( 5, 10, 20, 50, 100, 200 ) as $km ) : ?>
+							<?php foreach ( array( 5, 10, 20, 50, 100, 200, 500 ) as $km ) : ?>
 								<option value="<?php echo esc_attr( $km ); ?>">
 									<?php printf( esc_html__( '%d km', 'go-deliver' ), $km ); ?>
 								</option>
 							<?php endforeach; ?>
+							<option value="9999"><?php esc_html_e( 'All of NZ', 'go-deliver' ); ?></option>
 						</select>
 						<span class="gd-field-hint"><?php esc_html_e( 'Maximum distance from your base you\'ll travel for jobs.', 'go-deliver' ); ?></span>
 					</div>

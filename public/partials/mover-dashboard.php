@@ -375,7 +375,7 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 						<div class="gd-job-detail__grid">
 							<div class="gd-job-detail__field gd-location-field" style="grid-column:1/-1;">
 								<label class="gd-job-detail__field-label" for="gd-profile-base-suburb">
-									<?php esc_html_e( 'Base Suburb / City', 'go-deliver' ); ?>
+									<?php esc_html_e( 'Your Address', 'go-deliver' ); ?>
 								</label>
 								<input
 									type="text"
@@ -391,17 +391,17 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 							</div>
 							<div class="gd-job-detail__field">
 								<label class="gd-job-detail__field-label" for="gd-profile-radius">
-									<?php esc_html_e( 'Service Radius (km)', 'go-deliver' ); ?>
+									<?php esc_html_e( 'Service Radius', 'go-deliver' ); ?>
 								</label>
-								<input
-									type="number"
-									id="gd-profile-radius"
-									name="radius"
-									class="gd-input"
-									min="0"
-									step="1"
-									value="<?php echo esc_attr( $radius ?: '' ); ?>"
-								>
+								<select id="gd-profile-radius" name="radius" class="gd-input">
+									<option value=""><?php esc_html_e( '-- Select radius --', 'go-deliver' ); ?></option>
+									<?php foreach ( array( 5, 10, 20, 50, 100, 200, 500 ) as $km ) : ?>
+										<option value="<?php echo esc_attr( $km ); ?>" <?php selected( $radius, $km ); ?>>
+											<?php printf( esc_html__( '%d km', 'go-deliver' ), $km ); ?>
+										</option>
+									<?php endforeach; ?>
+									<option value="9999" <?php selected( $radius, 9999 ); ?>><?php esc_html_e( 'All of NZ', 'go-deliver' ); ?></option>
+								</select>
 							</div>
 						</div>
 					</div>
