@@ -99,12 +99,39 @@ $filtered[] = $job;
 continue;
 }
 
-$pickup = $job['pickup_location'] ?? array();
+$pickup  = $job['pickup_location'] ?? array();
 $job_lat = isset( $pickup['lat'] ) ? (float) $pickup['lat'] : 0.0;
 $job_lng = isset( $pickup['lng'] ) ? (float) $pickup['lng'] : 0.0;
 
+// If coordinates are missing (e.g. geocoding failed at job-creation time),
+// attempt to geocode now and persist so it won't need re-geocoding next time.
 if ( ! $job_lat || ! $job_lng ) {
+$address_or_suburb = ( $pickup['address'] ?? '' ) ?: ( $pickup['suburb'] ?? '' );
+if ( ! empty( $address_or_suburb ) ) {
+$coords = $this->geocode_address( $address_or_suburb );
+if ( ! is_wp_error( $coords ) ) {
+$job_lat         = $coords['lat'];
+$job_lng         = $coords['lng'];
+$pickup['lat']   = $job_lat;
+$pickup['lng']   = $job_lng;
+$job['pickup_location'] = $pickup;
+// Persist so we don't re-geocode on every page load.
+if ( ! empty( $job['id'] ) ) {
+$updated = update_post_meta( (int) $job['id'], 'gd_pickup_location', wp_json_encode( $pickup ) );
+if ( false === $updated ) {
+// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+error_log( 'Go Deliver: failed to persist geocoded coordinates for job ' . (int) $job['id'] );
+}
+}
+}
+}
+
+// If coordinates are still unavailable after geocoding, include the job
+// anyway — never silently drop it — so movers matching on job type can see it.
+if ( ! $job_lat || ! $job_lng ) {
+$filtered[] = $job;
 continue;
+}
 }
 
 $distance = $this->haversine_distance( $base_lat, $base_lng, $job_lat, $job_lng );
