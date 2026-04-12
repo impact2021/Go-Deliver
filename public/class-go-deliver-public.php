@@ -27,6 +27,16 @@ class Go_Deliver_Public {
 			GD_VERSION
 		);
 
+		// Override brand colours with admin-saved values.
+		$job_card_bg     = get_option( 'gd_job_card_bg', '#2D1B0E' );
+		$job_card_accent = get_option( 'gd_job_card_accent', '#C9A227' );
+		$inline_css      = sprintf(
+			':root { --gd-job-card-bg: %1$s; --gd-job-card-accent: %2$s; }',
+			sanitize_hex_color( $job_card_bg ),
+			sanitize_hex_color( $job_card_accent )
+		);
+		wp_add_inline_style( 'go-deliver-public', $inline_css );
+
 		$google_maps_key = get_option( 'gd_google_maps_api_key', '' );
 
 		if ( $google_maps_key ) {

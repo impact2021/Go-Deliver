@@ -338,57 +338,20 @@
 	margin: 0 0 20px;
 }
 
-/* Progress steps */
-.gd-steps {
-	display: flex;
-	gap: 0;
-	margin-bottom: -1px;
-}
-
-.gd-step {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 12px 20px 16px;
-	font-size: 14px;
-	font-weight: 600;
-	color: var(--gd-text-muted);
-	cursor: default;
-	position: relative;
-	border-bottom: 3px solid transparent;
-}
-
-.gd-step--active {
-	color: var(--gd-primary);
-	border-bottom-color: var(--gd-primary);
-}
-
-.gd-step--done {
-	color: var(--gd-success);
-	border-bottom-color: var(--gd-success);
-}
-
-.gd-step__number {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 26px;
-	height: 26px;
-	border-radius: 50%;
+/* Progress bar */
+.gd-form-progress {
+	height: 6px;
 	background: var(--gd-border);
-	font-size: 13px;
-	font-weight: 700;
-	flex-shrink: 0;
+	border-radius: 0 0 var(--gd-radius) var(--gd-radius);
+	overflow: hidden;
 }
 
-.gd-step--active .gd-step__number {
+.gd-form-progress__fill {
+	height: 100%;
+	width: 0%;
 	background: var(--gd-primary);
-	color: var(--gd-white);
-}
-
-.gd-step--done .gd-step__number {
-	background: var(--gd-success);
-	color: var(--gd-white);
+	border-radius: inherit;
+	transition: width 350ms ease;
 }
 
 /* Form body */
@@ -2020,20 +1983,6 @@
 	.gd-job-form__footer {
 		padding-left: 16px;
 		padding-right: 16px;
-	}
-
-	.gd-steps {
-		overflow-x: auto;
-		gap: 0;
-	}
-
-	.gd-step {
-		flex-shrink: 0;
-		padding: 10px 14px 14px;
-	}
-
-	.gd-step__label {
-		display: none;
 	}
 
 	.gd-field-row {

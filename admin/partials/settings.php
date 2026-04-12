@@ -53,6 +53,15 @@ if ( isset( $_POST['gd_settings_nonce'] ) ) {
 		} elseif ( 'email' === $tab ) {
 			update_option( 'gd_email_from_name', sanitize_text_field( wp_unslash( $_POST['gd_email_from_name'] ?? '' ) ) );
 			update_option( 'gd_email_from_address', sanitize_email( wp_unslash( $_POST['gd_email_from_address'] ?? '' ) ) );
+		} elseif ( 'appearance' === $tab ) {
+			$bg     = sanitize_hex_color( wp_unslash( $_POST['gd_job_card_bg'] ?? '' ) );
+			$accent = sanitize_hex_color( wp_unslash( $_POST['gd_job_card_accent'] ?? '' ) );
+			if ( $bg ) {
+				update_option( 'gd_job_card_bg', $bg );
+			}
+			if ( $accent ) {
+				update_option( 'gd_job_card_accent', $accent );
+			}
 		}
 
 		$saved = true;
@@ -80,6 +89,8 @@ $stripe_wh_masked   = get_option( 'gd_stripe_webhook_secret', '' ) ? '•••�
 $webhook_url        = home_url( '/wp-json/go-deliver/v1/stripe-webhook' );
 $email_from_name    = get_option( 'gd_email_from_name', get_bloginfo( 'name' ) );
 $email_from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+$job_card_bg        = get_option( 'gd_job_card_bg', '#2D1B0E' );
+$job_card_accent    = get_option( 'gd_job_card_accent', '#C9A227' );
 ?>
 <div class="wrap gd-admin-wrap">
 	<h1><?php esc_html_e( 'Go Deliver Settings', 'go-deliver' ); ?></h1>
@@ -105,6 +116,9 @@ $email_from_address = get_option( 'gd_email_from_address', get_option( 'admin_em
 		</a>
 		<a href="#email" class="gd-tab-link<?php echo 'email' === $active_tab ? ' is-active' : ''; ?>" data-tab="email">
 			<?php esc_html_e( 'Email', 'go-deliver' ); ?>
+		</a>
+		<a href="#appearance" class="gd-tab-link<?php echo 'appearance' === $active_tab ? ' is-active' : ''; ?>" data-tab="appearance">
+			<?php esc_html_e( 'Appearance', 'go-deliver' ); ?>
 		</a>
 	</nav>
 
@@ -533,5 +547,54 @@ $email_from_address = get_option( 'gd_email_from_address', get_option( 'admin_em
 			<?php submit_button( __( 'Save Email Settings', 'go-deliver' ) ); ?>
 		</form>
 	</div><!-- /#gd-tab-email -->
+
+	<!-- ======================================================
+	     Appearance Tab
+	     ====================================================== -->
+	<div id="gd-tab-appearance" class="gd-tab-panel<?php echo 'appearance' === $active_tab ? ' is-active' : ''; ?>">
+		<form method="post" class="gd-settings-form">
+			<?php wp_nonce_field( 'gd_save_settings', 'gd_settings_nonce' ); ?>
+			<input type="hidden" name="gd_active_tab" value="appearance">
+
+			<table class="form-table" role="presentation">
+				<tbody>
+					<tr>
+						<th scope="row">
+							<label for="gd_job_card_bg"><?php esc_html_e( 'Job Card Background', 'go-deliver' ); ?></label>
+						</th>
+						<td>
+							<input
+								type="text"
+								id="gd_job_card_bg"
+								name="gd_job_card_bg"
+								class="gd-color-picker"
+								value="<?php echo esc_attr( $job_card_bg ); ?>"
+								data-default-color="#2D1B0E"
+							>
+							<p class="description"><?php esc_html_e( 'Background colour of the job cards on the available-jobs board (default: dark brown #2D1B0E).', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="gd_job_card_accent"><?php esc_html_e( 'Job Card Accent', 'go-deliver' ); ?></label>
+						</th>
+						<td>
+							<input
+								type="text"
+								id="gd_job_card_accent"
+								name="gd_job_card_accent"
+								class="gd-color-picker"
+								value="<?php echo esc_attr( $job_card_accent ); ?>"
+								data-default-color="#C9A227"
+							>
+							<p class="description"><?php esc_html_e( 'Accent / highlight colour used for badges, borders, and the underline on the job board (default: gold #C9A227).', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<?php submit_button( __( 'Save Appearance Settings', 'go-deliver' ) ); ?>
+		</form>
+	</div><!-- /#gd-tab-appearance -->
 
 </div><!-- /.gd-admin-wrap -->
