@@ -698,8 +698,8 @@
 			);
 		} );
 
-		// Quote submission from modal.
-		$dashboard.on( 'submit', '#gd-quote-form', function ( e ) {
+		// Quote submission from modal (modal lives outside $dashboard, so listen on document).
+		$( document ).on( 'submit', '#gd-quote-form', function ( e ) {
 			e.preventDefault();
 			gdSubmitQuote( $( this ) );
 		} );

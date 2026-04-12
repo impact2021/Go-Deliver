@@ -414,7 +414,7 @@ wp_reset_postdata();
  * AJAX: submit a quote.
  */
 public function ajax_submit_quote() {
-check_ajax_referer( 'gd_submit_quote', 'nonce' );
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
 
 if ( ! is_user_logged_in() || ! current_user_can( 'gd_submit_quotes' ) ) {
 wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
@@ -441,7 +441,7 @@ wp_send_json_success( array( 'quote_id' => $result ) );
  * AJAX: accept a quote (customer).
  */
 public function ajax_accept_quote() {
-check_ajax_referer( 'gd_accept_quote', 'nonce' );
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
 
 if ( ! is_user_logged_in() || ! current_user_can( 'gd_submit_jobs' ) ) {
 wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
@@ -465,7 +465,7 @@ wp_send_json_success( array( 'message' => __( 'Quote accepted.', 'go-deliver' ) 
  * AJAX: withdraw a quote (mover).
  */
 public function ajax_withdraw_quote() {
-check_ajax_referer( 'gd_withdraw_quote', 'nonce' );
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
 
 if ( ! is_user_logged_in() || ! current_user_can( 'gd_submit_quotes' ) ) {
 wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
