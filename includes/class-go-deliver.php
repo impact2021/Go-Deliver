@@ -95,6 +95,44 @@ class Go_Deliver {
 		add_shortcode( 'gd_messaging', array( $public, 'render_messaging' ) );
 		add_shortcode( 'gd_wallet_topup', array( $public, 'render_wallet_topup' ) );
 		add_shortcode( 'gd_login_logout', array( $public, 'render_login_logout' ) );
+
+		// Nav menu: inject unread message badge on the messaging page item.
+		add_filter( 'wp_nav_menu_objects', array( $this, 'add_unread_badge_to_menu' ), 10, 2 );
+	}
+
+	/**
+	 * Append an unread-messages badge to the nav menu item that links to the
+	 * messaging page.  Only visible for logged-in users who have unread messages.
+	 *
+	 * @param WP_Post[] $sorted_menu_items Array of menu item objects.
+	 * @param stdClass  $args              wp_nav_menu() arguments.
+	 * @return WP_Post[] Modified menu items.
+	 */
+	public function add_unread_badge_to_menu( $sorted_menu_items, $args ) {
+		if ( ! is_user_logged_in() ) {
+			return $sorted_menu_items;
+		}
+
+		$messaging_page_id = (int) get_option( 'gd_messaging_page_id', 0 );
+		if ( ! $messaging_page_id ) {
+			return $sorted_menu_items;
+		}
+
+		$unread_count = Go_Deliver_DB::get_unread_message_count( get_current_user_id() );
+		if ( $unread_count <= 0 ) {
+			return $sorted_menu_items;
+		}
+
+		$messaging_url = trailingslashit( get_permalink( $messaging_page_id ) );
+
+		foreach ( $sorted_menu_items as $item ) {
+			if ( trailingslashit( $item->url ) === $messaging_url ) {
+				$item->title .= ' <span class="gd-menu-badge">' . esc_html( (int) $unread_count ) . '</span>';
+				break;
+			}
+		}
+
+		return $sorted_menu_items;
 	}
 
 	/**
@@ -152,6 +190,8 @@ class Go_Deliver {
 			'gd_get_available_jobs',
 			'gd_update_mover_profile',
 			'gd_get_my_quotes',
+			'gd_dismiss_job',
+			'gd_restore_job',
 		);
 
 		foreach ( $ajax_actions_auth as $action ) {
@@ -198,6 +238,8 @@ class Go_Deliver {
 			'gd_get_available_jobs'  => array( 'Go_Deliver_Jobs', 'ajax_get_available_jobs' ),
 			'gd_update_mover_profile' => array( 'Go_Deliver_Mover_Reg', 'ajax_update_mover_profile' ),
 			'gd_get_my_quotes'       => array( 'Go_Deliver_Quotes', 'ajax_get_my_quotes' ),
+			'gd_dismiss_job'         => array( 'Go_Deliver_Jobs', 'ajax_dismiss_job' ),
+			'gd_restore_job'         => array( 'Go_Deliver_Jobs', 'ajax_restore_job' ),
 		);
 
 		if ( isset( $handler_map[ $action ] ) ) {

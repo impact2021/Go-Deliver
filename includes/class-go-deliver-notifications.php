@@ -106,6 +106,10 @@ class Go_Deliver_Notifications {
 			 GROUP BY receiver_id"
 		);
 
+		$messaging_page_id = (int) get_option( 'gd_messaging_page_id', 0 );
+		$messaging_url     = $messaging_page_id ? get_permalink( $messaging_page_id ) : home_url();
+		$site_name         = get_bloginfo( 'name' );
+
 		foreach ( $rows as $row ) {
 			$user_id = (int) $row->receiver_id;
 
@@ -115,12 +119,34 @@ class Go_Deliver_Notifications {
 				continue;
 			}
 
-			/* translators: %d: number of unread messages */
-			$subject = sprintf( __( 'You have %d unread message(s)', 'go-deliver' ), (int) $row->cnt );
-			/* translators: %d: number of unread messages */
-			$message = sprintf( __( 'You have %d unread message(s) waiting for you on Go Deliver. Log in to view them.', 'go-deliver' ), (int) $row->cnt );
+			$user = get_userdata( $user_id );
+			if ( ! $user ) {
+				continue;
+			}
 
-			self::notify( $user_id, 'unread_messages', $subject, $message, true );
+			$unread_count = (int) $row->cnt;
+
+			/* translators: %d: number of unread messages */
+			$subject = sprintf( __( 'You have %d unread message(s)', 'go-deliver' ), $unread_count );
+			/* translators: %d: number of unread messages */
+			$body = sprintf( __( 'You have %d unread message(s) waiting for you on Go Deliver. Log in to view them.', 'go-deliver' ), $unread_count );
+
+			// Save in-app notification.
+			Go_Deliver_DB::save_notification( $user_id, 'unread_messages', $subject, $body );
+
+			// Send HTML email with direct link to messaging inbox.
+			$this->send_html_email(
+				$user->user_email,
+				$subject,
+				GD_PLUGIN_DIR . 'templates/emails/unread-messages.php',
+				array(
+					'recipient_first_name' => $user->first_name ?: $user->display_name,
+					'unread_count'         => $unread_count,
+					'messaging_url'        => $messaging_url,
+					'site_name'            => $site_name,
+					'site_url'             => home_url(),
+				)
+			);
 
 			// Record that we notified this user so we don't spam them again
 			// until they view their messages (which clears this flag).

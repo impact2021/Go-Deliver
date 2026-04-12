@@ -140,6 +140,22 @@ $accepted_quotes_query = new WP_Query( array(
 $accepted_quotes = $accepted_quotes_query->posts;
 wp_reset_postdata();
 
+// Fetch dismissed jobs for the Dismissed Jobs tab.
+$dismissed_job_ids = array_map( 'intval', (array) get_user_meta( $user_id, 'gd_dismissed_jobs', true ) );
+$dismissed_jobs    = array();
+if ( ! empty( $dismissed_job_ids ) ) {
+	$jobs_handler = new Go_Deliver_Jobs();
+	foreach ( $dismissed_job_ids as $djid ) {
+		if ( ! $djid ) {
+			continue;
+		}
+		$djdata = $jobs_handler->get_job( $djid );
+		if ( ! is_wp_error( $djdata ) ) {
+			$dismissed_jobs[] = $djdata;
+		}
+	}
+}
+
 $messaging_page_id  = (int) get_option( 'gd_messaging_page_id', 0 );
 $messaging_base_url = $messaging_page_id ? get_permalink( $messaging_page_id ) : home_url();
 
@@ -216,6 +232,12 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 			<?php esc_html_e( 'Accepted Jobs', 'go-deliver' ); ?>
 			<?php if ( ! empty( $accepted_quotes ) ) : ?>
 				<span class="gd-badge gd-badge--accepted" style="margin-left:6px;"><?php echo esc_html( count( $accepted_quotes ) ); ?></span>
+			<?php endif; ?>
+		</div>
+		<div class="gd-tab" data-tab="dismissed-jobs" role="tab" tabindex="0">
+			<?php esc_html_e( 'Dismissed Jobs', 'go-deliver' ); ?>
+			<?php if ( ! empty( $dismissed_jobs ) ) : ?>
+				<span class="gd-badge gd-badge--open" id="gd-dismissed-badge" style="margin-left:6px;"><?php echo esc_html( count( $dismissed_jobs ) ); ?></span>
 			<?php endif; ?>
 		</div>
 		<div class="gd-tab" data-tab="profile" role="tab" tabindex="0">
@@ -472,6 +494,78 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 			<?php endforeach; ?>
 		<?php endif; ?>
 	</div><!-- /#gd-tab-accepted-jobs -->
+
+	<!-- Tab: Dismissed Jobs -->
+	<div class="gd-tab-panel" id="gd-tab-dismissed-jobs" role="tabpanel" style="display:none;">
+		<?php if ( empty( $dismissed_jobs ) ) : ?>
+			<div class="gd-empty-state">
+				<div class="gd-empty-state__icon">🚫</div>
+				<p class="gd-empty-state__text"><?php esc_html_e( 'No dismissed jobs.', 'go-deliver' ); ?></p>
+			</div>
+		<?php else : ?>
+			<?php
+			$dj_type_labels    = Go_Deliver_Jobs::get_type_labels();
+			$dj_all_ids        = array_column( $dismissed_jobs, 'id' );
+			$dj_quote_stats    = Go_Deliver_Jobs::get_quote_stats_bulk( $dj_all_ids );
+			$dj_empty_stats    = array( 'count' => 0, 'min' => null, 'max' => null );
+			foreach ( $dismissed_jobs as $dj ) :
+				$dj_pickup  = $dj['pickup_location'] ?? array();
+				$dj_dropoff = $dj['dropoff_location'] ?? array();
+				$dj_type    = $dj['job_type'] ?? '';
+				$dj_title   = ! empty( $dj['listing_title'] )
+					? esc_html( $dj['listing_title'] )
+					: esc_html( $dj_type_labels[ $dj_type ] ?? ucwords( str_replace( '_', ' ', $dj_type ) ) );
+				$dj_date    = ! empty( $dj['date_requested'] )
+					? esc_html( date_i18n( get_option( 'date_format' ), strtotime( $dj['date_requested'] ) ) )
+					: '';
+				$dj_from    = esc_html( $dj_pickup['suburb'] ?? $dj_pickup['address'] ?? __( 'Unknown', 'go-deliver' ) );
+				$dj_to      = esc_html( $dj_dropoff['suburb'] ?? $dj_dropoff['address'] ?? __( 'Unknown', 'go-deliver' ) );
+				$dj_stats   = $dj_quote_stats[ $dj['id'] ] ?? $dj_empty_stats;
+				$dj_q_count = (int) $dj_stats['count'];
+			?>
+				<div class="gd-mover-card gd-dismissed-card" id="gd-dismissed-job-<?php echo esc_attr( $dj['id'] ); ?>">
+					<div class="gd-mover-card__header">
+						<div>
+							<div class="gd-mover-card__job-type"><?php echo $dj_title; ?></div>
+							<div class="gd-mover-card__suburb"><?php echo $dj_from; ?> → <?php echo $dj_to; ?></div>
+						</div>
+						<div style="text-align:right;">
+							<?php if ( $dj_q_count > 0 ) : ?>
+								<div style="font-size:13px;color:var(--gd-text-muted);">
+									<?php
+									printf(
+										/* translators: %d: number of quotes */
+										esc_html( _n( '%d quote', '%d quotes', $dj_q_count, 'go-deliver' ) ),
+										$dj_q_count
+									);
+									if ( null !== $dj_stats['min'] ) {
+										if ( $dj_stats['min'] === $dj_stats['max'] ) {
+											echo ' · $' . esc_html( number_format( $dj_stats['min'], 0 ) );
+										} else {
+											echo ' · $' . esc_html( number_format( $dj_stats['min'], 0 ) ) . '–$' . esc_html( number_format( $dj_stats['max'], 0 ) );
+										}
+									}
+									?>
+								</div>
+							<?php endif; ?>
+							<?php if ( $dj_date ) : ?>
+								<div style="font-size:12px;color:var(--gd-text-muted);margin-top:2px;"><?php echo $dj_date; ?></div>
+							<?php endif; ?>
+						</div>
+					</div>
+					<div class="gd-mover-card__actions">
+						<button
+							type="button"
+							class="gd-btn gd-btn--outline gd-btn--sm gd-restore-job-btn"
+							data-job-id="<?php echo esc_attr( $dj['id'] ); ?>"
+						>
+							<?php esc_html_e( 'Restore to Available Jobs', 'go-deliver' ); ?>
+						</button>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		<?php endif; ?>
+	</div><!-- /#gd-tab-dismissed-jobs -->
 
 	<!-- Tab: Profile -->
 	<div class="gd-tab-panel" id="gd-tab-profile" role="tabpanel" style="display:none;">

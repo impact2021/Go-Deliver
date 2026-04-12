@@ -754,6 +754,62 @@
 			);
 		} );
 
+		// Dismiss job.
+		$dashboard.on( 'click', '.gd-dismiss-job-btn', function () {
+			var jobId = $( this ).data( 'job-id' );
+			var $btn  = $( this );
+			gdBtnLoading( $btn );
+			gdAjax(
+				'gd_dismiss_job',
+				{ job_id: jobId },
+				function () {
+					$btn.closest( '.gd-job-card' ).fadeOut( 300, function () { $( this ).remove(); } );
+					// Update the dismissed-jobs tab badge.
+					var $badge = $dashboard.find( '#gd-dismissed-badge' );
+					if ( $badge.length ) {
+						$badge.text( parseInt( $badge.text(), 10 ) + 1 );
+					} else {
+						$dashboard.find( '[data-tab="dismissed-jobs"]' ).append( '<span class="gd-badge gd-badge--open" id="gd-dismissed-badge" style="margin-left:6px;">1</span>' );
+					}
+				},
+				function ( msg ) {
+					gdBtnReset( $btn );
+					gdToast( msg, 'error' );
+				}
+			);
+		} );
+
+		// Restore dismissed job.
+		$dashboard.on( 'click', '.gd-restore-job-btn', function () {
+			var jobId = $( this ).data( 'job-id' );
+			var $btn  = $( this );
+			gdBtnLoading( $btn );
+			gdAjax(
+				'gd_restore_job',
+				{ job_id: jobId },
+				function () {
+					gdToast( 'Job restored to Available Jobs.', 'success' );
+					$btn.closest( '.gd-dismissed-card' ).fadeOut( 300, function () { $( this ).remove(); } );
+					// Update the dismissed-jobs tab badge.
+					var $badge = $dashboard.find( '#gd-dismissed-badge' );
+					if ( $badge.length ) {
+						var newCount = parseInt( $badge.text(), 10 ) - 1;
+						if ( newCount <= 0 ) {
+							$badge.remove();
+						} else {
+							$badge.text( newCount );
+						}
+					}
+					// Reload available jobs so the restored job appears.
+					gdLoadAvailableJobs( $dashboard );
+				},
+				function ( msg ) {
+					gdBtnReset( $btn );
+					gdToast( msg, 'error' );
+				}
+			);
+		} );
+
 		// Quote submission from modal (modal lives outside $dashboard, so listen on document).
 		$( document ).on( 'submit', '#gd-quote-form', function ( e ) {
 			e.preventDefault();

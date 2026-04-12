@@ -34,8 +34,54 @@ if ( ! $job_id && isset( $_GET['job_id'] ) ) {
 }
 
 if ( ! $job_id ) {
-	echo '<div class="gd-wrap"><div class="gd-alert gd-alert--info"><span class="gd-alert__icon">ℹ️</span><div class="gd-alert__body">'
-	     . esc_html__( 'Please select a job to view its conversation.', 'go-deliver' ) . '</div></div></div>';
+	// No job selected – show inbox: all conversations ordered by unread first.
+	$conversations = Go_Deliver_DB::get_conversations_for_user( $current_user_id );
+
+	if ( empty( $conversations ) ) {
+		echo '<div class="gd-wrap"><div class="gd-empty-state">'
+			. '<div class="gd-empty-state__icon">💬</div>'
+			. '<p class="gd-empty-state__text">' . esc_html__( 'You have no conversations yet.', 'go-deliver' ) . '</p>'
+			. '</div></div>';
+		return;
+	}
+
+	$messaging_base_url = get_permalink();
+	?>
+	<div class="gd-wrap">
+		<h2 style="font-size:20px;font-weight:700;margin:0 0 16px;"><?php esc_html_e( 'Messages', 'go-deliver' ); ?></h2>
+		<div class="gd-conversation-list">
+			<?php foreach ( $conversations as $conv ) :
+				$cjob_id    = (int) $conv->job_id;
+				$unread     = (int) $conv->unread_count;
+				$last_at    = $conv->last_message_at;
+				$job_post   = get_post( $cjob_id );
+				if ( ! $job_post ) continue;
+
+				$job_title  = esc_html( Go_Deliver_Jobs::get_display_title( $cjob_id ) );
+				$raw_loc    = json_decode( get_post_meta( $cjob_id, 'gd_pickup_location', true ), true );
+				$suburb     = esc_html( $raw_loc['suburb'] ?? $raw_loc['address'] ?? '' );
+				$conv_url   = esc_url( add_query_arg( 'job_id', $cjob_id, $messaging_base_url ) );
+				$time_label = esc_html( human_time_diff( strtotime( $last_at ), current_time( 'timestamp' ) ) . ' ' . __( 'ago', 'go-deliver' ) );
+			?>
+				<a href="<?php echo $conv_url; ?>" class="gd-conversation-item<?php echo $unread ? ' gd-conversation-item--unread' : ''; ?>">
+					<div class="gd-conversation-item__icon">💬</div>
+					<div class="gd-conversation-item__body">
+						<div class="gd-conversation-item__title">
+							<?php echo $job_title; ?>
+							<?php if ( $suburb ) : ?>
+								<span class="gd-conversation-item__suburb"> — <?php echo $suburb; ?></span>
+							<?php endif; ?>
+						</div>
+						<div class="gd-conversation-item__meta"><?php echo $time_label; ?></div>
+					</div>
+					<?php if ( $unread ) : ?>
+						<span class="gd-conversation-item__badge"><?php echo esc_html( $unread ); ?></span>
+					<?php endif; ?>
+				</a>
+			<?php endforeach; ?>
+		</div>
+	</div>
+	<?php
 	return;
 }
 

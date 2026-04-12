@@ -182,6 +182,55 @@ class Go_Deliver_DB {
 		);
 	}
 
+	/**
+	 * Count total unread messages for a user across all conversations.
+	 *
+	 * @param int $user_id WordPress user ID.
+	 * @return int Total unread message count.
+	 */
+	public static function get_unread_message_count( $user_id ) {
+		global $wpdb;
+
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM `{$wpdb->prefix}gd_messages`
+				 WHERE receiver_id = %d AND is_read = 0",
+				(int) $user_id
+			)
+		);
+	}
+
+	/**
+	 * Get all conversation threads for a user, with per-job unread counts.
+	 *
+	 * Returns one row per job, ordered by unread messages first then by
+	 * most-recent activity so that urgent threads surface at the top.
+	 *
+	 * @param int $user_id WordPress user ID.
+	 * @return array[] Array of objects with job_id, unread_count, last_message_at.
+	 */
+	public static function get_conversations_for_user( $user_id ) {
+		global $wpdb;
+
+		$user_id = (int) $user_id;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT
+					m.job_id,
+					SUM( CASE WHEN m.receiver_id = %d AND m.is_read = 0 THEN 1 ELSE 0 END ) AS unread_count,
+					MAX( m.created_at ) AS last_message_at
+				 FROM `{$wpdb->prefix}gd_messages` m
+				 WHERE m.sender_id = %d OR m.receiver_id = %d
+				 GROUP BY m.job_id
+				 ORDER BY unread_count DESC, last_message_at DESC",
+				$user_id,
+				$user_id,
+				$user_id
+			)
+		);
+	}
+
 	// =========================================================================
 	// Notification helpers.
 	// =========================================================================

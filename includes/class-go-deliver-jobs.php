@@ -548,6 +548,136 @@ return true;
 }
 
 /**
+ * Return quote count, minimum bid, and maximum bid for a set of jobs in one
+ * database query.  Only non-withdrawn quotes are counted.
+ *
+ * @param int[] $job_ids Array of job post IDs.
+ * @return array<int,array{count:int,min:float|null,max:float|null}>
+ *   Keyed by job ID; jobs with no quotes get count=0, min/max=null.
+ */
+public static function get_quote_stats_bulk( array $job_ids ): array {
+if ( empty( $job_ids ) ) {
+return array();
+}
+
+global $wpdb;
+
+// Cast every element to int to prevent SQL injection via the IN list.
+$int_ids          = array_map( 'intval', $job_ids );
+$ids_placeholder  = implode( ',', $int_ids );
+
+// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+$rows = $wpdb->get_results(
+"SELECT
+pm_job.meta_value AS job_id,
+COUNT(p.ID) AS quote_count,
+MIN(CAST(pm_amount.meta_value AS DECIMAL(10,2))) AS min_amount,
+MAX(CAST(pm_amount.meta_value AS DECIMAL(10,2))) AS max_amount
+FROM {$wpdb->posts} p
+INNER JOIN {$wpdb->postmeta} pm_job
+ON p.ID = pm_job.post_id AND pm_job.meta_key = 'gd_job_id'
+INNER JOIN {$wpdb->postmeta} pm_status
+ON p.ID = pm_status.post_id AND pm_status.meta_key = 'gd_status'
+AND pm_status.meta_value NOT IN ('withdrawn','expired')
+INNER JOIN {$wpdb->postmeta} pm_amount
+ON p.ID = pm_amount.post_id AND pm_amount.meta_key = 'gd_amount'
+WHERE p.post_type = 'gd_quote'
+AND p.post_status = 'publish'
+AND pm_job.meta_value IN ({$ids_placeholder})
+GROUP BY pm_job.meta_value"
+);
+
+$stats = array();
+foreach ( $rows as $row ) {
+$stats[ (int) $row->job_id ] = array(
+'count' => (int) $row->quote_count,
+'min'   => null !== $row->min_amount ? (float) $row->min_amount : null,
+'max'   => null !== $row->max_amount ? (float) $row->max_amount : null,
+);
+}
+
+// Fill zeros for jobs that have no active quotes.
+foreach ( $int_ids as $id ) {
+if ( ! isset( $stats[ $id ] ) ) {
+$stats[ $id ] = array( 'count' => 0, 'min' => null, 'max' => null );
+}
+}
+
+return $stats;
+}
+
+/**
+ * AJAX: dismiss (reject) a job so it no longer appears in Available Jobs.
+ *
+ * Stores the job ID in the mover's gd_dismissed_jobs user-meta array.
+ */
+public function ajax_dismiss_job() {
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+if ( ! is_user_logged_in() ) {
+wp_send_json_error( array( 'message' => __( 'Please log in.', 'go-deliver' ) ), 403 );
+}
+
+$roles    = (array) wp_get_current_user()->roles;
+$is_mover = in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true );
+
+if ( ! $is_mover && ! current_user_can( 'manage_options' ) ) {
+wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+}
+
+$job_id = absint( $_POST['job_id'] ?? 0 );
+if ( ! $job_id ) {
+wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
+}
+
+$user_id   = get_current_user_id();
+$dismissed = (array) get_user_meta( $user_id, 'gd_dismissed_jobs', true );
+
+if ( ! in_array( $job_id, array_map( 'intval', $dismissed ), true ) ) {
+$dismissed[] = $job_id;
+update_user_meta( $user_id, 'gd_dismissed_jobs', $dismissed );
+}
+
+wp_send_json_success( array( 'message' => __( 'Job dismissed.', 'go-deliver' ) ) );
+}
+
+/**
+ * AJAX: restore a previously dismissed job back to Available Jobs.
+ *
+ * Removes the job ID from the mover's gd_dismissed_jobs user-meta array.
+ */
+public function ajax_restore_job() {
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+if ( ! is_user_logged_in() ) {
+wp_send_json_error( array( 'message' => __( 'Please log in.', 'go-deliver' ) ), 403 );
+}
+
+$roles    = (array) wp_get_current_user()->roles;
+$is_mover = in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true );
+
+if ( ! $is_mover && ! current_user_can( 'manage_options' ) ) {
+wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+}
+
+$job_id = absint( $_POST['job_id'] ?? 0 );
+if ( ! $job_id ) {
+wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
+}
+
+$user_id   = get_current_user_id();
+$dismissed = (array) get_user_meta( $user_id, 'gd_dismissed_jobs', true );
+$dismissed = array_values(
+array_filter( $dismissed, function ( $id ) use ( $job_id ) {
+return (int) $id !== $job_id;
+} )
+);
+update_user_meta( $user_id, 'gd_dismissed_jobs', $dismissed );
+
+wp_send_json_success( array( 'message' => __( 'Job restored to Available Jobs.', 'go-deliver' ) ) );
+}
+
+/**
  * AJAX: mark an accepted job as completed.
  */
 public function ajax_complete_job() {
@@ -919,6 +1049,7 @@ wp_send_json_success( array( 'message' => __( 'Job cancelled.', 'go-deliver' ) )
  *
  * Returns an HTML fragment of job cards for the #gd-available-jobs-list
  * container.  Optionally filtered by job_type.
+ * Dismissed jobs are excluded for movers (admins see everything).
  */
 public function ajax_get_available_jobs() {
 check_ajax_referer( 'gd_public_nonce', 'nonce' );
@@ -931,8 +1062,8 @@ $user_id  = get_current_user_id();
 $is_admin = user_can( $user_id, 'manage_options' );
 
 if ( ! $is_admin ) {
-$roles        = (array) wp_get_current_user()->roles;
-$is_mover     = in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true );
+$roles    = (array) wp_get_current_user()->roles;
+$is_mover = in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true );
 if ( ! $is_mover ) {
 wp_send_json_error( array( 'message' => __( 'Access denied.', 'go-deliver' ) ), 403 );
 }
@@ -944,6 +1075,16 @@ $jobs = $is_admin
 ? $this->get_all_open_jobs()
 : $this->get_open_jobs_for_mover( $user_id );
 
+// Exclude jobs the mover has dismissed (admins always see everything).
+if ( ! $is_admin ) {
+$dismissed = array_map( 'intval', (array) get_user_meta( $user_id, 'gd_dismissed_jobs', true ) );
+if ( ! empty( $dismissed ) ) {
+$jobs = array_values( array_filter( $jobs, function ( $job ) use ( $dismissed ) {
+return ! in_array( (int) $job['id'], $dismissed, true );
+} ) );
+}
+}
+
 // Apply optional job-type filter.
 if ( ! empty( $job_type_filter ) ) {
 $jobs = array_values( array_filter( $jobs, function ( $job ) use ( $job_type_filter ) {
@@ -954,6 +1095,10 @@ return isset( $job['job_type'] ) && $job['job_type'] === $job_type_filter;
 if ( empty( $jobs ) ) {
 wp_send_json_success( array( 'html' => '' ) );
 }
+
+// Fetch quote counts and bid ranges for all jobs in one query.
+$job_ids     = array_column( $jobs, 'id' );
+$quote_stats = self::get_quote_stats_bulk( $job_ids );
 
 $job_type_labels = self::get_type_labels();
 
@@ -984,6 +1129,9 @@ $inv_words      = $inventory ? preg_split( '/\s+/', $inventory, -1, PREG_SPLIT_N
 $inv_word_count = count( $inv_words );
 $inv_needs_more = $inv_word_count > GD_JOB_CARD_PREVIEW_WORDS;
 $inv_preview    = $inv_needs_more ? implode( ' ', array_slice( $inv_words, 0, GD_JOB_CARD_PREVIEW_WORDS ) ) . '…' : $inventory;
+
+$q_stats = $quote_stats[ $job['id'] ] ?? array( 'count' => 0, 'min' => null, 'max' => null );
+$q_count = (int) $q_stats['count'];
 ?>
 <div class="gd-job-card" data-job-id="<?php echo esc_attr( $job['id'] ); ?>">
 
@@ -1022,6 +1170,24 @@ $inv_preview    = $inv_needs_more ? implode( ' ', array_slice( $inv_words, 0, GD
 <?php endif; ?>
 </div>
 <?php endif; ?>
+<div class="gd-job-card__info-col">
+<span class="gd-job-card__info-label"><?php esc_html_e( 'Quotes', 'go-deliver' ); ?></span>
+<span class="gd-job-card__info-value">
+<?php if ( 0 === $q_count ) : ?>
+<?php esc_html_e( 'None yet', 'go-deliver' ); ?>
+<?php else : ?>
+<?php echo esc_html( $q_count ); ?>
+<?php if ( null !== $q_stats['min'] ) : ?>
+&nbsp;·&nbsp;
+<?php if ( $q_stats['min'] === $q_stats['max'] ) : ?>
+$<?php echo esc_html( number_format( $q_stats['min'], 0 ) ); ?>
+<?php else : ?>
+$<?php echo esc_html( number_format( $q_stats['min'], 0 ) ); ?>–$<?php echo esc_html( number_format( $q_stats['max'], 0 ) ); ?>
+<?php endif; ?>
+<?php endif; ?>
+<?php endif; ?>
+</span>
+</div>
 </div>
 <div class="gd-job-card__cta">
 <button
@@ -1030,6 +1196,14 @@ class="gd-btn gd-btn--primary gd-quote-btn"
 data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
 >
 <?php esc_html_e( 'Submit a Quote', 'go-deliver' ); ?>
+</button>
+<button
+type="button"
+class="gd-btn gd-btn--outline gd-dismiss-job-btn"
+data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
+title="<?php esc_attr_e( 'Dismiss this job', 'go-deliver' ); ?>"
+>
+<?php esc_html_e( 'Dismiss', 'go-deliver' ); ?>
 </button>
 </div>
 </div>
