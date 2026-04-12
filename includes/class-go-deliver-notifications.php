@@ -145,6 +145,65 @@ class Go_Deliver_Notifications {
 	}
 
 	// -------------------------------------------------------------------------
+	// Message notifications.
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Email the receiver when a new message is sent.
+	 *
+	 * @param int $job_id      gd_job post ID.
+	 * @param int $sender_id   Sender user ID.
+	 * @param int $receiver_id Receiver user ID.
+	 * @param int $message_id  Saved message ID (unused, reserved for future use).
+	 */
+	public function notify_new_message( $job_id, $sender_id, $receiver_id, $message_id ) {
+		$receiver = get_userdata( (int) $receiver_id );
+		if ( ! $receiver || ! $receiver->user_email ) {
+			return;
+		}
+
+		$sender   = get_userdata( (int) $sender_id );
+		$job_type = get_post_meta( (int) $job_id, 'gd_job_type', true ) ?: __( 'Moving Job', 'go-deliver' );
+
+		$messaging_page_id = (int) get_option( 'gd_messaging_page_id', 0 );
+		$conversation_url  = $messaging_page_id
+			? add_query_arg( 'job_id', (int) $job_id, get_permalink( $messaging_page_id ) )
+			: home_url();
+
+		$site_name = get_bloginfo( 'name' );
+
+		$subject = sprintf(
+			/* translators: %s: site name */
+			__( 'New Message – %s', 'go-deliver' ),
+			$site_name
+		);
+
+		// Retrieve the last saved message for a preview snippet.
+		$messages        = Go_Deliver_DB::get_messages( (int) $job_id, (int) $receiver_id );
+		$message_preview = '';
+		if ( is_array( $messages ) && ! empty( $messages ) ) {
+			$last            = end( $messages );
+			$raw             = isset( $last->message ) ? $last->message : ( isset( $last['message'] ) ? $last['message'] : '' );
+			$message_preview = wp_trim_words( $raw, 30, '…' );
+		}
+
+		$this->send_html_email(
+			$receiver->user_email,
+			$subject,
+			GD_PLUGIN_DIR . 'templates/emails/new-message.php',
+			array(
+				'recipient_first_name' => $receiver->first_name ?: $receiver->display_name,
+				'sender_first_name'    => $sender ? ( $sender->first_name ?: $sender->display_name ) : __( 'Someone', 'go-deliver' ),
+				'job_type'             => $job_type,
+				'message_preview'      => $message_preview,
+				'conversation_url'     => $conversation_url,
+				'site_name'            => $site_name,
+				'site_url'             => home_url(),
+			)
+		);
+	}
+
+	// -------------------------------------------------------------------------
 	// New-job notifications for movers.
 	// -------------------------------------------------------------------------
 

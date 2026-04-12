@@ -125,11 +125,6 @@ $messaging_nonce = wp_create_nonce( 'gd_messaging' );
 			</div>
 		</div>
 
-		<!-- Privacy notice -->
-		<div class="gd-messaging-panel__notice">
-			🔒 <?php esc_html_e( 'Please do not share personal contact details (phone, email, address) in messages.', 'go-deliver' ); ?>
-		</div>
-
 		<!-- Message list -->
 		<div class="gd-message-list" id="gd-message-list">
 			<div class="gd-inline-spinner">
