@@ -296,7 +296,7 @@ foreach ( $jobs as $job ) {
 									<div class="gd-quote-card__message"><?php echo $q_message; ?></div>
 								<?php endif; ?>
 
-								<?php if ( 'pending' === $q_status && 'open' === $status ) : ?>
+								<?php if ( 'pending' === $q_status && in_array( $status, array( 'open', 'locked' ), true ) ) : ?>
 									<div class="gd-quote-card__actions">
 										<button
 											type="button"
