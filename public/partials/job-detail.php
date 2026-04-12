@@ -137,7 +137,7 @@ $photos    = is_array( $photo_ids ) ? $photo_ids : array();
 				</div>
 			</div>
 
-			<?php if ( $is_mover && ! $is_accepted_mover && 'open' === $job_status ) : ?>
+			<?php if ( $is_mover && ! $is_accepted_mover && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
 				<p class="gd-privacy-notice">
 					🔒 <?php esc_html_e( 'Full address details are revealed only after your quote is accepted.', 'go-deliver' ); ?>
 				</p>
@@ -309,7 +309,7 @@ $photos    = is_array( $photo_ids ) ? $photo_ids : array();
 						<div class="gd-quote-card__message"><?php echo $q_message; ?></div>
 					<?php endif; ?>
 
-					<?php if ( 'pending' === $q_status && 'open' === $job_status ) : ?>
+					<?php if ( 'pending' === $q_status && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
 						<div class="gd-quote-card__actions">
 							<button
 								type="button"
@@ -328,7 +328,7 @@ $photos    = is_array( $photo_ids ) ? $photo_ids : array();
 		<?php endif; ?>
 
 		<!-- Quote Form (mover view, only for open jobs) -->
-		<?php if ( $is_mover && 'open' === $job_status ) : ?>
+		<?php if ( $is_mover && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
 			<?php include __DIR__ . '/quote-form.php'; ?>
 		<?php endif; ?>
 
