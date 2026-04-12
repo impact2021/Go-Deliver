@@ -296,6 +296,11 @@ class Go_Deliver_Notifications {
 			$site_name
 		);
 
+		$messaging_page_id = (int) get_option( 'gd_messaging_page_id', 0 );
+		$job_url           = $messaging_page_id
+			? add_query_arg( 'job_id', $job_id, get_permalink( $messaging_page_id ) )
+			: home_url();
+
 		$this->send_html_email(
 			$mover->user_email,
 			$subject,
@@ -311,6 +316,7 @@ class Go_Deliver_Notifications {
 				'customer_email'   => $customer_email,
 				'quote_amount'     => $quote_amount,
 				'fee_amount'       => $fee_amount,
+				'job_url'          => $job_url,
 				'site_name'        => $site_name,
 				'site_url'         => home_url(),
 			)
