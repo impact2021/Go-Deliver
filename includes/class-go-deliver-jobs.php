@@ -638,7 +638,70 @@ $dismissed[] = $job_id;
 update_user_meta( $user_id, 'gd_dismissed_jobs', $dismissed );
 }
 
-wp_send_json_success( array( 'message' => __( 'Job dismissed.', 'go-deliver' ) ) );
+// Build the dismissed-job card HTML so the JS can inject it immediately
+// into the Dismissed Jobs tab without requiring a page reload.
+$card_html   = '';
+$job_data    = $this->get_job( $job_id );
+if ( ! is_wp_error( $job_data ) ) {
+$type_labels = self::get_type_labels();
+$pickup      = $job_data['pickup_location'] ?? array();
+$dropoff     = $job_data['dropoff_location'] ?? array();
+$type        = $job_data['job_type'] ?? '';
+$title       = ! empty( $job_data['listing_title'] )
+	? $job_data['listing_title']
+	: ( $type_labels[ $type ] ?? ucwords( str_replace( '_', ' ', $type ) ) );
+$date        = ! empty( $job_data['date_requested'] )
+	? date_i18n( get_option( 'date_format' ), strtotime( $job_data['date_requested'] ) )
+	: '';
+$from        = $pickup['suburb']  ?? $pickup['address']  ?? __( 'Unknown', 'go-deliver' );
+$to          = $dropoff['suburb'] ?? $dropoff['address'] ?? __( 'Unknown', 'go-deliver' );
+$stats       = self::get_quote_stats_bulk( array( $job_id ) );
+$q_stats     = $stats[ $job_id ] ?? array( 'count' => 0, 'min' => null, 'max' => null );
+$q_count     = (int) $q_stats['count'];
+
+ob_start();
+?>
+<div class="gd-mover-card gd-dismissed-card" id="gd-dismissed-job-<?php echo esc_attr( $job_id ); ?>">
+	<div class="gd-mover-card__header">
+		<div>
+			<div class="gd-mover-card__job-type"><?php echo esc_html( $title ); ?></div>
+			<div class="gd-mover-card__suburb"><?php echo esc_html( $from ); ?> → <?php echo esc_html( $to ); ?></div>
+		</div>
+		<div style="text-align:right;">
+			<?php if ( $q_count > 0 ) : ?>
+				<div style="font-size:13px;color:var(--gd-text-muted);">
+					<?php
+					echo esc_html( sprintf( _n( '%d quote', '%d quotes', $q_count, 'go-deliver' ), $q_count ) );
+					if ( null !== $q_stats['min'] ) {
+						if ( $q_stats['min'] === $q_stats['max'] ) {
+							echo ' · $' . esc_html( number_format( $q_stats['min'], 0 ) );
+						} else {
+							echo ' · $' . esc_html( number_format( $q_stats['min'], 0 ) ) . '–$' . esc_html( number_format( $q_stats['max'], 0 ) );
+						}
+					}
+					?>
+				</div>
+			<?php endif; ?>
+			<?php if ( $date ) : ?>
+				<div style="font-size:12px;color:var(--gd-text-muted);margin-top:2px;"><?php echo esc_html( $date ); ?></div>
+			<?php endif; ?>
+		</div>
+	</div>
+	<div class="gd-mover-card__actions">
+		<button
+			type="button"
+			class="gd-btn gd-btn--outline gd-btn--sm gd-restore-job-btn"
+			data-job-id="<?php echo esc_attr( $job_id ); ?>"
+		>
+			<?php esc_html_e( 'Restore to Available Jobs', 'go-deliver' ); ?>
+		</button>
+	</div>
+</div>
+<?php
+$card_html = ob_get_clean();
+}
+
+wp_send_json_success( array( 'message' => __( 'Job dismissed.', 'go-deliver' ), 'card_html' => $card_html ) );
 }
 
 /**
@@ -960,7 +1023,21 @@ if ( UPLOAD_ERR_OK !== (int) $single_file['error'] || empty( $single_file['tmp_n
 continue;
 }
 $_FILES['gd_job_photo_tmp'] = $single_file;
+// Grant upload_files capability for this request so wp_handle_upload()
+// allows the upload regardless of the user's role (gd_customer does not
+// have this cap by default).
+$upload_cap_filter = function ( $allcaps, $caps ) {
+if ( in_array( 'upload_files', $caps, true ) ) {
+$allcaps['upload_files'] = true;
+}
+return $allcaps;
+};
+add_filter( 'user_has_cap', $upload_cap_filter, 10, 2 );
+try {
 $attachment_id = media_handle_upload( 'gd_job_photo_tmp', 0 );
+} finally {
+remove_filter( 'user_has_cap', $upload_cap_filter, 10 );
+}
 if ( ! is_wp_error( $attachment_id ) ) {
 $photos[] = $attachment_id;
 }
@@ -1199,11 +1276,11 @@ data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
 </button>
 <button
 type="button"
-class="gd-btn gd-btn--outline gd-dismiss-job-btn"
+class="gd-btn gd-btn--dark gd-dismiss-job-btn"
 data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
-title="<?php esc_attr_e( 'Dismiss this job', 'go-deliver' ); ?>"
+title="<?php esc_attr_e( 'Not interested in this job', 'go-deliver' ); ?>"
 >
-<?php esc_html_e( 'Dismiss', 'go-deliver' ); ?>
+<?php esc_html_e( 'Not interested in this job', 'go-deliver' ); ?>
 </button>
 </div>
 </div>
