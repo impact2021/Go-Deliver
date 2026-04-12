@@ -1042,7 +1042,7 @@
 	function gdLoadMessages( jobId, $panel ) {
 		gdAjax(
 			'gd_get_messages',
-			{ job_id: jobId },
+			{ job_id: jobId, nonce: $panel.data( 'nonce' ) || gdPublic.nonce },
 			function ( messages ) {
 				var $list = $panel.find( '#gd-message-list' );
 				if ( ! Array.isArray( messages ) || ! messages.length ) {
