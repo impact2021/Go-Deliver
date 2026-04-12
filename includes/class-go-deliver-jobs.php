@@ -77,6 +77,10 @@ return $labels[ $type ] ?? ( $type ? ucwords( str_replace( '_', ' ', $type ) ) :
  * @return bool
  */
 private static function contains_contact_info( string $text ): bool {
+// Email addresses.
+if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $text ) ) {
+return true;
+}
 // Phone numbers.
 if ( preg_match( '/\d{7,}/', preg_replace( '/[\s\-\.\(\)\+]/', '', $text ) ) ) {
 return true;
@@ -799,12 +803,12 @@ if ( mb_strlen( $listing_title ) > 80 ) {
 wp_send_json_error( array( 'message' => __( 'Listing title must be 80 characters or fewer.', 'go-deliver' ) ) );
 }
 if ( self::contains_contact_info( $listing_title ) ) {
-wp_send_json_error( array( 'message' => __( 'Your listing title may not include a phone number or street address. Please remove contact details — they are shared privately after a quote is accepted.', 'go-deliver' ) ) );
+wp_send_json_error( array( 'message' => __( 'Your listing title may not include a phone number, street address, or email address. Please remove contact details — they are shared privately after a quote is accepted.', 'go-deliver' ) ) );
 }
 
 $inventory_raw = wp_kses_post( wp_unslash( $_POST['inventory'] ?? '' ) );
 if ( self::contains_contact_info( wp_strip_all_tags( $inventory_raw ) ) ) {
-wp_send_json_error( array( 'message' => __( 'The "More information" field may not include a phone number or street address. Contact details are shared privately after a quote is accepted.', 'go-deliver' ) ) );
+wp_send_json_error( array( 'message' => __( 'The "More information" field may not include a phone number, street address, or email address. Contact details are shared privately after a quote is accepted.', 'go-deliver' ) ) );
 }
 
 $data = array(
@@ -917,8 +921,9 @@ $type         = $job['job_type'] ?? '';
 $listing_title = ! empty( $job['listing_title'] ) ? $job['listing_title'] : null;
 $label        = $listing_title ?? ( isset( $job_type_labels[ $type ] ) ? $job_type_labels[ $type ] : ucwords( str_replace( '_', ' ', $type ) ) );
 $status_label = isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : ucfirst( $status );
-$date         = ! empty( $job['date_requested'] ) ? date_i18n( get_option( 'date_format' ), strtotime( $job['date_requested'] ) ) : '';
-$photos       = ! empty( $job['photos'] ) && is_array( $job['photos'] ) ? $job['photos'] : array();
+$date          = ! empty( $job['date_requested'] ) ? date_i18n( get_option( 'date_format' ), strtotime( $job['date_requested'] ) ) : '';
+$date_flexible = ! empty( $job['form_data']['date_flexible'] );
+$photos        = ! empty( $job['photos'] ) && is_array( $job['photos'] ) ? $job['photos'] : array();
 $created_at   = $job['created_at'] ?? '';
 $expiry_str   = $created_at ? date_i18n( 'd M Y', strtotime( $created_at ) + $expiry_days * DAY_IN_SECONDS ) : '';
 ?>
@@ -952,6 +957,9 @@ $expiry_str   = $created_at ? date_i18n( 'd M Y', strtotime( $created_at ) + $ex
 <div class="gd-job-card__meta">
 <span class="gd-job-card__meta-icon">📅</span>
 <?php echo esc_html( $date ); ?>
+<?php if ( $date_flexible ) : ?>
+<span class="gd-badge gd-badge--info" style="margin-left:6px;font-size:11px;"><?php esc_html_e( 'Flexible', 'go-deliver' ); ?></span>
+<?php endif; ?>
 </div>
 <?php endif; ?>
 

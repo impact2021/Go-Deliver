@@ -162,6 +162,15 @@ class Go_Deliver_Notifications {
 			return;
 		}
 
+		// Only send one email per unread conversation thread. If the receiver has
+		// already been notified since they last viewed the conversation, skip the
+		// email. The flag is cleared when the receiver fetches messages.
+		$notified_meta_key = 'gd_msg_notified_' . (int) $job_id;
+		if ( get_user_meta( (int) $receiver_id, $notified_meta_key, true ) ) {
+			return;
+		}
+		update_user_meta( (int) $receiver_id, $notified_meta_key, 1 );
+
 		$sender   = get_userdata( (int) $sender_id );
 		$job_type = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 

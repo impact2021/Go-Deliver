@@ -94,6 +94,24 @@ if ( $show_full_details && $job_customer_id ) {
 
 // Photo attachments.
 $photos = json_decode( get_post_meta( $job_id, 'gd_photos', true ), true ) ?: array();
+
+// Extended form data fields.
+$form_data       = json_decode( get_post_meta( $job_id, 'gd_form_data', true ), true ) ?: array();
+$date_flexible   = ! empty( $form_data['date_flexible'] );
+$dropoff_floors  = $form_data['dropoff_floors'] ?? '0';
+$dropoff_helpers = $form_data['dropoff_helpers'] ?? 'self';
+
+$floors_labels = array(
+	'0' => __( 'Ground floor / no stairs', 'go-deliver' ),
+	'1' => __( '1 floor / flight of stairs', 'go-deliver' ),
+	'2' => __( '2 floors / flights of stairs', 'go-deliver' ),
+	'3' => __( '3 or more floors / flights', 'go-deliver' ),
+);
+$helpers_labels = array(
+	'self'  => __( 'No extra help needed', 'go-deliver' ),
+	'1'     => __( 'Need 1 person to help', 'go-deliver' ),
+	'2plus' => __( 'Need 2+ people to help', 'go-deliver' ),
+);
 ?>
 <div class="gd-job-detail">
 
@@ -150,7 +168,12 @@ $photos = json_decode( get_post_meta( $job_id, 'gd_photos', true ), true ) ?: ar
 				</div>
 				<div class="gd-job-detail__field">
 					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Date Requested', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value"><?php echo $date_requested ?: '—'; ?></div>
+					<div class="gd-job-detail__field-value">
+						<?php echo $date_requested ?: '—'; ?>
+						<?php if ( $date_flexible ) : ?>
+							<span class="gd-badge gd-badge--info" style="margin-left:6px;font-size:11px;"><?php esc_html_e( 'Flexible', 'go-deliver' ); ?></span>
+						<?php endif; ?>
+					</div>
 				</div>
 			</div>
 
@@ -175,6 +198,18 @@ $photos = json_decode( get_post_meta( $job_id, 'gd_photos', true ), true ) ?: ar
 					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Labour at Dropoff', 'go-deliver' ); ?></div>
 					<div class="gd-job-detail__field-value">
 						<?php echo $labour_dropoff ? esc_html__( 'Yes', 'go-deliver' ) : esc_html__( 'No', 'go-deliver' ); ?>
+					</div>
+				</div>
+				<div class="gd-job-detail__field">
+					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Floors / Stairs at Delivery', 'go-deliver' ); ?></div>
+					<div class="gd-job-detail__field-value">
+						<?php echo esc_html( $floors_labels[ $dropoff_floors ] ?? $dropoff_floors ); ?>
+					</div>
+				</div>
+				<div class="gd-job-detail__field">
+					<div class="gd-job-detail__field-label"><?php esc_html_e( 'People to Unload', 'go-deliver' ); ?></div>
+					<div class="gd-job-detail__field-value">
+						<?php echo esc_html( $helpers_labels[ $dropoff_helpers ] ?? $dropoff_helpers ); ?>
 					</div>
 				</div>
 			</div>
