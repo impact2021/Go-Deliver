@@ -27,32 +27,9 @@ $form_builder = new Go_Deliver_Form_Builder();
 	<div class="gd-job-form__header">
 		<h1 class="gd-job-form__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h1>
 
-		<!-- Step progress indicators -->
-		<div class="gd-steps">
-			<div class="gd-step" data-step="1">
-				<span class="gd-step__number">1</span>
-				<span class="gd-step__label"><?php esc_html_e( 'What?', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="2">
-				<span class="gd-step__number">2</span>
-				<span class="gd-step__label"><?php esc_html_e( 'Collection', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="3">
-				<span class="gd-step__number">3</span>
-				<span class="gd-step__label"><?php esc_html_e( 'Delivery', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="4">
-				<span class="gd-step__number">4</span>
-				<span class="gd-step__label"><?php esc_html_e( 'When?', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="5">
-				<span class="gd-step__number">5</span>
-				<span class="gd-step__label"><?php esc_html_e( 'Photos &amp; Notes', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="6">
-				<span class="gd-step__number">6</span>
-				<span class="gd-step__label"><?php esc_html_e( 'Your Details', 'go-deliver' ); ?></span>
-			</div>
+		<!-- Step progress bar -->
+		<div class="gd-form-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+			<div class="gd-form-progress__fill"></div>
 		</div>
 	</div><!-- /.gd-job-form__header -->
 
