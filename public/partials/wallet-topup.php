@@ -116,7 +116,7 @@ $transactions = $wallet->get_transactions( $user_id, 10 );
 
 					<div class="gd-field-group">
 						<label for="gd-topup-amount">
-							<?php esc_html_e( 'Amount (AUD)', 'go-deliver' ); ?>
+							<?php esc_html_e( 'Amount', 'go-deliver' ); ?>
 							<span class="gd-required" aria-hidden="true">*</span>
 						</label>
 						<input
