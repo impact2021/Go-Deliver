@@ -200,13 +200,15 @@ $photos    = is_array( $photo_ids ) ? $photo_ids : array();
 			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Photos', 'go-deliver' ); ?></div>
 			<div class="gd-photo-gallery">
 				<?php foreach ( $photos as $photo_id ) :
-					$img_url = wp_get_attachment_url( (int) $photo_id );
-					if ( $img_url ) :
+					$full_url  = wp_get_attachment_url( (int) $photo_id );
+					$thumb_src = wp_get_attachment_image_src( (int) $photo_id, 'thumbnail' );
+					if ( $full_url ) :
+						$thumb_url = $thumb_src ? $thumb_src[0] : $full_url;
 				?>
 					<div class="gd-photo-gallery__item">
-						<a href="<?php echo esc_url( $img_url ); ?>" target="_blank" rel="noopener">
+						<a href="<?php echo esc_url( $full_url ); ?>" target="_blank" rel="noopener" class="gd-photo-gallery__link">
 							<img
-								src="<?php echo esc_url( $img_url ); ?>"
+								src="<?php echo esc_url( $thumb_url ); ?>"
 								alt="<?php esc_attr_e( 'Job photo', 'go-deliver' ); ?>"
 								loading="lazy"
 							>

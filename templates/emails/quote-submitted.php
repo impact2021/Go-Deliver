@@ -40,10 +40,14 @@ body{margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSys
 <h1 class="eg"><?php $customer_first_name ? printf( esc_html__( 'Hi %s,', 'go-deliver' ), esc_html( $customer_first_name ) ) : esc_html_e( 'Hi there,', 'go-deliver' ); ?></h1>
 <p class="et"><?php printf( esc_html__( 'Great news! You have received a new quote for your %s job.', 'go-deliver' ), esc_html( $job_type ) ); ?></p>
 <div class="card">
+	<?php if ( $mover_rating > 0 ) : ?>
 	<?php $stars = (int) round( $mover_rating ); ?>
 	<div class="card__rating"><?php echo esc_html( str_repeat( '★', $stars ) . str_repeat( '☆', 5 - $stars ) ); ?></div>
+	<?php endif; ?>
 	<div class="card__mover"><?php echo esc_html( $mover_first_name ); ?></div>
+	<?php if ( $mover_rating > 0 ) : ?>
 	<div style="color:#64748b;font-size:13px;margin-bottom:12px;"><?php printf( esc_html__( 'Rating: %s / 5', 'go-deliver' ), esc_html( number_format( $mover_rating, 1 ) ) ); ?></div>
+	<?php endif; ?>
 	<div class="card__amount">$<?php echo esc_html( number_format( $quote_amount, 0 ) ); ?></div>
 	<div style="color:#64748b;font-size:13px;margin-top:4px;"><?php esc_html_e( 'Quoted amount', 'go-deliver' ); ?></div>
 </div>

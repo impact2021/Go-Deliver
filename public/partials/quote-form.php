@@ -129,7 +129,7 @@ $balance        = $wallet->get_balance( $current_user_id );
 				class="gd-quote-amount-input"
 				min="1"
 				step="1"
-				placeholder="<?php esc_attr_e( 'Enter amount in AUD', 'go-deliver' ); ?>"
+				placeholder="<?php esc_attr_e( 'Enter amount', 'go-deliver' ); ?>"
 				required
 			>
 			<span class="gd-quote-form__fee-info">

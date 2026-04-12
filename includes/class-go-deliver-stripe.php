@@ -75,7 +75,7 @@ return new WP_Error( 'amount_too_large', __( 'Maximum top-up amount is $10,000.0
 $body = array(
 'payment_method_types[]'                                => 'card',
 'mode'                                                  => 'payment',
-'line_items[0][price_data][currency]'                   => 'aud',
+'line_items[0][price_data][currency]'                   => 'nzd',
 'line_items[0][price_data][unit_amount]'                => $amount_cents,
 'line_items[0][price_data][product_data][name]'         => 'Wallet Top-up',
 'line_items[0][quantity]'                               => 1,
