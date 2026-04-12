@@ -119,8 +119,8 @@ $status_labels = array(
 				$inventory       = ! empty( $job['inventory'] ) ? wp_strip_all_tags( $job['inventory'] ) : '';
 				$inv_words       = $inventory ? preg_split( '/\s+/', $inventory, -1, PREG_SPLIT_NO_EMPTY ) : array();
 				$inv_word_count  = count( $inv_words );
-				$inv_needs_more  = $inv_word_count > 50;
-				$inv_preview     = $inv_needs_more ? implode( ' ', array_slice( $inv_words, 0, 50 ) ) . '…' : $inventory;
+				$inv_needs_more  = $inv_word_count > GD_JOB_CARD_PREVIEW_WORDS;
+				$inv_preview     = $inv_needs_more ? implode( ' ', array_slice( $inv_words, 0, GD_JOB_CARD_PREVIEW_WORDS ) ) . '…' : $inventory;
 			?>
 			<div class="gd-job-card" data-job-id="<?php echo esc_attr( $job['id'] ); ?>">
 
