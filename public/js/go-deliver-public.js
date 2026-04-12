@@ -146,7 +146,9 @@
 	function gdAjax( action, data, success, fail ) {
 		data         = data         || {};
 		data.action  = action;
-		if ( ! data.nonce ) { data.nonce = gdPublic.nonce; }
+		if ( ! data.nonce ) {
+			data.nonce = gdPublic.nonce;
+		}
 
 		$.ajax( {
 			url:      gdPublic.ajaxUrl,
