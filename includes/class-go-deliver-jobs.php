@@ -15,7 +15,7 @@ exit;
 class Go_Deliver_Jobs {
 
 /** Valid job statuses. */
-const VALID_STATUSES = array( 'open', 'locked', 'accepted', 'expired', 'cancelled' );
+const VALID_STATUSES = array( 'open', 'locked', 'accepted', 'completed', 'expired', 'cancelled' );
 
 // =========================================================================
 // Registration helpers.
@@ -415,6 +415,91 @@ return new WP_Error( 'invalid_status', __( 'Only open jobs can be cancelled.', '
 }
 
 return $this->update_job_status( $job_id, 'cancelled' );
+}
+
+/**
+ * Mark an accepted job as completed by the mover.
+ *
+ * Only the mover who holds the accepted quote for this job may complete it.
+ * After completion an email notification is sent to the customer asking for
+ * a review.
+ *
+ * @param int $job_id   Post ID of the gd_job.
+ * @param int $mover_id User ID of the requesting mover (or their parent).
+ * @return true|WP_Error
+ */
+public function complete_job( $job_id, $mover_id ) {
+$job_id   = (int) $job_id;
+$mover_id = (int) $mover_id;
+
+$post = get_post( $job_id );
+if ( ! $post || 'gd_job' !== $post->post_type ) {
+return new WP_Error( 'job_not_found', __( 'Job not found.', 'go-deliver' ) );
+}
+
+$current_status = get_post_meta( $job_id, 'gd_job_status', true );
+if ( 'accepted' !== $current_status ) {
+return new WP_Error( 'invalid_status', __( 'Only accepted jobs can be marked as completed.', 'go-deliver' ) );
+}
+
+// Confirm the mover has the accepted quote for this job.
+$accepted_quote_id = (int) get_post_meta( $job_id, 'gd_accepted_quote_id', true );
+if ( ! $accepted_quote_id ) {
+return new WP_Error( 'no_accepted_quote', __( 'No accepted quote found for this job.', 'go-deliver' ) );
+}
+
+$quote_mover_id = (int) get_post_meta( $accepted_quote_id, 'gd_mover_id', true );
+if ( $quote_mover_id !== $mover_id ) {
+return new WP_Error( 'permission_denied', __( 'You are not the mover for this job.', 'go-deliver' ) );
+}
+
+$result = $this->update_job_status( $job_id, 'completed' );
+if ( is_wp_error( $result ) ) {
+return $result;
+}
+
+// Notify the customer.
+$notifications = new Go_Deliver_Notifications();
+if ( method_exists( $notifications, 'notify_customer_job_completed' ) ) {
+$notifications->notify_customer_job_completed( $job_id );
+}
+
+return true;
+}
+
+/**
+ * AJAX: mark an accepted job as completed.
+ */
+public function ajax_complete_job() {
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+if ( ! is_user_logged_in() ) {
+wp_send_json_error( array( 'message' => __( 'Please log in.', 'go-deliver' ) ), 403 );
+}
+
+$roles    = (array) wp_get_current_user()->roles;
+$is_mover = in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true );
+
+if ( ! $is_mover && ! current_user_can( 'manage_options' ) ) {
+wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+}
+
+$job_id = absint( $_POST['job_id'] ?? 0 );
+if ( ! $job_id ) {
+wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
+}
+
+// Resolve effective mover ID (sub-users share parent's wallet/jobs).
+$sub_users    = new Go_Deliver_Sub_Users();
+$effective_id = $sub_users->get_effective_mover_id( get_current_user_id() );
+
+$result = $this->complete_job( $job_id, $effective_id );
+
+if ( is_wp_error( $result ) ) {
+wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+}
+
+wp_send_json_success( array( 'message' => __( 'Job marked as completed. The customer has been notified.', 'go-deliver' ) ) );
 }
 
 /**

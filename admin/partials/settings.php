@@ -32,6 +32,11 @@ if ( isset( $_POST['gd_settings_nonce'] ) ) {
 			update_option( 'gd_job_expiry_days', absint( $_POST['gd_job_expiry_days'] ?? 7 ) );
 			update_option( 'gd_quote_expiry_days', absint( $_POST['gd_quote_expiry_days'] ?? 3 ) );
 			update_option( 'gd_google_maps_api_key', sanitize_text_field( wp_unslash( $_POST['gd_google_maps_api_key'] ?? '' ) ) );
+			update_option( 'gd_job_form_page_id', absint( $_POST['gd_job_form_page_id'] ?? 0 ) );
+			update_option( 'gd_customer_dashboard_page_id', absint( $_POST['gd_customer_dashboard_page_id'] ?? 0 ) );
+			update_option( 'gd_mover_dashboard_page_id', absint( $_POST['gd_mover_dashboard_page_id'] ?? 0 ) );
+			update_option( 'gd_messaging_page_id', absint( $_POST['gd_messaging_page_id'] ?? 0 ) );
+			update_option( 'gd_wallet_page_id', absint( $_POST['gd_wallet_page_id'] ?? 0 ) );
 			update_option( 'gd_job_redirect_page_id', absint( $_POST['gd_job_redirect_page_id'] ?? 0 ) );
 			update_option( 'gd_mover_reg_redirect_page_id', absint( $_POST['gd_mover_reg_redirect_page_id'] ?? 0 ) );
 			update_option( 'gd_mover_terms_page_id', absint( $_POST['gd_mover_terms_page_id'] ?? 0 ) );
@@ -55,15 +60,20 @@ if ( isset( $_POST['gd_settings_nonce'] ) ) {
 }
 
 // Fetch current values.
-$fee_pct               = floatval( get_option( 'gd_fee_percentage', 10 ) );
-$job_expiry            = absint( get_option( 'gd_job_expiry_days', 7 ) );
-$quote_expiry          = absint( get_option( 'gd_quote_expiry_days', 3 ) );
-$google_maps_key       = get_option( 'gd_google_maps_api_key', '' );
-$job_redirect_page_id  = absint( get_option( 'gd_job_redirect_page_id', 0 ) );
+$fee_pct                    = floatval( get_option( 'gd_fee_percentage', 10 ) );
+$job_expiry                 = absint( get_option( 'gd_job_expiry_days', 7 ) );
+$quote_expiry               = absint( get_option( 'gd_quote_expiry_days', 3 ) );
+$google_maps_key            = get_option( 'gd_google_maps_api_key', '' );
+$job_form_page_id           = absint( get_option( 'gd_job_form_page_id', 0 ) );
+$customer_dashboard_page_id = absint( get_option( 'gd_customer_dashboard_page_id', 0 ) );
+$mover_dashboard_page_id    = absint( get_option( 'gd_mover_dashboard_page_id', 0 ) );
+$messaging_page_id          = absint( get_option( 'gd_messaging_page_id', 0 ) );
+$wallet_page_id             = absint( get_option( 'gd_wallet_page_id', 0 ) );
+$job_redirect_page_id       = absint( get_option( 'gd_job_redirect_page_id', 0 ) );
 $mover_reg_redirect_page_id = absint( get_option( 'gd_mover_reg_redirect_page_id', 0 ) );
-$mover_terms_page_id   = absint( get_option( 'gd_mover_terms_page_id', 0 ) );
-$customer_terms_page_id = absint( get_option( 'gd_customer_terms_page_id', 0 ) );
-$debug_panel_enabled    = (bool) get_option( 'gd_debug_panel', 1 );
+$mover_terms_page_id        = absint( get_option( 'gd_mover_terms_page_id', 0 ) );
+$customer_terms_page_id     = absint( get_option( 'gd_customer_terms_page_id', 0 ) );
+$debug_panel_enabled        = (bool) get_option( 'gd_debug_panel', 1 );
 $stripe_pub         = get_option( 'gd_stripe_publishable_key', '' );
 $stripe_sec_masked  = get_option( 'gd_stripe_secret_key', '' ) ? '••••••••••••••••' : '';
 $stripe_wh_masked   = get_option( 'gd_stripe_webhook_secret', '' ) ? '••••••••••••••••' : '';
@@ -175,6 +185,101 @@ $email_from_address = get_option( 'gd_email_from_address', get_option( 'admin_em
 								autocomplete="off"
 							>
 							<p class="description"><?php esc_html_e( 'Google Maps API key with the Places API enabled. Used for address autocomplete on the job submission form.', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="gd_job_form_page_id"><?php esc_html_e( 'Job Form Page', 'go-deliver' ); ?></label>
+						</th>
+						<td>
+							<?php
+							wp_dropdown_pages(
+								array(
+									'name'              => 'gd_job_form_page_id',
+									'id'                => 'gd_job_form_page_id',
+									'selected'          => $job_form_page_id,
+									'show_option_none'  => __( '— Not set —', 'go-deliver' ),
+									'option_none_value' => '0',
+								)
+							);
+							?>
+							<p class="description"><?php esc_html_e( 'Page containing the [gd_job_form] shortcode. Used for the "Post a Job" link in the customer dashboard.', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="gd_customer_dashboard_page_id"><?php esc_html_e( 'Customer Dashboard Page', 'go-deliver' ); ?></label>
+						</th>
+						<td>
+							<?php
+							wp_dropdown_pages(
+								array(
+									'name'              => 'gd_customer_dashboard_page_id',
+									'id'                => 'gd_customer_dashboard_page_id',
+									'selected'          => $customer_dashboard_page_id,
+									'show_option_none'  => __( '— Not set —', 'go-deliver' ),
+									'option_none_value' => '0',
+								)
+							);
+							?>
+							<p class="description"><?php esc_html_e( 'Page containing the [gd_customer_dashboard] or [gd_dashboard] shortcode. Used for links in customer email notifications.', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="gd_mover_dashboard_page_id"><?php esc_html_e( 'Mover Dashboard Page', 'go-deliver' ); ?></label>
+						</th>
+						<td>
+							<?php
+							wp_dropdown_pages(
+								array(
+									'name'              => 'gd_mover_dashboard_page_id',
+									'id'                => 'gd_mover_dashboard_page_id',
+									'selected'          => $mover_dashboard_page_id,
+									'show_option_none'  => __( '— Not set —', 'go-deliver' ),
+									'option_none_value' => '0',
+								)
+							);
+							?>
+							<p class="description"><?php esc_html_e( 'Page containing the [gd_mover_dashboard] or [gd_dashboard] shortcode. Used for links in mover email notifications and after mover registration.', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="gd_messaging_page_id"><?php esc_html_e( 'Messaging Page', 'go-deliver' ); ?></label>
+						</th>
+						<td>
+							<?php
+							wp_dropdown_pages(
+								array(
+									'name'              => 'gd_messaging_page_id',
+									'id'                => 'gd_messaging_page_id',
+									'selected'          => $messaging_page_id,
+									'show_option_none'  => __( '— Not set —', 'go-deliver' ),
+									'option_none_value' => '0',
+								)
+							);
+							?>
+							<p class="description"><?php esc_html_e( 'Page containing the [gd_messaging] shortcode. Used for messaging links in the mover dashboard, job detail view, and email notifications. This must be set for movers to access messaging.', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row">
+							<label for="gd_wallet_page_id"><?php esc_html_e( 'Wallet Top-Up Page', 'go-deliver' ); ?></label>
+						</th>
+						<td>
+							<?php
+							wp_dropdown_pages(
+								array(
+									'name'              => 'gd_wallet_page_id',
+									'id'                => 'gd_wallet_page_id',
+									'selected'          => $wallet_page_id,
+									'show_option_none'  => __( '— Not set —', 'go-deliver' ),
+									'option_none_value' => '0',
+								)
+							);
+							?>
+							<p class="description"><?php esc_html_e( 'Page containing the [gd_wallet_topup] shortcode. Used for the "Top Up Wallet" link in the mover dashboard and quote form.', 'go-deliver' ); ?></p>
 						</td>
 					</tr>
 					<tr>

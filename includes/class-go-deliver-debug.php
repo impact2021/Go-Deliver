@@ -57,17 +57,22 @@ class Go_Deliver_Debug {
 		$last_error = error_get_last();
 
 		$options = array(
-			'gd_fee_percentage'            => get_option( 'gd_fee_percentage', '—' ),
-			'gd_job_expiry_days'           => get_option( 'gd_job_expiry_days', '—' ),
-			'gd_quote_expiry_days'         => get_option( 'gd_quote_expiry_days', '—' ),
-			'gd_job_redirect_page_id'      => get_option( 'gd_job_redirect_page_id', '—' ),
+			'gd_fee_percentage'             => get_option( 'gd_fee_percentage', '—' ),
+			'gd_job_expiry_days'            => get_option( 'gd_job_expiry_days', '—' ),
+			'gd_quote_expiry_days'          => get_option( 'gd_quote_expiry_days', '—' ),
+			'gd_job_form_page_id'           => get_option( 'gd_job_form_page_id', '—' ),
+			'gd_customer_dashboard_page_id' => get_option( 'gd_customer_dashboard_page_id', '—' ),
+			'gd_mover_dashboard_page_id'    => get_option( 'gd_mover_dashboard_page_id', '—' ),
+			'gd_messaging_page_id'          => get_option( 'gd_messaging_page_id', '—' ),
+			'gd_wallet_page_id'             => get_option( 'gd_wallet_page_id', '—' ),
+			'gd_job_redirect_page_id'       => get_option( 'gd_job_redirect_page_id', '—' ),
 			'gd_mover_reg_redirect_page_id' => get_option( 'gd_mover_reg_redirect_page_id', '—' ),
-			'gd_mover_terms_page_id'       => get_option( 'gd_mover_terms_page_id', '—' ),
-			'gd_customer_terms_page_id'    => get_option( 'gd_customer_terms_page_id', '—' ),
-			'gd_stripe_publishable_key'    => get_option( 'gd_stripe_publishable_key' ) ? '(set)' : '(not set)',
-			'gd_stripe_secret_key'         => get_option( 'gd_stripe_secret_key' ) ? '(set)' : '(not set)',
-			'gd_google_maps_api_key'       => get_option( 'gd_google_maps_api_key' ) ? '(set)' : '(not set)',
-			'gd_debug_panel'               => get_option( 'gd_debug_panel', 1 ),
+			'gd_mover_terms_page_id'        => get_option( 'gd_mover_terms_page_id', '—' ),
+			'gd_customer_terms_page_id'     => get_option( 'gd_customer_terms_page_id', '—' ),
+			'gd_stripe_publishable_key'     => get_option( 'gd_stripe_publishable_key' ) ? '(set)' : '(not set)',
+			'gd_stripe_secret_key'          => get_option( 'gd_stripe_secret_key' ) ? '(set)' : '(not set)',
+			'gd_google_maps_api_key'        => get_option( 'gd_google_maps_api_key' ) ? '(set)' : '(not set)',
+			'gd_debug_panel'                => get_option( 'gd_debug_panel', 1 ),
 		);
 
 		$user    = wp_get_current_user();

@@ -53,8 +53,8 @@ return new WP_Error( 'job_not_found', __( 'Job not found.', 'go-deliver' ) );
 
 // Job must be accepted/completed.
 $job_status = get_post_meta( $job_id, 'gd_job_status', true );
-if ( 'accepted' !== $job_status ) {
-return new WP_Error( 'job_not_completed', __( 'Reviews can only be submitted for accepted jobs.', 'go-deliver' ) );
+if ( ! in_array( $job_status, array( 'accepted', 'completed' ), true ) ) {
+return new WP_Error( 'job_not_completed', __( 'Reviews can only be submitted for accepted or completed jobs.', 'go-deliver' ) );
 }
 
 // Ensure customer owns the job.

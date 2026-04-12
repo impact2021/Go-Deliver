@@ -796,6 +796,100 @@
 				}
 			);
 		} );
+
+		// Mark job as complete.
+		$dashboard.on( 'click', '.gd-complete-job-btn', function () {
+			if ( ! window.confirm( 'Mark this job as completed? The customer will be notified and asked to leave a review.' ) ) {
+				return;
+			}
+			var $btn  = $( this );
+			var jobId = $btn.data( 'job-id' );
+			gdBtnLoading( $btn );
+			gdAjax(
+				'gd_complete_job',
+				{ job_id: jobId },
+				function ( data ) {
+					gdToast( data.message || 'Job marked as completed.', 'success' );
+					$btn.closest( '.gd-mover-card' ).find( '.gd-badge--accepted' ).text( '✓ Completed' );
+					$btn.remove();
+				},
+				function ( msg ) {
+					gdBtnReset( $btn );
+					gdToast( msg, 'error' );
+				}
+			);
+		} );
+
+		// Add sub-user (team member).
+		$dashboard.on( 'submit', '#gd-add-sub-user-form', function ( e ) {
+			e.preventDefault();
+			var $form = $( this );
+			var $btn  = $form.find( '#gd-add-sub-user-btn' );
+			var $msg  = $form.find( '#gd-add-sub-user-msg' );
+
+			gdBtnLoading( $btn );
+			$msg.hide().removeClass( 'gd-alert--error gd-alert--success' );
+
+			$.ajax( {
+				url:    gdPublic.ajaxUrl,
+				type:   'POST',
+				data:   {
+					action:     'gd_add_sub_user',
+					nonce:      gdPublic.subUsersNonce,
+					first_name: $.trim( $form.find( '[name="first_name"]' ).val() ),
+					last_name:  $.trim( $form.find( '[name="last_name"]' ).val() ),
+					username:   $.trim( $form.find( '[name="username"]' ).val() ),
+					email:      $.trim( $form.find( '[name="email"]' ).val() ),
+					password:   $form.find( '[name="password"]' ).val(),
+				},
+				success: function ( res ) {
+					gdBtnReset( $btn );
+					if ( res.success ) {
+						$msg.addClass( 'gd-alert--success' ).text( 'Team member added successfully. Reload the page to see them listed.' ).show();
+						$form[0].reset();
+					} else {
+						$msg.addClass( 'gd-alert--error' ).text( res.data && res.data.message ? res.data.message : 'An error occurred.' ).show();
+					}
+				},
+				error: function () {
+					gdBtnReset( $btn );
+					$msg.addClass( 'gd-alert--error' ).text( 'Network error. Please try again.' ).show();
+				},
+			} );
+		} );
+
+		// Remove sub-user (team member).
+		$dashboard.on( 'click', '.gd-remove-sub-user-btn', function () {
+			if ( ! window.confirm( 'Remove this team member? Their account will be permanently deleted.' ) ) {
+				return;
+			}
+			var $btn      = $( this );
+			var subUserId = $btn.data( 'sub-user-id' );
+			gdBtnLoading( $btn );
+
+			$.ajax( {
+				url:    gdPublic.ajaxUrl,
+				type:   'POST',
+				data:   {
+					action:      'gd_remove_sub_user',
+					nonce:       gdPublic.subUsersNonce,
+					sub_user_id: subUserId,
+				},
+				success: function ( res ) {
+					if ( res.success ) {
+						gdToast( res.data && res.data.message ? res.data.message : 'Team member removed.', 'success' );
+						$( '#gd-sub-user-' + subUserId ).fadeOut( 300, function () { $( this ).remove(); } );
+					} else {
+						gdBtnReset( $btn );
+						gdToast( res.data && res.data.message ? res.data.message : 'An error occurred.', 'error' );
+					}
+				},
+				error: function () {
+					gdBtnReset( $btn );
+					gdToast( 'Network error. Please try again.', 'error' );
+				},
+			} );
+		} );
 	}
 
 	/**

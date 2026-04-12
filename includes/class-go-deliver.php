@@ -115,6 +115,12 @@ class Go_Deliver {
 		$debug = new Go_Deliver_Debug();
 		$debug->register_hooks();
 
+		// Login redirect – send non-admin users to their dashboard page.
+		add_filter( 'login_redirect', array( $this, 'redirect_after_login' ), 10, 3 );
+
+		// Block WP admin area access for non-admin users.
+		add_action( 'admin_init', array( $this, 'block_admin_for_non_admins' ) );
+
 		// ---------------------------------------------------------------
 		// AJAX handlers – logged-in users.
 		// ---------------------------------------------------------------
@@ -132,6 +138,7 @@ class Go_Deliver {
 			'gd_get_job_detail',
 			'gd_get_job_details',
 			'gd_cancel_job',
+			'gd_complete_job',
 			'gd_add_sub_user',
 			'gd_remove_sub_user',
 			'gd_get_available_jobs',
@@ -177,6 +184,7 @@ class Go_Deliver {
 			'gd_get_job_detail'      => array( 'Go_Deliver_Jobs', 'ajax_get_job_detail_html' ),
 			'gd_get_job_details'     => array( 'Go_Deliver_Jobs', 'ajax_get_job_details' ),
 			'gd_cancel_job'          => array( 'Go_Deliver_Jobs', 'ajax_cancel_job' ),
+			'gd_complete_job'        => array( 'Go_Deliver_Jobs', 'ajax_complete_job' ),
 			'gd_add_sub_user'        => array( 'Go_Deliver_Sub_Users', 'ajax_add_sub_user' ),
 			'gd_remove_sub_user'     => array( 'Go_Deliver_Sub_Users', 'ajax_remove_sub_user' ),
 			'gd_get_available_jobs'  => array( 'Go_Deliver_Jobs', 'ajax_get_available_jobs' ),
@@ -194,6 +202,72 @@ class Go_Deliver {
 		}
 
 		wp_send_json_error( array( 'message' => __( 'Invalid action.', 'go-deliver' ) ), 400 );
+	}
+
+	/**
+	 * Redirect non-admin users to their role-appropriate dashboard after login.
+	 *
+	 * Hooks onto WordPress's built-in login_redirect filter so that customers
+	 * and movers never land on the WP admin dashboard.
+	 *
+	 * @param string  $redirect_to           The default redirect destination.
+	 * @param string  $requested_redirect_to The requested redirect destination (may be empty).
+	 * @param WP_User|WP_Error $user         The logged-in user object (or WP_Error on failure).
+	 * @return string Redirect URL.
+	 */
+	public function redirect_after_login( $redirect_to, $requested_redirect_to, $user ) {
+		if ( is_wp_error( $user ) || ! ( $user instanceof WP_User ) ) {
+			return $redirect_to;
+		}
+
+		// Admins keep their normal redirect (usually the WP dashboard).
+		if ( user_can( $user, 'manage_options' ) ) {
+			return $redirect_to;
+		}
+
+		$roles = (array) $user->roles;
+
+		if ( in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true ) ) {
+			$page_id = (int) get_option( 'gd_mover_dashboard_page_id', 0 );
+			if ( $page_id ) {
+				return get_permalink( $page_id );
+			}
+			return home_url();
+		}
+
+		// Customer or any other non-admin role.
+		$page_id = (int) get_option( 'gd_customer_dashboard_page_id', 0 );
+		if ( $page_id ) {
+			return get_permalink( $page_id );
+		}
+		return home_url();
+	}
+
+	/**
+	 * Prevent non-admin users from accessing the WP admin area.
+	 *
+	 * Fires on admin_init. AJAX requests are always allowed through so that
+	 * front-end AJAX handlers registered under wp-admin/admin-ajax.php continue
+	 * to work correctly.
+	 */
+	public function block_admin_for_non_admins() {
+		if ( wp_doing_ajax() || current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		$roles = (array) wp_get_current_user()->roles;
+
+		if ( in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true ) ) {
+			$page_id = (int) get_option( 'gd_mover_dashboard_page_id', 0 );
+			wp_safe_redirect( $page_id ? get_permalink( $page_id ) : home_url() );
+			exit;
+		}
+
+		if ( is_user_logged_in() ) {
+			$page_id = (int) get_option( 'gd_customer_dashboard_page_id', 0 );
+			wp_safe_redirect( $page_id ? get_permalink( $page_id ) : home_url() );
+			exit;
+		}
 	}
 
 	/**

@@ -136,6 +136,7 @@ foreach ( $jobs as $job ) {
 					'locked'    => __( 'Receiving Quotes', 'go-deliver' ),
 					'accepted'  => __( 'Accepted', 'go-deliver' ),
 					'expired'   => __( 'Expired', 'go-deliver' ),
+'completed' => __( 'Completed', 'go-deliver' ),
 					'cancelled' => __( 'Cancelled', 'go-deliver' ),
 				);
 				$status_label = isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : ucfirst( $status );
@@ -219,7 +220,7 @@ foreach ( $jobs as $job ) {
 							</button>
 						<?php endif; ?>
 
-						<?php if ( 'accepted' === $status && $accepted_mover && ! $review_submitted ) : ?>
+						<?php if ( in_array( $status, array( 'accepted', 'completed' ), true ) && $accepted_mover && ! $review_submitted ) : ?>
 							<button
 								type="button"
 								class="gd-btn gd-btn--outline gd-btn--sm"
@@ -316,7 +317,7 @@ foreach ( $jobs as $job ) {
 					<?php endif; ?>
 
 					<!-- Review section for completed jobs -->
-					<?php if ( 'accepted' === $status && $accepted_mover ) : ?>
+					<?php if ( in_array( $status, array( 'accepted', 'completed' ), true ) && $accepted_mover ) : ?>
 						<div id="gd-review-<?php echo esc_attr( $job_id ); ?>" class="gd-review-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gd-border);">
 							<?php if ( $review_submitted ) : ?>
 								<p class="gd-text-success">✓ <?php esc_html_e( 'Review submitted for this job.', 'go-deliver' ); ?></p>
