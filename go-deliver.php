@@ -39,6 +39,9 @@ if ( ! defined( 'GD_PLUGIN_URL' ) ) {
 if ( ! defined( 'GD_PLUGIN_BASENAME' ) ) {
 	define( 'GD_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 }
+if ( ! defined( 'GD_JOB_CARD_PREVIEW_WORDS' ) ) {
+	define( 'GD_JOB_CARD_PREVIEW_WORDS', 50 );
+}
 
 // Include all class files from the includes/ directory.
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-activator.php';

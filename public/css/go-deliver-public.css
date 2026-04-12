@@ -35,8 +35,10 @@
 	--gd-font:           -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
 
 	/* Available-jobs board brand colours */
-	--gd-job-card-bg:     #2D1B0E; /* dark brown */
-	--gd-job-card-accent: #C9A227; /* gold       */
+	--gd-job-card-bg:      #1B6E85; /* teal       */
+	--gd-job-card-bg-dark: #155f73; /* teal dark  */
+	--gd-job-card-text:    #ffffff;
+	--gd-job-card-muted:   rgba(255,255,255,0.65);
 }
 
 /* -----------------------------------------------------------------------------
@@ -2077,8 +2079,8 @@
 
 /* =============================================================================
    Available Jobs Board  (#gd-job-list, #gd-available-jobs-list)
-   Premium dark-brown / gold theme.
-   Scoped to #gd-job-list and #gd-available-jobs-list (mover dashboard) so other pages
+   Teal theme matching the brand design.
+   Scoped to #gd-job-list and #gd-available-jobs-list so other pages
    that reuse .gd-job-card are unchanged.
    ============================================================================= */
 
@@ -2106,7 +2108,7 @@
 	display: block;
 	width: 60px;
 	height: 4px;
-	background: var(--gd-job-card-accent);
+	background: var(--gd-job-card-bg);
 	border-radius: 2px;
 	margin: 10px auto 0;
 }
@@ -2132,17 +2134,17 @@
 #gd-job-list .gd-job-card,
 #gd-available-jobs-list .gd-job-card {
 	background: var(--gd-job-card-bg);
-	border: 1px solid rgba(201, 162, 39, 0.30);
+	border: none;
 	border-radius: 14px;
-	padding: 20px 24px;
+	padding: 22px 24px 20px;
 	margin-bottom: 0;
-	color: #f5efe6;
-	transition: border-color 200ms ease;
+	color: var(--gd-job-card-text);
+	transition: box-shadow 200ms ease, transform 200ms ease;
 	position: relative;
 	overflow: hidden;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
 
-/* Remove radial glow decoration */
 #gd-job-list .gd-job-card::before,
 #gd-available-jobs-list .gd-job-card::before {
 	content: none;
@@ -2150,155 +2152,217 @@
 
 #gd-job-list .gd-job-card:hover,
 #gd-available-jobs-list .gd-job-card:hover {
-	border-color: rgba(201, 162, 39, 0.55);
+	box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+	transform: translateY(-1px);
 }
 
-/* Card header (badge + job type)
+/* Card header: badge + title wrap
    --------------------------------------------------------------------------- */
 #gd-job-list .gd-job-card__header,
 #gd-available-jobs-list .gd-job-card__header {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 10px;
+	gap: 14px;
 	margin-bottom: 18px;
 }
 
-#gd-job-list .gd-job-card__type,
-#gd-available-jobs-list .gd-job-card__type {
-	font-size: 18px;
-	font-weight: 700;
-	color: var(--gd-job-card-accent);
-	letter-spacing: 0.01em;
-}
-
-/* Status badges */
+/* Status badge – white pill */
 #gd-job-list .gd-badge,
 #gd-available-jobs-list .gd-badge {
-	background: rgba(201, 162, 39, 0.14);
-	color: var(--gd-job-card-accent);
-	border: 1px solid rgba(201, 162, 39, 0.40);
-	border-radius: 20px;
-	padding: 3px 12px;
-	font-size: 11px;
-	font-weight: 700;
+	background: #ffffff;
+	color: var(--gd-job-card-bg);
+	border: none;
+	border-radius: 50px;
+	padding: 5px 14px;
+	font-size: 12px;
+	font-weight: 800;
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
+	letter-spacing: 0.06em;
+	white-space: nowrap;
+	flex-shrink: 0;
 }
 
 #gd-job-list .gd-badge--locked,
 #gd-available-jobs-list .gd-badge--locked {
-	background: rgba(249, 115, 22, 0.14);
-	color: #fb923c;
-	border-color: rgba(249, 115, 22, 0.40);
+	background: #fff3cd;
+	color: #7c5000;
 }
 
-/* Card body (divider + content)
-   --------------------------------------------------------------------------- */
-#gd-job-list .gd-job-card__body,
-#gd-available-jobs-list .gd-job-card__body {
-	border-top: 1px solid rgba(201, 162, 39, 0.20);
-	padding-top: 18px;
-}
-
-/* Route row */
-#gd-job-list .gd-job-card__route,
-#gd-available-jobs-list .gd-job-card__route {
+/* Title wrap: type + optional listing title side-by-side */
+#gd-job-list .gd-job-card__title-wrap,
+#gd-available-jobs-list .gd-job-card__title-wrap {
 	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-bottom: 14px;
+	align-items: baseline;
 	flex-wrap: wrap;
+	gap: 10px;
+	min-width: 0;
 }
 
-#gd-job-list .gd-job-card__location,
-#gd-available-jobs-list .gd-job-card__location {
+#gd-job-list .gd-job-card__type,
+#gd-available-jobs-list .gd-job-card__type {
+	font-size: 22px;
+	font-weight: 800;
+	color: #ffffff;
+	letter-spacing: 0.01em;
+	line-height: 1.2;
+}
+
+#gd-job-list .gd-job-card__listing-title,
+#gd-available-jobs-list .gd-job-card__listing-title {
+	font-size: 22px;
+	font-weight: 700;
+	color: rgba(255,255,255,0.85);
+	letter-spacing: 0.01em;
+	line-height: 1.2;
+}
+
+/* Info row: columns + CTA button
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-job-card__info-row,
+#gd-available-jobs-list .gd-job-card__info-row {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-bottom: 4px;
+}
+
+#gd-job-list .gd-job-card__info-cols,
+#gd-available-jobs-list .gd-job-card__info-cols {
+	display: flex;
+	gap: 28px;
+	flex-wrap: wrap;
 	flex: 1;
+	min-width: 0;
+}
+
+#gd-job-list .gd-job-card__info-col,
+#gd-available-jobs-list .gd-job-card__info-col {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
 	min-width: 80px;
 }
 
-#gd-job-list .gd-job-card__location-icon,
-#gd-available-jobs-list .gd-job-card__location-icon {
-	font-size: 16px;
-	flex-shrink: 0;
+#gd-job-list .gd-job-card__info-label,
+#gd-available-jobs-list .gd-job-card__info-label {
+	font-size: 12px;
+	font-weight: 500;
+	color: rgba(255,255,255,0.65);
+	text-transform: none;
+	letter-spacing: 0;
 }
 
-#gd-job-list .gd-job-card__location-text,
-#gd-available-jobs-list .gd-job-card__location-text {
-	font-size: 14px;
-	font-weight: 600;
-	color: #f5efe6;
-}
-
-#gd-job-list .gd-job-card__arrow,
-#gd-available-jobs-list .gd-job-card__arrow {
-	color: var(--gd-job-card-accent);
-	font-size: 20px;
+#gd-job-list .gd-job-card__info-value,
+#gd-available-jobs-list .gd-job-card__info-value {
+	font-size: 15px;
 	font-weight: 700;
+	color: #ffffff;
+}
+
+#gd-job-list .gd-job-card__info-flex,
+#gd-available-jobs-list .gd-job-card__info-flex {
+	font-size: 12px;
+	color: rgba(255,255,255,0.65);
+	margin-top: 1px;
+}
+
+/* CTA button area */
+#gd-job-list .gd-job-card__cta,
+#gd-available-jobs-list .gd-job-card__cta {
 	flex-shrink: 0;
 }
 
-/* Date meta */
-#gd-job-list .gd-job-card__meta,
-#gd-available-jobs-list .gd-job-card__meta {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	font-size: 13px;
-	color: rgba(245, 239, 230, 0.60);
-	margin-bottom: 10px;
-}
-
-#gd-job-list .gd-job-card__meta-icon,
-#gd-available-jobs-list .gd-job-card__meta-icon {
-	font-size: 14px;
-}
-
-/* Inventory notes */
-#gd-job-list .gd-job-card__notes,
-#gd-available-jobs-list .gd-job-card__notes {
-	font-size: 13px;
-	color: rgba(245, 239, 230, 0.55);
-	line-height: 1.5;
-	font-style: italic;
-}
-
-/* Card footer
-   --------------------------------------------------------------------------- */
-#gd-job-list .gd-job-card__footer,
-#gd-available-jobs-list .gd-job-card__footer {
-	border-top: 1px solid rgba(201, 162, 39, 0.20);
-	padding-top: 16px;
-	margin-top: 16px;
-	display: flex;
-	gap: 10px;
-	align-items: center;
-	flex-wrap: wrap;
-}
-
-/* CTA button */
 #gd-job-list .gd-btn--primary.gd-quote-btn,
 #gd-available-jobs-list .gd-btn--primary.gd-quote-btn {
-	display: flex;
+	display: inline-flex;
+	align-items: center;
 	justify-content: center;
-	background: var(--gd-job-card-accent);
+	background: #ffffff;
 	color: var(--gd-job-card-bg);
 	border: none;
-	font-weight: 700;
+	font-weight: 800;
 	font-size: 13px;
-	letter-spacing: 0.06em;
+	letter-spacing: 0.07em;
 	text-transform: uppercase;
-	border-radius: 8px;
-	padding: 11px 20px;
-	transition: filter 180ms ease;
+	border-radius: 10px;
+	padding: 14px 22px;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: filter 160ms ease, box-shadow 160ms ease;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
 #gd-job-list .gd-btn--primary.gd-quote-btn:hover,
 #gd-available-jobs-list .gd-btn--primary.gd-quote-btn:hover {
-	filter: brightness(1.12);
+	filter: brightness(0.96);
+	box-shadow: 0 4px 12px rgba(0,0,0,0.20);
+}
+
+/* Divider
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-job-card__divider,
+#gd-available-jobs-list .gd-job-card__divider {
+	border: none;
+	border-top: 1px solid rgba(255,255,255,0.25);
+	margin: 18px 0 16px;
+}
+
+/* Additional information
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-job-card__extra,
+#gd-available-jobs-list .gd-job-card__extra {
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+#gd-job-list .gd-job-card__extra-label,
+#gd-available-jobs-list .gd-job-card__extra-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: rgba(255,255,255,0.65);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 6px;
+}
+
+#gd-job-list .gd-job-card__extra-text,
+#gd-available-jobs-list .gd-job-card__extra-text {
+	color: rgba(255,255,255,0.85);
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+/* Read-more toggle */
+#gd-job-list .gd-read-more-btn,
+#gd-available-jobs-list .gd-read-more-btn {
+	display: inline;
+	background: none;
+	border: none;
+	padding: 0;
+	margin-left: 4px;
+	color: #ffffff;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: underline;
+	cursor: pointer;
+	line-height: inherit;
+}
+
+#gd-job-list .gd-read-more-btn:hover,
+#gd-available-jobs-list .gd-read-more-btn:hover {
+	opacity: 0.8;
+}
+
+.gd-hidden {
+	display: none !important;
+}
+
+/* Photo gallery (inside job cards)
+   --------------------------------------------------------------------------- */
+#gd-job-list .gd-photo-gallery,
+#gd-available-jobs-list .gd-photo-gallery {
+	margin-top: 12px;
 }
 
 /* Empty state
@@ -2309,8 +2373,8 @@
 	padding: 60px 24px;
 	background: var(--gd-job-card-bg);
 	border-radius: 16px;
-	border: 1px solid rgba(201, 162, 39, 0.25);
-	color: #f5efe6;
+	color: var(--gd-job-card-text);
+	box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
 
 #gd-job-list .gd-empty-state__icon,
@@ -2323,34 +2387,51 @@
 #gd-available-jobs-list .gd-empty-state__title {
 	font-size: 22px;
 	font-weight: 700;
-	color: var(--gd-job-card-accent);
+	color: #ffffff;
 	margin: 0 0 8px;
 }
 
 #gd-job-list .gd-empty-state__text,
 #gd-available-jobs-list .gd-empty-state__text {
-	color: rgba(245, 239, 230, 0.65);
+	color: rgba(255,255,255,0.70);
 	font-size: 15px;
 	margin: 0;
 }
 
-/* Responsive tweaks for the jobs board
+/* Responsive tweaks
    --------------------------------------------------------------------------- */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
 	#gd-job-list .gd-dashboard-header__title,
 	#gd-available-jobs-list .gd-dashboard-header__title {
 		font-size: 26px;
 	}
 
-	#gd-job-list .gd-job-card__route,
-	#gd-available-jobs-list .gd-job-card__route {
-		flex-direction: column;
-		align-items: flex-start;
+	#gd-job-list .gd-job-card__type,
+	#gd-available-jobs-list .gd-job-card__type,
+	#gd-job-list .gd-job-card__listing-title,
+	#gd-available-jobs-list .gd-job-card__listing-title {
+		font-size: 18px;
 	}
 
-	#gd-job-list .gd-job-card__arrow,
-	#gd-available-jobs-list .gd-job-card__arrow {
-		transform: rotate(90deg);
+	#gd-job-list .gd-job-card__info-row,
+	#gd-available-jobs-list .gd-job-card__info-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	#gd-job-list .gd-job-card__info-cols,
+	#gd-available-jobs-list .gd-job-card__info-cols {
+		gap: 16px;
+	}
+
+	#gd-job-list .gd-job-card__cta,
+	#gd-available-jobs-list .gd-job-card__cta {
+		width: 100%;
+	}
+
+	#gd-job-list .gd-btn--primary.gd-quote-btn,
+	#gd-available-jobs-list .gd-btn--primary.gd-quote-btn {
+		width: 100%;
 	}
 }
 
