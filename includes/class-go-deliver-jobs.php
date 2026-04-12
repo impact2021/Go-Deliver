@@ -95,27 +95,9 @@ $sanitized_pickup  = $this->sanitize_location( $pickup );
 $sanitized_dropoff = $this->sanitize_location( $dropoff );
 
 // Geocode missing coordinates server-side so jobs appear in mover radius searches.
-$location_handler = new Go_Deliver_Location();
-if ( ! $sanitized_pickup['lat'] || ! $sanitized_pickup['lng'] ) {
-$address_str = $sanitized_pickup['address'] ?: $sanitized_pickup['suburb'];
-if ( $address_str ) {
-$coords = $location_handler->geocode_address( $address_str );
-if ( ! is_wp_error( $coords ) ) {
-$sanitized_pickup['lat'] = $coords['lat'];
-$sanitized_pickup['lng'] = $coords['lng'];
-}
-}
-}
-if ( ! $sanitized_dropoff['lat'] || ! $sanitized_dropoff['lng'] ) {
-$address_str = $sanitized_dropoff['address'] ?: $sanitized_dropoff['suburb'];
-if ( $address_str ) {
-$coords = $location_handler->geocode_address( $address_str );
-if ( ! is_wp_error( $coords ) ) {
-$sanitized_dropoff['lat'] = $coords['lat'];
-$sanitized_dropoff['lng'] = $coords['lng'];
-}
-}
-}
+$location_handler  = new Go_Deliver_Location();
+$sanitized_pickup  = $this->fill_missing_coordinates( $sanitized_pickup, $location_handler );
+$sanitized_dropoff = $this->fill_missing_coordinates( $sanitized_dropoff, $location_handler );
 
 $form_data = isset( $data['form_data'] ) && is_array( $data['form_data'] ) ? $data['form_data'] : array();
 
@@ -165,6 +147,39 @@ return array(
 'address' => isset( $location['address'] ) ? sanitize_text_field( $location['address'] )    : '',
 'suburb'  => isset( $location['suburb'] )  ? sanitize_text_field( $location['suburb'] )     : '',
 );
+}
+
+/**
+ * Attempt to fill missing lat/lng on a location array via geocoding.
+ *
+ * If the location already has non-zero coordinates they are returned unchanged.
+ * When geocoding fails the original location is returned and the failure is
+ * written to the PHP error log so it can be diagnosed.
+ *
+ * @param array               $location         Sanitized location array.
+ * @param Go_Deliver_Location $location_handler Location handler instance.
+ * @return array Location array, potentially with lat/lng populated.
+ */
+private function fill_missing_coordinates( $location, $location_handler ) {
+if ( ! empty( $location['lat'] ) && ! empty( $location['lng'] ) ) {
+return $location;
+}
+
+$address_str = ! empty( $location['address'] ) ? $location['address'] : $location['suburb'];
+if ( empty( $address_str ) ) {
+return $location;
+}
+
+$coords = $location_handler->geocode_address( $address_str );
+if ( is_wp_error( $coords ) ) {
+// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+error_log( 'Go Deliver geocoding failed for "' . $address_str . '": ' . $coords->get_error_message() );
+return $location;
+}
+
+$location['lat'] = $coords['lat'];
+$location['lng'] = $coords['lng'];
+return $location;
 }
 
 /**
