@@ -552,6 +552,71 @@ class Go_Deliver_Notifications {
 	}
 
 	/**
+	 * Send a welcome email to a newly added team member (sub-user).
+	 *
+	 * Called by Go_Deliver_Sub_Users::add_sub_user() after the WP user
+	 * account has been created so the new member receives their credentials
+	 * and a link to the mover dashboard.
+	 *
+	 * @param int    $sub_user_id      WordPress user ID of the new team member.
+	 * @param int    $parent_mover_id  WordPress user ID of the mover who added them.
+	 * @param string $plaintext_password The password that was set (not yet hashed).
+	 */
+	public static function notify_team_member_added( $sub_user_id, $parent_mover_id, $plaintext_password = '' ) {
+		$member = get_userdata( (int) $sub_user_id );
+		$mover  = get_userdata( (int) $parent_mover_id );
+
+		if ( ! $member || ! $member->user_email ) {
+			return;
+		}
+
+		$site_name     = get_bloginfo( 'name' );
+		$site_url      = home_url();
+		$team_name     = $mover ? trim( $mover->first_name . ' ' . $mover->last_name ) : '';
+		if ( ! $team_name && $mover ) {
+			$team_name = $mover->display_name;
+		}
+
+		$first_name    = trim( $member->first_name );
+		$dashboard_url = get_option( 'gd_mover_dashboard_url', home_url() );
+
+		$from_name    = get_option( 'gd_email_from_name', $site_name );
+		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			sprintf( 'From: %s <%s>', $from_name, $from_address ),
+		);
+
+		/* translators: %s: site name */
+		$subject       = sprintf( __( "You've been added to a team on %s", 'go-deliver' ), $site_name );
+		$template_path = GD_PLUGIN_DIR . 'templates/emails/team-member-added.php';
+
+		if ( ! file_exists( $template_path ) ) {
+			return;
+		}
+
+		$vars = array(
+			'member_first_name' => $first_name ?: $member->user_login,
+			'member_username'   => $member->user_login,
+			'member_password'   => $plaintext_password,
+			'team_name'         => $team_name,
+			'login_url'         => wp_login_url( $dashboard_url ),
+			'dashboard_url'     => $dashboard_url,
+			'site_name'         => $site_name,
+			'site_url'          => $site_url,
+		);
+
+		ob_start();
+		// phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- intentional for template rendering, keys are caller-controlled.
+		extract( $vars, EXTR_SKIP );
+		include $template_path;
+		$html = ob_get_clean();
+
+		wp_mail( $member->user_email, wp_strip_all_tags( $subject ), $html, $headers );
+	}
+
+	/**
 	 * Notify movers whose quotes are nearing the expiry date.
 	 */
 	private function notify_expiring_quotes() {
