@@ -802,20 +802,33 @@ require_once ABSPATH . 'wp-admin/includes/media.php';
 require_once ABSPATH . 'wp-admin/includes/file.php';
 require_once ABSPATH . 'wp-admin/includes/image.php';
 }
-// Normalise the $_FILES array so we can iterate individual files.
-$file_count = is_array( $_FILES['job_photos']['name'] ) ? count( $_FILES['job_photos']['name'] ) : 1;
-for ( $i = 0; $i < $file_count; $i++ ) {
-$single_file = array(
-'name'     => is_array( $_FILES['job_photos']['name'] )     ? $_FILES['job_photos']['name'][ $i ]     : $_FILES['job_photos']['name'],
-'type'     => is_array( $_FILES['job_photos']['type'] )     ? $_FILES['job_photos']['type'][ $i ]     : $_FILES['job_photos']['type'],
-'tmp_name' => is_array( $_FILES['job_photos']['tmp_name'] ) ? $_FILES['job_photos']['tmp_name'][ $i ] : $_FILES['job_photos']['tmp_name'],
-'error'    => is_array( $_FILES['job_photos']['error'] )    ? $_FILES['job_photos']['error'][ $i ]    : $_FILES['job_photos']['error'],
-'size'     => is_array( $_FILES['job_photos']['size'] )     ? $_FILES['job_photos']['size'][ $i ]     : $_FILES['job_photos']['size'],
-);
+
+// Normalize the $_FILES array into a flat list of individual files
+// regardless of whether one file or multiple files were uploaded.
+$raw       = $_FILES['job_photos'];
+$file_keys = array( 'name', 'type', 'tmp_name', 'error', 'size' );
+$file_list = array();
+if ( is_array( $raw['name'] ) ) {
+$count = count( $raw['name'] );
+for ( $i = 0; $i < $count; $i++ ) {
+$entry = array();
+foreach ( $file_keys as $k ) {
+$entry[ $k ] = $raw[ $k ][ $i ] ?? '';
+}
+$file_list[] = $entry;
+}
+} else {
+$entry = array();
+foreach ( $file_keys as $k ) {
+$entry[ $k ] = $raw[ $k ] ?? '';
+}
+$file_list[] = $entry;
+}
+
+foreach ( $file_list as $single_file ) {
 if ( UPLOAD_ERR_OK !== (int) $single_file['error'] || empty( $single_file['tmp_name'] ) ) {
 continue;
 }
-// Temporarily place the normalised file where media_handle_upload can find it.
 $_FILES['gd_job_photo_tmp'] = $single_file;
 $attachment_id = media_handle_upload( 'gd_job_photo_tmp', 0 );
 if ( ! is_wp_error( $attachment_id ) ) {
@@ -861,6 +874,17 @@ $result = $this->create_job( $data );
 
 if ( is_wp_error( $result ) ) {
 wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+}
+
+// Associate uploaded photo attachments with the new job post so they are
+// correctly linked in the media library.
+if ( ! empty( $photos ) ) {
+foreach ( $photos as $attachment_id ) {
+wp_update_post( array(
+'ID'          => $attachment_id,
+'post_parent' => $result,
+) );
+}
 }
 
 wp_send_json_success( array( 'job_id' => $result ) );

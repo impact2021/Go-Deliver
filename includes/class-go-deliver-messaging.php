@@ -318,7 +318,16 @@ if ( is_wp_error( $messages ) ) {
 wp_send_json_error( array( 'message' => $messages->get_error_message() ) );
 }
 
-// Clear the pending notification flag so the next incoming message will
+// Mark all messages addressed to this user for this job as read so the
+// hourly cron does not keep re-sending "unread messages" emails for
+// conversations the user has already viewed.
+Go_Deliver_DB::mark_messages_read( $job_id, get_current_user_id() );
+
+// Clear the cron "already notified" flag so a future unread message
+// can trigger a fresh notification.
+delete_user_meta( get_current_user_id(), 'gd_unread_msg_cron_notified' );
+
+// Clear the per-message notification flag so the next incoming message will
 // trigger a fresh email notification to this user.
 delete_user_meta( get_current_user_id(), 'gd_msg_notified_' . $job_id );
 
