@@ -108,7 +108,7 @@ $floors_labels = array(
 	'3' => __( '3 or more floors / flights', 'go-deliver' ),
 );
 $helpers_labels = array(
-	'self'  => __( 'Customer will unload themselves', 'go-deliver' ),
+	'self'  => __( 'No extra help needed', 'go-deliver' ),
 	'1'     => __( 'Need 1 person to help', 'go-deliver' ),
 	'2plus' => __( 'Need 2+ people to help', 'go-deliver' ),
 );

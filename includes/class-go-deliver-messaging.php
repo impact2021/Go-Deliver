@@ -318,6 +318,10 @@ if ( is_wp_error( $messages ) ) {
 wp_send_json_error( array( 'message' => $messages->get_error_message() ) );
 }
 
+// Clear the pending notification flag so the next incoming message will
+// trigger a fresh email notification to this user.
+delete_user_meta( get_current_user_id(), 'gd_msg_notified_' . $job_id );
+
 wp_send_json_success( $messages );
 }
 }
