@@ -462,7 +462,23 @@
 
 					var fullAddress = place.formatted_address || $suburb.val();
 					$address.val( fullAddress );
-					$suburb.val( fullAddress );
+
+					// Extract suburb/locality name from address components so that
+					// only a general area (not the full street address) is stored
+					// and shown to movers before a quote is accepted.
+					var suburbName = '';
+					if ( place.address_components ) {
+						place.address_components.forEach( function ( comp ) {
+							if ( ! suburbName && comp.types && (
+								comp.types.indexOf( 'sublocality' ) !== -1 ||
+								comp.types.indexOf( 'locality' ) !== -1 ||
+								comp.types.indexOf( 'neighborhood' ) !== -1
+							) ) {
+								suburbName = comp.long_name;
+							}
+						} );
+					}
+					$suburb.val( suburbName || $suburb.val() );
 				} );
 
 				return; // Skip Nominatim fallback for this field.
