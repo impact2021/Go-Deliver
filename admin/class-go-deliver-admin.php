@@ -312,6 +312,18 @@ class Go_Deliver_Admin {
 			);
 		}
 
+		// Colour picker – only needed on the Settings page.
+		if ( false !== strpos( $hook_suffix, 'go-deliver-settings' ) ) {
+			wp_enqueue_style( 'wp-color-picker' );
+			wp_enqueue_script(
+				'go-deliver-color-picker',
+				GD_PLUGIN_URL . 'admin/js/go-deliver-color-picker.js',
+				array( 'wp-color-picker' ),
+				GD_VERSION,
+				true
+			);
+		}
+
 		wp_enqueue_script(
 			'go-deliver-admin',
 			GD_PLUGIN_URL . 'admin/js/go-deliver-admin.js',

@@ -27,32 +27,9 @@ $form_builder = new Go_Deliver_Form_Builder();
 	<div class="gd-job-form__header">
 		<h1 class="gd-job-form__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h1>
 
-		<!-- Step progress indicators -->
-		<div class="gd-steps">
-			<div class="gd-step" data-step="1">
-				<span class="gd-step__number">1</span>
-				<span class="gd-step__label"><?php esc_html_e( 'What?', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="2">
-				<span class="gd-step__number">2</span>
-				<span class="gd-step__label"><?php esc_html_e( 'Collection', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="3">
-				<span class="gd-step__number">3</span>
-				<span class="gd-step__label"><?php esc_html_e( 'Delivery', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="4">
-				<span class="gd-step__number">4</span>
-				<span class="gd-step__label"><?php esc_html_e( 'When?', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="5">
-				<span class="gd-step__number">5</span>
-				<span class="gd-step__label"><?php esc_html_e( 'Photos &amp; Notes', 'go-deliver' ); ?></span>
-			</div>
-			<div class="gd-step" data-step="6">
-				<span class="gd-step__number">6</span>
-				<span class="gd-step__label"><?php esc_html_e( 'Your Details', 'go-deliver' ); ?></span>
-			</div>
+		<!-- Step progress bar -->
+		<div class="gd-form-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+			<div class="gd-form-progress__fill"></div>
 		</div>
 	</div><!-- /.gd-job-form__header -->
 
@@ -63,326 +40,116 @@ $form_builder = new Go_Deliver_Form_Builder();
 		<div class="gd-job-form__body">
 
 			<!-- ============================================================
-			     Step 1: What do you need moved?
+			     Step 1: What are you moving?
 			     ============================================================ -->
 			<div class="gd-form-section" data-step="1">
-				<h2 class="gd-form-section__title"><?php esc_html_e( 'What do you need moved?', 'go-deliver' ); ?></h2>
+				<h2 class="gd-form-section__title"><?php esc_html_e( 'What are you moving?', 'go-deliver' ); ?></h2>
 
-				<!-- ── Category picker ──────────────────────────────────────── -->
 				<div class="gd-field-group">
-					<div class="gd-type-picker" id="gd-category-picker" role="group" aria-label="<?php esc_attr_e( 'Item category', 'go-deliver' ); ?>">
-						<button type="button" class="gd-type-picker__btn"
-							data-category="trademe"
-							data-job-type="trademe_pickup"
-							data-title-label="<?php esc_attr_e( 'What did you win on Trade Me?', 'go-deliver' ); ?>"
-							data-title-placeholder="<?php esc_attr_e( 'e.g. Samsung 65&quot; TV', 'go-deliver' ); ?>">
-							<span class="gd-type-picker__icon" aria-hidden="true">🛒</span>
-							<?php esc_html_e( 'TradeMe', 'go-deliver' ); ?>
-						</button>
-						<button type="button" class="gd-type-picker__btn" data-category="item">
-							<span class="gd-type-picker__icon" aria-hidden="true">📦</span>
-							<?php esc_html_e( 'Item', 'go-deliver' ); ?>
-						</button>
-						<button type="button" class="gd-type-picker__btn"
-							data-category="move"
-							data-job-type="move"
-							data-title-label="<?php esc_attr_e( 'Describe your move', 'go-deliver' ); ?>"
-							data-title-placeholder="<?php esc_attr_e( 'e.g. 3 bedroom house contents', 'go-deliver' ); ?>">
-							<span class="gd-type-picker__icon" aria-hidden="true">🏠</span>
-							<?php esc_html_e( 'Move', 'go-deliver' ); ?>
-						</button>
-						<button type="button" class="gd-type-picker__btn" data-category="vehicle">
-							<span class="gd-type-picker__icon" aria-hidden="true">🚗</span>
-							<?php esc_html_e( 'Vehicle', 'go-deliver' ); ?>
-						</button>
-						<button type="button" class="gd-type-picker__btn"
-							data-category="boat"
-							data-job-type="boat"
-							data-title-label="<?php esc_attr_e( 'Describe the boat', 'go-deliver' ); ?>"
-							data-title-placeholder="<?php esc_attr_e( 'e.g. 5m fibreglass fishing boat', 'go-deliver' ); ?>">
-							<span class="gd-type-picker__icon" aria-hidden="true">⛵</span>
-							<?php esc_html_e( 'Boat', 'go-deliver' ); ?>
-						</button>
-						<button type="button" class="gd-type-picker__btn"
-							data-category="pet"
-							data-job-type="pet"
-							data-title-label="<?php esc_attr_e( 'Describe your pet', 'go-deliver' ); ?>"
-							data-title-placeholder="<?php esc_attr_e( 'e.g. Golden Retriever, large dog', 'go-deliver' ); ?>">
-							<span class="gd-type-picker__icon" aria-hidden="true">🐾</span>
-							<?php esc_html_e( 'Pet', 'go-deliver' ); ?>
-						</button>
-						<button type="button" class="gd-type-picker__btn"
-							data-category="junk"
-							data-job-type="junk"
-							data-title-label="<?php esc_attr_e( 'Describe the junk', 'go-deliver' ); ?>"
-							data-title-placeholder="<?php esc_attr_e( 'e.g. Mixed household rubbish, approx 1 trailer load', 'go-deliver' ); ?>">
-							<span class="gd-type-picker__icon" aria-hidden="true">🗑️</span>
-							<?php esc_html_e( 'Junk', 'go-deliver' ); ?>
-						</button>
-						<button type="button" class="gd-type-picker__btn"
-							data-category="other"
-							data-job-type="other"
-							data-title-label="<?php esc_attr_e( 'Describe the job', 'go-deliver' ); ?>"
-							data-title-placeholder="<?php esc_attr_e( 'e.g. Grand piano, Auckland to Wellington', 'go-deliver' ); ?>">
-							<span class="gd-type-picker__icon" aria-hidden="true">✨</span>
-							<?php esc_html_e( 'Other', 'go-deliver' ); ?>
-						</button>
-					</div>
-					<span class="gd-field-error" id="gd-category-error" style="display:none;">
-						<?php esc_html_e( 'Please select what you need moved.', 'go-deliver' ); ?>
-					</span>
-					<input type="hidden" name="job_type" id="gd_job_type">
+					<label for="gd_job_type">
+						<?php esc_html_e( 'Item type', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<?php $form_builder->render_flat_job_type_dropdown(); ?>
 				</div>
 
-				<!-- ── Sub-section: TradeMe ──────────────────────────────────── -->
-				<div class="gd-type-section" data-category-section="trademe" style="display:none;">
-					<div class="gd-field-group">
-						<label for="gd_trademe_url">
-							<?php esc_html_e( 'Trade Me Listing URL', 'go-deliver' ); ?>
-							<span class="gd-required" aria-hidden="true">*</span>
-						</label>
-						<input
-							type="url"
-							id="gd_trademe_url"
-							name="form_data[trademe_url]"
-							placeholder="https://www.trademe.co.nz/..."
-							autocomplete="off"
-							required
-						>
-						<span class="gd-field-hint">
-							<?php esc_html_e( "Paste the link to the Trade Me listing you've won.", 'go-deliver' ); ?>
-						</span>
-					</div>
-				</div>
-
-				<!-- ── Sub-section: Item ────────────────────────────────────── -->
-				<div class="gd-type-section" data-category-section="item" style="display:none;">
-					<div class="gd-field-group">
-						<label>
-							<?php esc_html_e( 'What kind of item?', 'go-deliver' ); ?>
-							<span class="gd-required" aria-hidden="true">*</span>
-						</label>
-						<div class="gd-type-picker gd-type-picker--sm">
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="furniture"
-								data-job-type="furniture"
-								data-title-label="<?php esc_attr_e( 'Describe the furniture', 'go-deliver' ); ?>"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Double bed, Queen size', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🪑</span>
-								<?php esc_html_e( 'Furniture', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="general"
-								data-job-type="item"
-								data-title-label="<?php esc_attr_e( 'Describe the item', 'go-deliver' ); ?>"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Large refrigerator, Samsung', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">📦</span>
-								<?php esc_html_e( 'General Item', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="packed"
-								data-job-type="item_packed"
-								data-title-label="<?php esc_attr_e( 'Describe the packed items', 'go-deliver' ); ?>"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. 3 boxes of household goods', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">📫</span>
-								<?php esc_html_e( 'Packed / Boxed', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="piano"
-								data-job-type="piano"
-								data-title-label="<?php esc_attr_e( 'Describe the piano', 'go-deliver' ); ?>"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Upright piano, Baldwin', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🎹</span>
-								<?php esc_html_e( 'Piano', 'go-deliver' ); ?>
-							</button>
-						</div>
-						<input type="hidden" name="form_data[item_subtype]" id="gd_item_subtype">
-						<span class="gd-field-error" id="gd-item-subtype-error" style="display:none;">
-							<?php esc_html_e( 'Please select an item type.', 'go-deliver' ); ?>
-						</span>
-					</div>
-				</div>
-
-				<!-- ── Sub-section: Move ────────────────────────────────────── -->
-				<div class="gd-type-section" data-category-section="move" style="display:none;">
-					<div class="gd-field-group">
-						<label>
-							<?php esc_html_e( 'Type of move', 'go-deliver' ); ?>
-							<span class="gd-required" aria-hidden="true">*</span>
-						</label>
-						<div class="gd-type-picker gd-type-picker--sm">
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="home"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. 3 bedroom house contents, Auckland CBD', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🏠</span>
-								<?php esc_html_e( 'House', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="office"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Small office, 10 workstations', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🏢</span>
-								<?php esc_html_e( 'Office', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="single"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Sofa, 3 seater + coffee table', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">📦</span>
-								<?php esc_html_e( 'Single Item Move', 'go-deliver' ); ?>
-							</button>
-						</div>
-						<input type="hidden" name="form_data[move_type]" id="gd_move_type">
-						<span class="gd-field-error" id="gd-move-type-error" style="display:none;">
-							<?php esc_html_e( 'Please select a move type.', 'go-deliver' ); ?>
-						</span>
-					</div>
-				</div>
-
-				<!-- ── Sub-section: Vehicle ──────────────────────────────────── -->
-				<div class="gd-type-section" data-category-section="vehicle" style="display:none;">
-					<div class="gd-field-group">
-						<label>
-							<?php esc_html_e( 'Vehicle type', 'go-deliver' ); ?>
-							<span class="gd-required" aria-hidden="true">*</span>
-						</label>
-						<div class="gd-type-picker gd-type-picker--sm">
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="car"
-								data-job-type="car"
-								data-title-label="<?php esc_attr_e( 'Describe the car', 'go-deliver' ); ?>"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Toyota Corolla 2018, white', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🚗</span>
-								<?php esc_html_e( 'Car', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="motorcycle"
-								data-job-type="motorcycle"
-								data-title-label="<?php esc_attr_e( 'Describe the motorcycle', 'go-deliver' ); ?>"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Yamaha MT-07 2020', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🏍️</span>
-								<?php esc_html_e( 'Motorcycle', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="vehicle"
-								data-job-type="vehicle"
-								data-title-label="<?php esc_attr_e( 'Describe the vehicle', 'go-deliver' ); ?>"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Box trailer, 6x4', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🚛</span>
-								<?php esc_html_e( 'Large Vehicle', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="other_vehicle"
-								data-job-type="other_vehicle"
-								data-title-label="<?php esc_attr_e( 'Describe the vehicle', 'go-deliver' ); ?>"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Golf cart, ride-on mower', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🚜</span>
-								<?php esc_html_e( 'Other', 'go-deliver' ); ?>
-							</button>
-						</div>
-						<input type="hidden" name="form_data[vehicle_type]" id="gd_vehicle_type">
-						<span class="gd-field-error" id="gd-vehicle-type-error" style="display:none;">
-							<?php esc_html_e( 'Please select a vehicle type.', 'go-deliver' ); ?>
-						</span>
-					</div>
-				</div>
-
-				<!-- ── Sub-section: Pet ──────────────────────────────────────── -->
-				<div class="gd-type-section" data-category-section="pet" style="display:none;">
-					<div class="gd-field-group">
-						<label>
-							<?php esc_html_e( 'What kind of pet?', 'go-deliver' ); ?>
-							<span class="gd-required" aria-hidden="true">*</span>
-						</label>
-						<div class="gd-type-picker gd-type-picker--sm">
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="dog"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Golden Retriever, large dog', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🐕</span>
-								<?php esc_html_e( 'Dog', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="cat"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Siamese cat, indoor', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🐈</span>
-								<?php esc_html_e( 'Cat', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="other"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Rabbit, small animal', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🐾</span>
-								<?php esc_html_e( 'Other', 'go-deliver' ); ?>
-							</button>
-						</div>
-						<input type="hidden" name="form_data[pet_type]" id="gd_pet_type">
-						<span class="gd-field-error" id="gd-pet-type-error" style="display:none;">
-							<?php esc_html_e( 'Please select a pet type.', 'go-deliver' ); ?>
-						</span>
-					</div>
-				</div>
-
-				<!-- ── Sub-section: Junk ────────────────────────────────────── -->
-				<div class="gd-type-section" data-category-section="junk" style="display:none;">
-					<div class="gd-field-group">
-						<label>
-							<?php esc_html_e( 'Type of junk', 'go-deliver' ); ?>
-							<span class="gd-required" aria-hidden="true">*</span>
-						</label>
-						<div class="gd-type-picker gd-type-picker--sm">
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="household"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Old furniture and appliances', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🏠</span>
-								<?php esc_html_e( 'Household', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="green_waste"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Garden clippings and branches', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">🌿</span>
-								<?php esc_html_e( 'Green Waste', 'go-deliver' ); ?>
-							</button>
-							<button type="button" class="gd-type-picker__btn"
-								data-subtype="mixed"
-								data-title-placeholder="<?php esc_attr_e( 'e.g. Mixed rubbish, approx 1 trailer load', 'go-deliver' ); ?>">
-								<span class="gd-type-picker__icon" aria-hidden="true">♻️</span>
-								<?php esc_html_e( 'Mixed', 'go-deliver' ); ?>
-							</button>
-						</div>
-						<input type="hidden" name="form_data[junk_type]" id="gd_junk_type">
-						<span class="gd-field-error" id="gd-junk-type-error" style="display:none;">
-							<?php esc_html_e( 'Please select a junk type.', 'go-deliver' ); ?>
-						</span>
-					</div>
-					<div class="gd-field-group">
-						<label for="gd_junk_volume">
-							<?php esc_html_e( 'Estimate volume', 'go-deliver' ); ?>
-						</label>
-						<select id="gd_junk_volume" name="form_data[junk_volume]">
-							<option value=""><?php esc_html_e( '— Select approximate volume —', 'go-deliver' ); ?></option>
-							<option value="small"><?php esc_html_e( 'Small — fits in a car boot', 'go-deliver' ); ?></option>
-							<option value="medium"><?php esc_html_e( 'Medium — half trailer load', 'go-deliver' ); ?></option>
-							<option value="large"><?php esc_html_e( 'Large — full trailer load', 'go-deliver' ); ?></option>
-							<option value="extra_large"><?php esc_html_e( 'Extra large — multiple loads', 'go-deliver' ); ?></option>
-						</select>
-					</div>
-				</div>
-
-				<!-- ── Listing title (appears after category / sub-type selection) ── -->
-				<div class="gd-field-group" id="gd-listing-title-group" style="display:none;">
-					<label for="gd_listing_title" id="gd-listing-title-label">
-						<?php esc_html_e( 'Describe what you need moved', 'go-deliver' ); ?>
+				<!-- Vehicle: Make & Model (shown for car / motorcycle / vehicle / other_vehicle) -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="car,motorcycle,vehicle,other_vehicle" style="display:none;">
+					<label for="gd_vehicle_make">
+						<?php esc_html_e( 'Make', 'go-deliver' ); ?>
 						<span class="gd-required" aria-hidden="true">*</span>
 					</label>
 					<input
 						type="text"
-						id="gd_listing_title"
-						name="listing_title"
-						maxlength="80"
-						placeholder="<?php esc_attr_e( 'e.g. Double bed, Queen size', 'go-deliver' ); ?>"
+						id="gd_vehicle_make"
+						name="form_data[vehicle_make]"
+						placeholder="<?php esc_attr_e( 'e.g. Toyota', 'go-deliver' ); ?>"
 						autocomplete="off"
-						required
 					>
-					<span class="gd-field-hint">
-						<?php esc_html_e( 'Keep it brief. Do not include phone numbers or addresses — these are shared privately once a quote is accepted.', 'go-deliver' ); ?>
-					</span>
+				</div>
+
+				<div class="gd-field-group gd-type-field" data-job-type-show="car,motorcycle,vehicle,other_vehicle" style="display:none;">
+					<label for="gd_vehicle_model">
+						<?php esc_html_e( 'Model', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<input
+						type="text"
+						id="gd_vehicle_model"
+						name="form_data[vehicle_model]"
+						placeholder="<?php esc_attr_e( 'e.g. Corolla', 'go-deliver' ); ?>"
+						autocomplete="off"
+					>
+				</div>
+
+				<!-- Furniture type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="furniture" style="display:none;">
+					<label for="gd_furniture_type">
+						<?php esc_html_e( 'What kind of furniture?', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<select id="gd_furniture_type" name="form_data[furniture_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="sofa"><?php esc_html_e( 'Sofa / Couch', 'go-deliver' ); ?></option>
+						<option value="table"><?php esc_html_e( 'Table', 'go-deliver' ); ?></option>
+						<option value="bed"><?php esc_html_e( 'Bed / Mattress', 'go-deliver' ); ?></option>
+						<option value="bookcase"><?php esc_html_e( 'Bookcase / Shelving', 'go-deliver' ); ?></option>
+						<option value="wardrobe"><?php esc_html_e( 'Wardrobe / Dresser', 'go-deliver' ); ?></option>
+						<option value="desk"><?php esc_html_e( 'Desk', 'go-deliver' ); ?></option>
+						<option value="appliance"><?php esc_html_e( 'Fridge / Appliance', 'go-deliver' ); ?></option>
+						<option value="other"><?php esc_html_e( 'Other furniture', 'go-deliver' ); ?></option>
+					</select>
+				</div>
+
+				<!-- Move type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="move" style="display:none;">
+					<label for="gd_move_type">
+						<?php esc_html_e( 'What kind of move?', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<select id="gd_move_type" name="form_data[move_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="home"><?php esc_html_e( 'Home move', 'go-deliver' ); ?></option>
+						<option value="office"><?php esc_html_e( 'Office move', 'go-deliver' ); ?></option>
+						<option value="storage"><?php esc_html_e( 'Into / out of storage', 'go-deliver' ); ?></option>
+					</select>
+				</div>
+
+				<!-- Boat type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="boat" style="display:none;">
+					<label for="gd_boat_type"><?php esc_html_e( 'What kind of boat?', 'go-deliver' ); ?></label>
+					<select id="gd_boat_type" name="form_data[boat_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="powerboat"><?php esc_html_e( 'Powerboat', 'go-deliver' ); ?></option>
+						<option value="sailboat"><?php esc_html_e( 'Sailboat', 'go-deliver' ); ?></option>
+						<option value="houseboat"><?php esc_html_e( 'Houseboat', 'go-deliver' ); ?></option>
+						<option value="jet_ski"><?php esc_html_e( 'Jet Ski', 'go-deliver' ); ?></option>
+						<option value="other"><?php esc_html_e( 'Other watercraft', 'go-deliver' ); ?></option>
+					</select>
+				</div>
+
+				<!-- Piano type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="piano" style="display:none;">
+					<label for="gd_piano_type"><?php esc_html_e( 'What kind of piano?', 'go-deliver' ); ?></label>
+					<select id="gd_piano_type" name="form_data[piano_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="grand"><?php esc_html_e( 'Grand Piano', 'go-deliver' ); ?></option>
+						<option value="upright"><?php esc_html_e( 'Upright Piano', 'go-deliver' ); ?></option>
+						<option value="digital"><?php esc_html_e( 'Digital Piano / Keyboard', 'go-deliver' ); ?></option>
+					</select>
+				</div>
+
+				<!-- Pet type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="pet" style="display:none;">
+					<label for="gd_pet_type"><?php esc_html_e( 'What kind of pet?', 'go-deliver' ); ?></label>
+					<select id="gd_pet_type" name="form_data[pet_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="cat"><?php esc_html_e( 'Cat', 'go-deliver' ); ?></option>
+						<option value="dog"><?php esc_html_e( 'Dog', 'go-deliver' ); ?></option>
+						<option value="bird"><?php esc_html_e( 'Bird', 'go-deliver' ); ?></option>
+						<option value="horse"><?php esc_html_e( 'Horse / Large animal', 'go-deliver' ); ?></option>
+						<option value="other"><?php esc_html_e( 'Other', 'go-deliver' ); ?></option>
+					</select>
 				</div>
 
 			</div><!-- /step 1 -->

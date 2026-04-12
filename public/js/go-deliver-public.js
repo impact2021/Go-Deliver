@@ -214,13 +214,10 @@
 			$form.find( '.gd-form-section' ).hide().removeClass( 'gd-form-section--active' );
 			$form.find( '.gd-form-section[data-step="' + step + '"]' ).show().addClass( 'gd-form-section--active' );
 
-			// Update step indicators.
-			$form.find( '.gd-step' ).each( function () {
-				var s = parseInt( $( this ).data( 'step' ), 10 );
-				$( this ).removeClass( 'gd-step--active gd-step--done' );
-				if ( s === step ) { $( this ).addClass( 'gd-step--active' ); }
-				else if ( s < step ) { $( this ).addClass( 'gd-step--done' ); }
-			} );
+			// Update progress bar.
+			var pct = Math.round( ( step / totalSteps ) * 100 );
+			$form.closest( '.gd-job-form' ).find( '.gd-form-progress__fill' ).css( 'width', pct + '%' );
+			$form.closest( '.gd-job-form' ).find( '.gd-form-progress' ).attr( 'aria-valuenow', pct );
 
 			// Prev button.
 			$form.find( '#gd-job-prev' ).toggle( step > 1 );
