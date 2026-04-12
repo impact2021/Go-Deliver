@@ -289,7 +289,7 @@ array(
 public function get_flat_job_types() {
 return array(
 array(
-'value' => 'trademe_purchase_pickup',
+'value' => 'trademe_pickup',
 'label' => __( 'TradeMe Purchase Pickup — purchase pickup from trademe.co.nz', 'go-deliver' ),
 ),
 array(

@@ -239,8 +239,13 @@ if ( is_user_logged_in() ) {
 							$job_type_options = array(
 								'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
 								'item'           => __( 'Item', 'go-deliver' ),
+								'furniture'      => __( 'Furniture', 'go-deliver' ),
+								'item_packed'    => __( 'Packed Item', 'go-deliver' ),
 								'move'           => __( 'Move', 'go-deliver' ),
 								'vehicle'        => __( 'Vehicle', 'go-deliver' ),
+								'car'            => __( 'Car', 'go-deliver' ),
+								'motorcycle'     => __( 'Motorcycle', 'go-deliver' ),
+								'other_vehicle'  => __( 'Other Vehicle', 'go-deliver' ),
 								'boat'           => __( 'Boat', 'go-deliver' ),
 								'piano'          => __( 'Piano', 'go-deliver' ),
 								'pet'            => __( 'Pet', 'go-deliver' ),
