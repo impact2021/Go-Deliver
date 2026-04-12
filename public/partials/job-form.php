@@ -278,6 +278,24 @@ $form_builder = new Go_Deliver_Form_Builder();
 			<div class="gd-form-section" data-step="5">
 				<h2 class="gd-form-section__title"><?php esc_html_e( 'Photos &amp; Extra Information', 'go-deliver' ); ?></h2>
 
+				<!-- Listing Title -->
+				<div class="gd-field-group">
+					<label for="gd_listing_title">
+						<?php esc_html_e( 'Listing title', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<input
+						type="text"
+						id="gd_listing_title"
+						name="listing_title"
+						maxlength="80"
+						placeholder="<?php esc_attr_e( 'e.g. 2-seater sofa from Auckland CBD to Ponsonby', 'go-deliver' ); ?>"
+						required
+						autocomplete="off"
+					>
+					<span class="gd-field-hint"><?php esc_html_e( 'A short title shown to movers on the listings page. Max 80 characters. Do not include phone numbers or addresses.', 'go-deliver' ); ?></span>
+				</div>
+
 				<!-- Photo Upload -->
 				<div class="gd-field-group">
 					<label><?php esc_html_e( 'Photos (optional)', 'go-deliver' ); ?></label>
