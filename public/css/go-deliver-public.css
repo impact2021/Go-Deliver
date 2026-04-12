@@ -2417,3 +2417,85 @@
 		transform: rotate(90deg);
 	}
 }
+
+/* ============================================================
+   Login / Logout shortcode  [gd_login_logout]
+   ============================================================ */
+.gd-login-logout {
+	max-width: 420px;
+	margin: 0 auto;
+	padding: 32px 24px;
+	background: var(--gd-white);
+	border: 1px solid var(--gd-border);
+	border-radius: var(--gd-radius-lg);
+}
+
+/* Logged-out state: style the WP-generated login form */
+.gd-login-logout--logged-out #loginform {
+	margin: 0;
+	padding: 0;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+}
+
+.gd-login-logout--logged-out #loginform .input {
+	display: block;
+	width: 100%;
+	padding: 10px 12px;
+	font-size: 14px;
+	border: 1px solid var(--gd-border);
+	border-radius: var(--gd-radius);
+	margin-bottom: 16px;
+	box-sizing: border-box;
+}
+
+.gd-login-logout--logged-out #loginform label {
+	display: block;
+	font-weight: 600;
+	font-size: 13px;
+	margin-bottom: 4px;
+	color: var(--gd-text);
+}
+
+.gd-login-logout--logged-out #loginform .forgetmenot {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	margin-bottom: 16px;
+}
+
+.gd-login-logout--logged-out #loginform .button-primary {
+	display: block;
+	width: 100%;
+	padding: 11px;
+	font-size: 15px;
+	font-weight: 600;
+	background: var(--gd-primary);
+	color: var(--gd-white);
+	border: none;
+	border-radius: var(--gd-radius);
+	cursor: pointer;
+	transition: background 0.2s;
+}
+
+.gd-login-logout--logged-out #loginform .button-primary:hover {
+	background: var(--gd-primary-dark, var(--gd-primary));
+	opacity: 0.9;
+}
+
+/* Logged-in state */
+.gd-login-logout--logged-in {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+
+.gd-login-logout__greeting {
+	margin: 0;
+	font-size: 15px;
+	color: var(--gd-text);
+}

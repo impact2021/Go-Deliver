@@ -214,4 +214,37 @@ class Go_Deliver_Public {
 		}
 		return ob_get_clean();
 	}
+
+	/**
+	 * Render the login / logout block.
+	 *
+	 * Shortcode: [gd_login_logout]
+	 *
+	 * When the user is not logged in, displays a login form.
+	 * When the user is logged in, displays a greeting and a logout link.
+	 *
+	 * Supported attributes:
+	 *   redirect        – URL to redirect to after a successful login.
+	 *   redirect_logout – URL to redirect to after logging out.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string HTML output.
+	 */
+	public function render_login_logout( $atts ) {
+		$atts = shortcode_atts(
+			array(
+				'redirect'        => '',
+				'redirect_logout' => '',
+			),
+			$atts,
+			'gd_login_logout'
+		);
+
+		ob_start();
+		$template = GD_PLUGIN_DIR . 'public/partials/login-logout.php';
+		if ( file_exists( $template ) ) {
+			include $template;
+		}
+		return ob_get_clean();
+	}
 }

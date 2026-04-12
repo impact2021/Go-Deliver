@@ -94,6 +94,7 @@ class Go_Deliver {
 		add_shortcode( 'gd_mover_registration', array( $public, 'render_mover_registration' ) );
 		add_shortcode( 'gd_messaging', array( $public, 'render_messaging' ) );
 		add_shortcode( 'gd_wallet_topup', array( $public, 'render_wallet_topup' ) );
+		add_shortcode( 'gd_login_logout', array( $public, 'render_login_logout' ) );
 	}
 
 	/**

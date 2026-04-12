@@ -50,6 +50,11 @@ $shortcodes = array(
 		'description' => __( 'Displays a list of available (open) jobs. Intended as a browse view for movers. Note: job browsing is also built into the mover dashboard.', 'go-deliver' ),
 		'roles'       => __( 'Logged-in users (movers)', 'go-deliver' ),
 	),
+	array(
+		'tag'         => '[gd_login_logout]',
+		'description' => __( 'Displays a login form for guests and a logout button for logged-in users. Optional attributes: <code>redirect</code> (URL after login) and <code>redirect_logout</code> (URL after logout). Example: <code>[gd_login_logout redirect="/dashboard" redirect_logout="/"]</code>', 'go-deliver' ),
+		'roles'       => __( 'All visitors (guests and logged-in users)', 'go-deliver' ),
+	),
 );
 ?>
 <div class="wrap">
@@ -106,6 +111,11 @@ $shortcodes = array(
 				<td><?php esc_html_e( 'Top Up Wallet', 'go-deliver' ); ?></td>
 				<td><code>[gd_wallet_topup]</code></td>
 				<td><?php esc_html_e( 'Set the page ID in Settings → Wallet Page. Movers only.', 'go-deliver' ); ?></td>
+			</tr>
+			<tr>
+				<td><?php esc_html_e( 'Login / Logout', 'go-deliver' ); ?></td>
+				<td><code>[gd_login_logout]</code></td>
+				<td><?php esc_html_e( 'Place in a menu, sidebar, or dedicated login page. Automatically switches between a login form and a logout button.', 'go-deliver' ); ?></td>
 			</tr>
 		</tbody>
 	</table>
