@@ -152,6 +152,8 @@ class Go_Deliver {
 			'gd_get_available_jobs',
 			'gd_update_mover_profile',
 			'gd_get_my_quotes',
+			'gd_dismiss_job',
+			'gd_restore_job',
 		);
 
 		foreach ( $ajax_actions_auth as $action ) {
@@ -198,6 +200,8 @@ class Go_Deliver {
 			'gd_get_available_jobs'  => array( 'Go_Deliver_Jobs', 'ajax_get_available_jobs' ),
 			'gd_update_mover_profile' => array( 'Go_Deliver_Mover_Reg', 'ajax_update_mover_profile' ),
 			'gd_get_my_quotes'       => array( 'Go_Deliver_Quotes', 'ajax_get_my_quotes' ),
+			'gd_dismiss_job'         => array( 'Go_Deliver_Jobs', 'ajax_dismiss_job' ),
+			'gd_restore_job'         => array( 'Go_Deliver_Jobs', 'ajax_restore_job' ),
 		);
 
 		if ( isset( $handler_map[ $action ] ) ) {
