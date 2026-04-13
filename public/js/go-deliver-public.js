@@ -240,6 +240,28 @@
 		}
 
 		/**
+		 * Validate that every address field in the given section has a geocoded result.
+		 * Returns false and shows an inline error if the user typed text but did not
+		 * select a suggestion from autocomplete (or geocoding did not complete).
+		 *
+		 * @param {jQuery} $section
+		 * @return {boolean}
+		 */
+		function validateAddressFields( $section ) {
+			var valid = true;
+			$section.find( '.gd-location-field' ).each( function () {
+				var $wrap    = $( this );
+				var $suburb  = $wrap.find( '.gd-suburb-input' );
+				var $address = $wrap.find( '.gd-address-input' );
+				if ( $suburb.is( ':visible' ) && $.trim( $suburb.val() ) && ! $.trim( $address.val() ) ) {
+					gdFieldError( $suburb, 'Please select a valid address from the suggestions.' );
+					valid = false;
+				}
+			} );
+			return valid;
+		}
+
+		/**
 		 * Validate required fields in the current step.
 		 *
 		 * @return {boolean}
@@ -266,6 +288,11 @@
 					gdClearFieldError( $f );
 				}
 			} );
+
+			// Ensure each address field was confirmed via autocomplete/geocoding.
+			if ( ! validateAddressFields( $section ) ) {
+				valid = false;
+			}
 
 			// Extra validation for the account creation step.
 			var $email = $section.find( '#gd_account_email' );
@@ -1436,6 +1463,11 @@
 					gdClearFieldError( $f );
 				}
 			} );
+
+			// Ensure each address field was confirmed via autocomplete/geocoding.
+			if ( ! validateAddressFields( $section ) ) {
+				valid = false;
+			}
 
 			// Password confirmation.
 			if ( step === 1 ) {
