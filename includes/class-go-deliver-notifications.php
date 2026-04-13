@@ -503,9 +503,10 @@ class Go_Deliver_Notifications {
 			return;
 		}
 
-		$site_name     = get_bloginfo( 'name' );
-		$job_type      = Go_Deliver_Jobs::get_display_title( (int) $job_id );
-		$pickup_suburb = get_post_meta( (int) $job_id, 'gd_pickup_suburb', true );
+		$site_name      = get_bloginfo( 'name' );
+		$job_type       = Go_Deliver_Jobs::get_display_title( (int) $job_id );
+		$pickup_suburb  = get_post_meta( (int) $job_id, 'gd_pickup_suburb', true );
+		$dropoff_suburb = get_post_meta( (int) $job_id, 'gd_dropoff_suburb', true );
 		$date_requested = get_post_meta( (int) $job_id, 'gd_date_requested', true );
 
 		// Link movers to the mover dashboard (jobs are viewed via AJAX modal).
@@ -527,6 +528,7 @@ class Go_Deliver_Notifications {
 				'job_id'           => (int) $job_id,
 				'job_type'         => $job_type,
 				'pickup_suburb'    => $pickup_suburb,
+				'dropoff_suburb'   => $dropoff_suburb,
 				'date_requested'   => $date_requested,
 				'job_url'          => $job_url,
 				'site_name'        => $site_name,
