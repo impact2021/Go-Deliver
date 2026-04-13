@@ -170,9 +170,9 @@ array(
 'conditional_on'    => 'item_type',
 'conditional_value' => 'Vehicle or boat',
 ),
-// ── Level 3: Vehicle / boat make ────────────────────────────────────────
+// ── Level 3: Make field (one entry per applicable sub-type) ───────────────────
 array(
-'key'               => 'vehicle_make',
+'key'               => 'vehicle_make_car',
 'label'             => __( 'Make', 'go-deliver' ),
 'type'              => 'text',
 'required'          => false,
@@ -180,15 +180,69 @@ array(
 'conditional_on'    => 'vehicle_boat_subtype',
 'conditional_value' => 'Car',
 ),
-// ── Level 3: Vehicle / boat model ───────────────────────────────────────
 array(
-'key'               => 'vehicle_model',
+'key'               => 'vehicle_make_motorbike',
+'label'             => __( 'Make', 'go-deliver' ),
+'type'              => 'text',
+'required'          => false,
+'placeholder'       => 'e.g. Honda',
+'conditional_on'    => 'vehicle_boat_subtype',
+'conditional_value' => 'Motorbike',
+),
+array(
+'key'               => 'vehicle_make_boat',
+'label'             => __( 'Make', 'go-deliver' ),
+'type'              => 'text',
+'required'          => false,
+'placeholder'       => 'e.g. Bayliner',
+'conditional_on'    => 'vehicle_boat_subtype',
+'conditional_value' => 'Boat',
+),
+array(
+'key'               => 'vehicle_make_caravan',
+'label'             => __( 'Make', 'go-deliver' ),
+'type'              => 'text',
+'required'          => false,
+'placeholder'       => 'e.g. Jayco',
+'conditional_on'    => 'vehicle_boat_subtype',
+'conditional_value' => 'Caravan',
+),
+// ── Level 3: Model field (one entry per applicable sub-type) ──────────────────
+array(
+'key'               => 'vehicle_model_car',
 'label'             => __( 'Model', 'go-deliver' ),
 'type'              => 'text',
 'required'          => false,
 'placeholder'       => 'e.g. Corolla',
 'conditional_on'    => 'vehicle_boat_subtype',
 'conditional_value' => 'Car',
+),
+array(
+'key'               => 'vehicle_model_motorbike',
+'label'             => __( 'Model', 'go-deliver' ),
+'type'              => 'text',
+'required'          => false,
+'placeholder'       => 'e.g. CBR500R',
+'conditional_on'    => 'vehicle_boat_subtype',
+'conditional_value' => 'Motorbike',
+),
+array(
+'key'               => 'vehicle_model_boat',
+'label'             => __( 'Model', 'go-deliver' ),
+'type'              => 'text',
+'required'          => false,
+'placeholder'       => 'e.g. Trophy 2052',
+'conditional_on'    => 'vehicle_boat_subtype',
+'conditional_value' => 'Boat',
+),
+array(
+'key'               => 'vehicle_model_caravan',
+'label'             => __( 'Model', 'go-deliver' ),
+'type'              => 'text',
+'required'          => false,
+'placeholder'       => 'e.g. Expanda 21.56.1',
+'conditional_on'    => 'vehicle_boat_subtype',
+'conditional_value' => 'Caravan',
 ),
 // ── Level 2: Pet sub-type ────────────────────────────────────────────
 array(

@@ -31,8 +31,8 @@ return array(
 // Current parent categories.
 'trademe_pickup' => __( 'Trademe Purchase Pickup', 'go-deliver' ),
 'item'           => __( 'Item', 'go-deliver' ),
-'move'           => __( 'Home or Office Move', 'go-deliver' ),
-'vehicle_or_boat' => __( 'Vehicle or Boat', 'go-deliver' ),
+'move'            => __( 'Home or office move', 'go-deliver' ),
+'vehicle_or_boat' => __( 'Vehicle or boat', 'go-deliver' ),
 'pet'            => __( 'Pet Transport', 'go-deliver' ),
 'junk'           => __( 'Junk Removal', 'go-deliver' ),
 'other'          => __( 'Other', 'go-deliver' ),
