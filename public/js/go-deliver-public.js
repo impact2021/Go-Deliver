@@ -980,7 +980,7 @@
 					var $chip  = $( this );
 					var slug   = $chip.data( 'filter' );
 					if ( ! slug ) { return; } // skip "All Types"
-					var base   = $chip.data( 'label-base' ) || $chip.text().trim().replace( / \(\d+\)$/, '' );
+					var base   = $chip.data( 'label-base' ) || $chip.text().trim().replace( /\s*\(\d+\)\s*$/, '' );
 					$chip.data( 'label-base', base );
 					var count  = counts[ slug ] || 0;
 					$chip.text( count > 0 ? base + ' (' + count + ')' : base );
