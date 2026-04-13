@@ -762,7 +762,7 @@
 			gdAjax(
 				'gd_dismiss_job',
 				{ job_id: jobId },
-				function () {
+				function ( data ) {
 					$btn.closest( '.gd-job-card' ).fadeOut( 300, function () { $( this ).remove(); } );
 					// Update the dismissed-jobs tab badge.
 					var $badge = $dashboard.find( '#gd-dismissed-badge' );
@@ -770,6 +770,13 @@
 						$badge.text( parseInt( $badge.text(), 10 ) + 1 );
 					} else {
 						$dashboard.find( '[data-tab="dismissed-jobs"]' ).append( '<span class="gd-badge gd-badge--open" id="gd-dismissed-badge" style="margin-left:6px;">1</span>' );
+					}
+					// Inject the dismissed card into the tab panel immediately
+					// so it appears without requiring a page reload.
+					if ( data && data.card_html ) {
+						var $panel = $dashboard.find( '#gd-tab-dismissed-jobs' );
+						$panel.find( '.gd-empty-state' ).remove();
+						$panel.prepend( data.card_html );
 					}
 				},
 				function ( msg ) {

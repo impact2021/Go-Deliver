@@ -140,6 +140,18 @@
 	background: var(--gd-primary-light);
 }
 
+/* Dark */
+.gd-btn--dark {
+	background: #111;
+	border-color: #111;
+	color: #fff;
+}
+.gd-btn--dark:hover {
+	background: #333;
+	border-color: #333;
+	color: #fff;
+}
+
 /* Success */
 .gd-btn--success {
 	background: var(--gd-success);

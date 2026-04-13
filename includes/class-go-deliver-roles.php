@@ -34,6 +34,7 @@ class Go_Deliver_Roles {
 			__( 'GD Customer', 'go-deliver' ),
 			array(
 				'read'             => true,
+				'upload_files'     => true,
 				'gd_submit_jobs'   => true,
 				'gd_view_own_jobs' => true,
 			)
@@ -67,6 +68,14 @@ class Go_Deliver_Roles {
 				'gd_view_own_quotes' => true,
 			)
 		);
+
+		// Ensure the gd_customer role has upload_files so job photo uploads
+		// work via wp_handle_upload(). add_role() is a no-op when the role
+		// already exists, so we explicitly add the cap for existing sites.
+		$customer_role = get_role( 'gd_customer' );
+		if ( $customer_role && ! $customer_role->has_cap( 'upload_files' ) ) {
+			$customer_role->add_cap( 'upload_files' );
+		}
 	}
 
 	/**
