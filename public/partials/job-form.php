@@ -53,11 +53,53 @@ $form_builder = new Go_Deliver_Form_Builder();
 					<?php $form_builder->render_flat_job_type_dropdown(); ?>
 				</div>
 
-				<!-- Vehicle: Make & Model (shown for car / motorcycle / vehicle / other_vehicle) -->
-				<div class="gd-field-group gd-type-field" data-job-type-show="car,motorcycle,vehicle,other_vehicle" style="display:none;">
+				<!-- Item: size sub-category -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="item" style="display:none;">
+					<label for="gd_item_size">
+						<?php esc_html_e( 'How big is the item?', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<select id="gd_item_size" name="form_data[item_size]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="very_large"><?php esc_html_e( 'Very large item (e.g. piano)', 'go-deliver' ); ?></option>
+						<option value="large_furniture"><?php esc_html_e( 'Large item / furniture', 'go-deliver' ); ?></option>
+						<option value="smaller_item"><?php esc_html_e( 'Smaller item (e.g. computer)', 'go-deliver' ); ?></option>
+					</select>
+				</div>
+
+				<!-- Move: home or office -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="move" style="display:none;">
+					<label for="gd_move_type">
+						<?php esc_html_e( 'What kind of move?', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<select id="gd_move_type" name="form_data[move_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="home"><?php esc_html_e( 'Home move', 'go-deliver' ); ?></option>
+						<option value="office"><?php esc_html_e( 'Office move', 'go-deliver' ); ?></option>
+					</select>
+				</div>
+
+				<!-- Vehicle or boat: sub-type -->
+				<div class="gd-field-group gd-type-field" data-job-type-show="vehicle_or_boat" style="display:none;">
+					<label for="gd_vehicle_boat_type">
+						<?php esc_html_e( 'What type of vehicle or boat?', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<select id="gd_vehicle_boat_type" name="form_data[vehicle_boat_type]">
+						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
+						<option value="car"><?php esc_html_e( 'Car', 'go-deliver' ); ?></option>
+						<option value="motorbike"><?php esc_html_e( 'Motorbike', 'go-deliver' ); ?></option>
+						<option value="boat"><?php esc_html_e( 'Boat', 'go-deliver' ); ?></option>
+						<option value="caravan"><?php esc_html_e( 'Caravan', 'go-deliver' ); ?></option>
+						<option value="other_vehicle"><?php esc_html_e( 'Other vehicle type', 'go-deliver' ); ?></option>
+					</select>
+				</div>
+
+				<!-- Vehicle / boat: Make (shown for car / motorbike / boat / caravan) -->
+				<div class="gd-field-group gd-subtype-field" data-subtype-show="car,motorbike,boat,caravan" style="display:none;">
 					<label for="gd_vehicle_make">
 						<?php esc_html_e( 'Make', 'go-deliver' ); ?>
-						<span class="gd-required" aria-hidden="true">*</span>
 					</label>
 					<input
 						type="text"
@@ -68,10 +110,10 @@ $form_builder = new Go_Deliver_Form_Builder();
 					>
 				</div>
 
-				<div class="gd-field-group gd-type-field" data-job-type-show="car,motorcycle,vehicle,other_vehicle" style="display:none;">
+				<!-- Vehicle / boat: Model (shown for car / motorbike / boat / caravan) -->
+				<div class="gd-field-group gd-subtype-field" data-subtype-show="car,motorbike,boat,caravan" style="display:none;">
 					<label for="gd_vehicle_model">
 						<?php esc_html_e( 'Model', 'go-deliver' ); ?>
-						<span class="gd-required" aria-hidden="true">*</span>
 					</label>
 					<input
 						type="text"
@@ -80,63 +122,6 @@ $form_builder = new Go_Deliver_Form_Builder();
 						placeholder="<?php esc_attr_e( 'e.g. Corolla', 'go-deliver' ); ?>"
 						autocomplete="off"
 					>
-				</div>
-
-				<!-- Furniture type -->
-				<div class="gd-field-group gd-type-field" data-job-type-show="furniture" style="display:none;">
-					<label for="gd_furniture_type">
-						<?php esc_html_e( 'What kind of furniture?', 'go-deliver' ); ?>
-						<span class="gd-required" aria-hidden="true">*</span>
-					</label>
-					<select id="gd_furniture_type" name="form_data[furniture_type]">
-						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
-						<option value="sofa"><?php esc_html_e( 'Sofa / Couch', 'go-deliver' ); ?></option>
-						<option value="table"><?php esc_html_e( 'Table', 'go-deliver' ); ?></option>
-						<option value="bed"><?php esc_html_e( 'Bed / Mattress', 'go-deliver' ); ?></option>
-						<option value="bookcase"><?php esc_html_e( 'Bookcase / Shelving', 'go-deliver' ); ?></option>
-						<option value="wardrobe"><?php esc_html_e( 'Wardrobe / Dresser', 'go-deliver' ); ?></option>
-						<option value="desk"><?php esc_html_e( 'Desk', 'go-deliver' ); ?></option>
-						<option value="appliance"><?php esc_html_e( 'Fridge / Appliance', 'go-deliver' ); ?></option>
-						<option value="other"><?php esc_html_e( 'Other furniture', 'go-deliver' ); ?></option>
-					</select>
-				</div>
-
-				<!-- Move type -->
-				<div class="gd-field-group gd-type-field" data-job-type-show="move" style="display:none;">
-					<label for="gd_move_type">
-						<?php esc_html_e( 'What kind of move?', 'go-deliver' ); ?>
-						<span class="gd-required" aria-hidden="true">*</span>
-					</label>
-					<select id="gd_move_type" name="form_data[move_type]">
-						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
-						<option value="home"><?php esc_html_e( 'Home move', 'go-deliver' ); ?></option>
-						<option value="office"><?php esc_html_e( 'Office move', 'go-deliver' ); ?></option>
-						<option value="storage"><?php esc_html_e( 'Into / out of storage', 'go-deliver' ); ?></option>
-					</select>
-				</div>
-
-				<!-- Boat type -->
-				<div class="gd-field-group gd-type-field" data-job-type-show="boat" style="display:none;">
-					<label for="gd_boat_type"><?php esc_html_e( 'What kind of boat?', 'go-deliver' ); ?></label>
-					<select id="gd_boat_type" name="form_data[boat_type]">
-						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
-						<option value="powerboat"><?php esc_html_e( 'Powerboat', 'go-deliver' ); ?></option>
-						<option value="sailboat"><?php esc_html_e( 'Sailboat', 'go-deliver' ); ?></option>
-						<option value="houseboat"><?php esc_html_e( 'Houseboat', 'go-deliver' ); ?></option>
-						<option value="jet_ski"><?php esc_html_e( 'Jet Ski', 'go-deliver' ); ?></option>
-						<option value="other"><?php esc_html_e( 'Other watercraft', 'go-deliver' ); ?></option>
-					</select>
-				</div>
-
-				<!-- Piano type -->
-				<div class="gd-field-group gd-type-field" data-job-type-show="piano" style="display:none;">
-					<label for="gd_piano_type"><?php esc_html_e( 'What kind of piano?', 'go-deliver' ); ?></label>
-					<select id="gd_piano_type" name="form_data[piano_type]">
-						<option value=""><?php esc_html_e( '-- Select --', 'go-deliver' ); ?></option>
-						<option value="grand"><?php esc_html_e( 'Grand Piano', 'go-deliver' ); ?></option>
-						<option value="upright"><?php esc_html_e( 'Upright Piano', 'go-deliver' ); ?></option>
-						<option value="digital"><?php esc_html_e( 'Digital Piano / Keyboard', 'go-deliver' ); ?></option>
-					</select>
 				</div>
 
 				<!-- Pet type -->

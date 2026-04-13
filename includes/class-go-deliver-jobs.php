@@ -28,20 +28,23 @@ const VALID_STATUSES = array( 'open', 'locked', 'accepted', 'completed', 'expire
  */
 public static function get_type_labels(): array {
 return array(
-'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
+// Current parent categories.
+'trademe_pickup' => __( 'Trademe Purchase Pickup', 'go-deliver' ),
 'item'           => __( 'Item', 'go-deliver' ),
+'move'            => __( 'Home or office move', 'go-deliver' ),
+'vehicle_or_boat' => __( 'Vehicle or boat', 'go-deliver' ),
+'pet'            => __( 'Pet Transport', 'go-deliver' ),
+'junk'           => __( 'Junk Removal', 'go-deliver' ),
+'other'          => __( 'Other', 'go-deliver' ),
+// Legacy slugs retained for backward compatibility with existing jobs.
 'furniture'      => __( 'Furniture', 'go-deliver' ),
 'item_packed'    => __( 'Packed Item', 'go-deliver' ),
-'move'           => __( 'House / Office Move', 'go-deliver' ),
 'car'            => __( 'Car', 'go-deliver' ),
 'motorcycle'     => __( 'Motorcycle', 'go-deliver' ),
 'vehicle'        => __( 'Vehicle', 'go-deliver' ),
 'other_vehicle'  => __( 'Other Vehicle', 'go-deliver' ),
 'boat'           => __( 'Boat', 'go-deliver' ),
 'piano'          => __( 'Piano', 'go-deliver' ),
-'pet'            => __( 'Pet Transport', 'go-deliver' ),
-'junk'           => __( 'Junk Removal', 'go-deliver' ),
-'other'          => __( 'Other', 'go-deliver' ),
 );
 }
 
