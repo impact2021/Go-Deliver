@@ -251,7 +251,7 @@ $helpers_labels = array(
 						$thumb_url = $thumb_src ? $thumb_src[0] : $full_url;
 				?>
 					<div class="gd-photo-gallery__item">
-						<a href="<?php echo esc_url( $full_url ); ?>" target="_blank" rel="noopener" class="gd-photo-gallery__link">
+						<a href="<?php echo esc_url( $full_url ); ?>" class="gd-photo-gallery__link">
 							<img
 								src="<?php echo esc_url( $thumb_url ); ?>"
 								alt="<?php esc_attr_e( 'Job photo', 'go-deliver' ); ?>"
