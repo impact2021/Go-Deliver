@@ -207,7 +207,7 @@ if ( is_user_logged_in() ) {
 							name="base_suburb"
 							class="gd-suburb-input"
 							required
-							placeholder="<?php esc_attr_e( 'e.g. Wellington', 'go-deliver' ); ?>"
+							placeholder=""
 							autocomplete="off"
 						>
 						<input type="hidden" name="base_address" class="gd-address-input">
