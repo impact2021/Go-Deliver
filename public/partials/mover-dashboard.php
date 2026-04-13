@@ -261,20 +261,13 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 			</button>
 			<?php
 			$available_types = array(
-				'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
-				'item'           => __( 'Item', 'go-deliver' ),
-				'furniture'      => __( 'Furniture', 'go-deliver' ),
-				'item_packed'    => __( 'Packed Item', 'go-deliver' ),
-				'move'           => __( 'Move', 'go-deliver' ),
-				'vehicle'        => __( 'Vehicle', 'go-deliver' ),
-				'car'            => __( 'Car', 'go-deliver' ),
-				'motorcycle'     => __( 'Motorcycle', 'go-deliver' ),
-				'other_vehicle'  => __( 'Other Vehicle', 'go-deliver' ),
-				'boat'           => __( 'Boat', 'go-deliver' ),
-				'piano'          => __( 'Piano', 'go-deliver' ),
-				'pet'            => __( 'Pet', 'go-deliver' ),
-				'junk'           => __( 'Junk', 'go-deliver' ),
-				'other'          => __( 'Other', 'go-deliver' ),
+				'trademe_pickup'  => __( 'Trademe Purchase Pickup', 'go-deliver' ),
+				'item'            => __( 'Item', 'go-deliver' ),
+				'move'            => __( 'Home or office move', 'go-deliver' ),
+				'vehicle_or_boat' => __( 'Vehicle or boat', 'go-deliver' ),
+				'pet'             => __( 'Pet', 'go-deliver' ),
+				'junk'            => __( 'Junk', 'go-deliver' ),
+				'other'           => __( 'Other', 'go-deliver' ),
 			);
 			foreach ( $available_types as $slug => $label ) :
 			?>
@@ -676,20 +669,13 @@ $fee_percentage = (float) get_option( 'gd_fee_percentage', 10 );
 						<div class="gd-checkbox-group">
 							<?php
 							$profile_job_types = array(
-								'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
-								'item'           => __( 'Item', 'go-deliver' ),
-								'furniture'      => __( 'Furniture', 'go-deliver' ),
-								'item_packed'    => __( 'Packed Item', 'go-deliver' ),
-								'move'           => __( 'Move', 'go-deliver' ),
-								'vehicle'        => __( 'Vehicle', 'go-deliver' ),
-								'car'            => __( 'Car', 'go-deliver' ),
-								'motorcycle'     => __( 'Motorcycle', 'go-deliver' ),
-								'other_vehicle'  => __( 'Other Vehicle', 'go-deliver' ),
-								'boat'           => __( 'Boat', 'go-deliver' ),
-								'piano'          => __( 'Piano', 'go-deliver' ),
-								'pet'            => __( 'Pet', 'go-deliver' ),
-								'junk'           => __( 'Junk', 'go-deliver' ),
-								'other'          => __( 'Other', 'go-deliver' ),
+								'trademe_pickup'  => __( 'Trademe Purchase Pickup', 'go-deliver' ),
+								'item'            => __( 'Item', 'go-deliver' ),
+								'move'            => __( 'Home or office move', 'go-deliver' ),
+								'vehicle_or_boat' => __( 'Vehicle or boat', 'go-deliver' ),
+								'pet'             => __( 'Pet', 'go-deliver' ),
+								'junk'            => __( 'Junk', 'go-deliver' ),
+								'other'           => __( 'Other', 'go-deliver' ),
 							);
 							foreach ( $profile_job_types as $slug => $label ) :
 							?>

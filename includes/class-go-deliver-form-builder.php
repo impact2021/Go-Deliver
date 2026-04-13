@@ -124,52 +124,30 @@ return true;
  */
 public function get_default_fields() {
 return array(
-// ── Level 1: top-level job type ──────────────────────────────────────
+// ── Level 1: top-level job type ────────────────────────────────────────
 array(
 'key'      => 'item_type',
 'label'    => __( 'Job Type', 'go-deliver' ),
 'type'     => 'select',
 'required' => true,
 'options'  => array(
-'TradeMe Purchase Pickup',
+'Trademe Purchase Pickup',
 'Item',
-'Move',
-'Vehicle',
-'Boat',
-'Piano',
+'Home or office move',
+'Vehicle or boat',
 'Pet',
 'Junk',
 'Other',
 ),
 ),
-// ── Level 2: Item sub-type ────────────────────────────────────────────
+// ── Level 2: Item size sub-type ────────────────────────────────────────
 array(
 'key'               => 'item_subtype',
-'label'             => __( 'Item Type', 'go-deliver' ),
+'label'             => __( 'Item Size', 'go-deliver' ),
 'type'              => 'select',
 'required'          => false,
-'options'           => array( 'Furniture', 'Item' ),
+'options'           => array( 'Very large item (e.g. piano)', 'Large item / furniture', 'Smaller item (e.g. computer)' ),
 'conditional_on'    => 'item_type',
-'conditional_value' => 'Item',
-),
-// ── Level 3: Furniture detail ─────────────────────────────────────────
-array(
-'key'               => 'furniture_subtype',
-'label'             => __( 'Furniture Type', 'go-deliver' ),
-'type'              => 'select',
-'required'          => false,
-'options'           => array( 'Sofa', 'Table', 'Bed', 'Bookcase', 'Chest', 'Drawer' ),
-'conditional_on'    => 'item_subtype',
-'conditional_value' => 'Furniture',
-),
-// ── Level 3: Loose / packed item detail ───────────────────────────────
-array(
-'key'               => 'item_detail_subtype',
-'label'             => __( 'Item Detail', 'go-deliver' ),
-'type'              => 'select',
-'required'          => false,
-'options'           => array( 'Packed Item', 'Electronics', 'Bicycle', 'Box' ),
-'conditional_on'    => 'item_subtype',
 'conditional_value' => 'Item',
 ),
 // ── Level 2: Move sub-type ────────────────────────────────────────────
@@ -178,99 +156,49 @@ array(
 'label'             => __( 'Move Type', 'go-deliver' ),
 'type'              => 'select',
 'required'          => false,
-'options'           => array( 'Home', 'Office', 'Storage' ),
+'options'           => array( 'Home', 'Office' ),
 'conditional_on'    => 'item_type',
-'conditional_value' => 'Move',
+'conditional_value' => 'Home or office move',
 ),
-// ── Level 2: Vehicle sub-type ─────────────────────────────────────────
+// ── Level 2: Vehicle or boat sub-type ──────────────────────────────────
 array(
-'key'               => 'vehicle_subtype',
-'label'             => __( 'Vehicle Type', 'go-deliver' ),
+'key'               => 'vehicle_boat_subtype',
+'label'             => __( 'Vehicle / Boat Type', 'go-deliver' ),
 'type'              => 'select',
 'required'          => false,
-'options'           => array( 'Car', 'Motorcycle', 'Other Vehicle' ),
+'options'           => array( 'Car', 'Motorbike', 'Boat', 'Caravan', 'Other vehicle type' ),
 'conditional_on'    => 'item_type',
-'conditional_value' => 'Vehicle',
+'conditional_value' => 'Vehicle or boat',
 ),
-// ── Level 3: Car detail ───────────────────────────────────────────────
+// ── Level 3: Vehicle / boat make ────────────────────────────────────────
 array(
-'key'               => 'car_subtype',
-'label'             => __( 'Car Type', 'go-deliver' ),
-'type'              => 'select',
+'key'               => 'vehicle_make',
+'label'             => __( 'Make', 'go-deliver' ),
+'type'              => 'text',
 'required'          => false,
-'options'           => array( 'Sedan', 'Minivan', '4x4', 'Pickup', 'Sports Car', 'Coupe' ),
-'conditional_on'    => 'vehicle_subtype',
+'placeholder'       => 'e.g. Toyota',
+'conditional_on'    => 'vehicle_boat_subtype',
 'conditional_value' => 'Car',
 ),
-// ── Level 3: Motorcycle detail ────────────────────────────────────────
+// ── Level 3: Vehicle / boat model ───────────────────────────────────────
 array(
-'key'               => 'motorcycle_subtype',
-'label'             => __( 'Motorcycle Type', 'go-deliver' ),
-'type'              => 'select',
+'key'               => 'vehicle_model',
+'label'             => __( 'Model', 'go-deliver' ),
+'type'              => 'text',
 'required'          => false,
-'options'           => array( 'Chopper', 'Superbike', 'Moped', 'Scooter' ),
-'conditional_on'    => 'vehicle_subtype',
-'conditional_value' => 'Motorcycle',
+'placeholder'       => 'e.g. Corolla',
+'conditional_on'    => 'vehicle_boat_subtype',
+'conditional_value' => 'Car',
 ),
-// ── Level 3: Other vehicle detail ─────────────────────────────────────
-array(
-'key'               => 'other_vehicle_subtype',
-'label'             => __( 'Vehicle Detail', 'go-deliver' ),
-'type'              => 'select',
-'required'          => false,
-'options'           => array( 'Truck', 'Bus', 'RV', 'Tractor' ),
-'conditional_on'    => 'vehicle_subtype',
-'conditional_value' => 'Other Vehicle',
-),
-// ── Level 2: Boat sub-type ────────────────────────────────────────────
-array(
-'key'               => 'boat_subtype',
-'label'             => __( 'Boat Type', 'go-deliver' ),
-'type'              => 'select',
-'required'          => false,
-'options'           => array( 'Powerboat', 'Sailboat', 'Houseboat', 'Jet Ski', 'Watercraft' ),
-'conditional_on'    => 'item_type',
-'conditional_value' => 'Boat',
-),
-// ── Level 2: Piano sub-type ───────────────────────────────────────────
-array(
-'key'               => 'piano_subtype',
-'label'             => __( 'Piano Type', 'go-deliver' ),
-'type'              => 'select',
-'required'          => false,
-'options'           => array( 'Grand Piano', 'Upright Piano', 'Digital Piano' ),
-'conditional_on'    => 'item_type',
-'conditional_value' => 'Piano',
-),
-// ── Level 2: Pet sub-type ─────────────────────────────────────────────
+// ── Level 2: Pet sub-type ────────────────────────────────────────────
 array(
 'key'               => 'pet_subtype',
 'label'             => __( 'Pet Type', 'go-deliver' ),
 'type'              => 'select',
 'required'          => false,
-'options'           => array( 'Cat', 'Dog', 'Bird', 'Horse' ),
+'options'           => array( 'Cat', 'Dog', 'Bird', 'Horse', 'Other' ),
 'conditional_on'    => 'item_type',
 'conditional_value' => 'Pet',
-),
-// ── Level 2: Junk sub-type ────────────────────────────────────────────
-array(
-'key'               => 'junk_subtype',
-'label'             => __( 'Junk Type', 'go-deliver' ),
-'type'              => 'select',
-'required'          => false,
-'options'           => array( 'Junk Clearance', 'Rubbish Removal' ),
-'conditional_on'    => 'item_type',
-'conditional_value' => 'Junk',
-),
-// ── Level 2: Other sub-type ───────────────────────────────────────────
-array(
-'key'               => 'other_subtype',
-'label'             => __( 'Other Type', 'go-deliver' ),
-'type'              => 'select',
-'required'          => false,
-'options'           => array( 'Heavy', 'Farm Equipment', 'Construction Material' ),
-'conditional_on'    => 'item_type',
-'conditional_value' => 'Other',
 ),
 );
 }
@@ -290,47 +218,19 @@ public function get_flat_job_types() {
 return array(
 array(
 'value' => 'trademe_pickup',
-'label' => __( 'TradeMe Purchase Pickup — purchase pickup from trademe.co.nz', 'go-deliver' ),
+'label' => __( 'Trademe Purchase Pickup — purchase pickup from trademe.co.nz', 'go-deliver' ),
 ),
 array(
 'value' => 'item',
-'label' => __( 'Item — furniture, electronics, antique, box, vehicle part etc.', 'go-deliver' ),
-),
-array(
-'value' => 'furniture',
-'label' => __( 'Furniture — sofa, table, bed, bookcase, chest, drawer etc.', 'go-deliver' ),
-),
-array(
-'value' => 'item_packed',
-'label' => __( 'Item — packed item, electronics, bicycle, box etc.', 'go-deliver' ),
+'label' => __( 'Item — very large, large/furniture, or smaller item', 'go-deliver' ),
 ),
 array(
 'value' => 'move',
-'label' => __( 'Move — home move, office move, storage move', 'go-deliver' ),
+'label' => __( 'Home or office move', 'go-deliver' ),
 ),
 array(
-'value' => 'vehicle',
-'label' => __( 'Vehicle — car, motorcycle, RV, truck and other motor vehicles', 'go-deliver' ),
-),
-array(
-'value' => 'car',
-'label' => __( 'Car — sedan, minivan, 4x4, pickup, sports car, coupe etc.', 'go-deliver' ),
-),
-array(
-'value' => 'motorcycle',
-'label' => __( 'Motorcycle — chopper, superbike, moped, scooter etc.', 'go-deliver' ),
-),
-array(
-'value' => 'other_vehicle',
-'label' => __( 'Other Vehicle — truck, bus, RV, tractor and other motor vehicles', 'go-deliver' ),
-),
-array(
-'value' => 'boat',
-'label' => __( 'Boat — powerboat, sailboat, houseboat, jet ski, watercraft etc.', 'go-deliver' ),
-),
-array(
-'value' => 'piano',
-'label' => __( 'Piano — grand piano, upright piano, digital piano etc.', 'go-deliver' ),
+'value' => 'vehicle_or_boat',
+'label' => __( 'Vehicle or boat — car, motorbike, boat, caravan etc.', 'go-deliver' ),
 ),
 array(
 'value' => 'pet',
@@ -342,7 +242,7 @@ array(
 ),
 array(
 'value' => 'other',
-'label' => __( 'Other — heavy, farm equipment, construction material etc.', 'go-deliver' ),
+'label' => __( 'Other', 'go-deliver' ),
 ),
 );
 }

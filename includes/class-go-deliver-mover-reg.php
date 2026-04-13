@@ -151,7 +151,7 @@ $message = sprintf(
 __( "A new mover has registered and requires approval.\n\nName: %1\$s\nEmail: %2\$s\n\nApprove or reject: %3\$s", 'go-deliver' ),
 $mover->display_name,
 $mover->user_email,
-admin_url( 'users.php?role=gd_mover' )
+admin_url( 'admin.php?page=go-deliver-movers' )
 );
 
 wp_mail( $admin_email, $subject, $message );

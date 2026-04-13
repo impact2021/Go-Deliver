@@ -390,6 +390,28 @@
 		$jobType.on( 'change', gdToggleTypeFields );
 		gdToggleTypeFields(); // honour any pre-selected value on page load.
 
+		// Show/hide make & model fields based on the vehicle/boat sub-type selection.
+		var $vehicleBoatType = $form.find( '#gd_vehicle_boat_type' );
+
+		function gdToggleSubtypeFields() {
+			var selected = $.trim( $vehicleBoatType.val() );
+			$form.find( '[data-subtype-show]' ).each( function () {
+				var subtypes = String( $( this ).data( 'subtype-show' ) ).split( ',' );
+				if ( selected && subtypes.indexOf( selected ) !== -1 ) {
+					$( this ).slideDown( 150 );
+				} else {
+					$( this ).slideUp( 150 );
+				}
+			} );
+		}
+
+		$vehicleBoatType.on( 'change', gdToggleSubtypeFields );
+		// Reset sub-type fields when the top-level job type changes.
+		$jobType.on( 'change', function () {
+			$form.find( '[data-subtype-show]' ).hide();
+		} );
+		gdToggleSubtypeFields(); // honour any pre-selected value on page load.
+
 		showStep( 1 );
 	}
 
