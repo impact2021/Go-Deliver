@@ -7,6 +7,7 @@
  *   $job_id            (int)    Job post ID.
  *   $job_type          (string) Type of move.
  *   $pickup_suburb     (string) Pickup suburb (no full address for privacy).
+ *   $dropoff_suburb    (string) Drop-off suburb (no full address for privacy).
  *   $date_requested    (string) Preferred moving date.
  *   $job_url           (string) URL to view the job.
  *   $site_name         (string) Website / plugin name.
@@ -24,6 +25,7 @@ $site_url       = isset( $site_url )       ? $site_url       : home_url();
 $mover_first_name = isset( $mover_first_name ) ? $mover_first_name : '';
 $job_type       = isset( $job_type )       ? $job_type       : __( 'Moving Job', 'go-deliver' );
 $pickup_suburb  = isset( $pickup_suburb )  ? $pickup_suburb  : '';
+$dropoff_suburb = isset( $dropoff_suburb ) ? $dropoff_suburb : '';
 $date_requested = isset( $date_requested ) ? $date_requested : '';
 $job_url        = isset( $job_url )        ? $job_url        : home_url();
 ?>
@@ -59,7 +61,7 @@ $job_url        = isset( $job_url )        ? $job_url        : home_url();
 
 	<div class="email-header">
 		<a href="<?php echo esc_url( $site_url ); ?>" class="email-header__logo">
-			🚚 <?php echo esc_html( $site_name ); ?>
+			<?php echo esc_html( $site_name ); ?>
 		</a>
 	</div>
 
@@ -87,6 +89,10 @@ $job_url        = isset( $job_url )        ? $job_url        : home_url();
 			<div class="email-detail-row">
 				<span class="email-detail-label"><?php esc_html_e( 'Pickup Suburb', 'go-deliver' ); ?></span>
 				<span class="email-detail-value"><?php echo esc_html( $pickup_suburb ?: __( 'Not specified', 'go-deliver' ) ); ?></span>
+			</div>
+			<div class="email-detail-row">
+				<span class="email-detail-label"><?php esc_html_e( 'Drop-off Suburb', 'go-deliver' ); ?></span>
+				<span class="email-detail-value"><?php echo esc_html( $dropoff_suburb ?: __( 'Not specified', 'go-deliver' ) ); ?></span>
 			</div>
 			<div class="email-detail-row">
 				<span class="email-detail-label"><?php esc_html_e( 'Date Requested', 'go-deliver' ); ?></span>
