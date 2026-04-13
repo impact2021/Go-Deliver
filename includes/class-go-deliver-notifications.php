@@ -391,6 +391,13 @@ class Go_Deliver_Notifications {
 		$job_type  = Go_Deliver_Jobs::get_display_title( (int) $job_id );
 		$site_name = get_bloginfo( 'name' );
 
+		// Ensure the mover's cached rating and review count are up-to-date
+		// before including them in the notification email.
+		if ( $mover ) {
+			$reviews = new Go_Deliver_Reviews();
+			$reviews->recalculate_average( $mover_id );
+		}
+
 		// Link to the customer's own dashboard where they can view quotes.
 		$dashboard_page_id = (int) get_option( 'gd_customer_dashboard_page_id', 0 );
 		$quotes_url        = $dashboard_page_id ? get_permalink( $dashboard_page_id ) : home_url();
