@@ -973,6 +973,18 @@
 			{ job_type: activeFilter },
 			function ( data ) {
 				$container.html( data.html || '<div class="gd-empty-state"><div class="gd-empty-state__icon">📦</div><p class="gd-empty-state__text">No available jobs in your area.</p></div>' );
+
+				// Update filter chip labels with job counts.
+				var counts = data.counts || {};
+				$dashboard.find( '.gd-filter-chip' ).each( function () {
+					var $chip  = $( this );
+					var slug   = $chip.data( 'filter' );
+					if ( ! slug ) { return; } // skip "All Types"
+					var base   = $chip.data( 'label-base' ) || $chip.text().trim().replace( / \(\d+\)$/, '' );
+					$chip.data( 'label-base', base );
+					var count  = counts[ slug ] || 0;
+					$chip.text( count > 0 ? base + ' (' + count + ')' : base );
+				} );
 			},
 			function ( msg ) {
 				$container.html( '<p class="gd-text-danger">' + gdEscape( msg ) + '</p>' );

@@ -1162,6 +1162,15 @@ return ! in_array( (int) $job['id'], $dismissed, true );
 }
 }
 
+// Count jobs by type before filtering, for the filter bar counts.
+$type_counts = array();
+foreach ( $jobs as $job ) {
+$t = $job['job_type'] ?? '';
+if ( $t !== '' ) {
+$type_counts[ $t ] = ( $type_counts[ $t ] ?? 0 ) + 1;
+}
+}
+
 // Apply optional job-type filter.
 if ( ! empty( $job_type_filter ) ) {
 $jobs = array_values( array_filter( $jobs, function ( $job ) use ( $job_type_filter ) {
@@ -1170,7 +1179,7 @@ return isset( $job['job_type'] ) && $job['job_type'] === $job_type_filter;
 }
 
 if ( empty( $jobs ) ) {
-wp_send_json_success( array( 'html' => '' ) );
+wp_send_json_success( array( 'html' => '', 'counts' => $type_counts ) );
 }
 
 // Fetch quote counts and bid ranges for all jobs in one query.
@@ -1327,7 +1336,7 @@ $thumb_url = $thumb_src ? $thumb_src[0] : $full_url;
 <?php
 $html = ob_get_clean();
 
-wp_send_json_success( array( 'html' => $html ) );
+wp_send_json_success( array( 'html' => $html, 'counts' => $type_counts ) );
 }
 
 /**
