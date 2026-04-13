@@ -1546,6 +1546,86 @@
 	} );
 
 	// =========================================================================
+	// Lightbox for job photo galleries
+	// =========================================================================
+
+	function gdInitLightbox() {
+		if ( ! $( '#gd-lightbox' ).length ) {
+			$( 'body' ).append(
+				'<div id="gd-lightbox" class="gd-lightbox-overlay" role="dialog" aria-modal="true">' +
+				'<button class="gd-lightbox__close" aria-label="Close">&times;</button>' +
+				'<button class="gd-lightbox__prev" aria-label="Previous">&#8249;</button>' +
+				'<div class="gd-lightbox__img-wrap"><img class="gd-lightbox__img" src="" alt=""></div>' +
+				'<button class="gd-lightbox__next" aria-label="Next">&#8250;</button>' +
+				'<div class="gd-lightbox__counter"></div>' +
+				'</div>'
+			);
+		}
+
+		var $lb      = $( '#gd-lightbox' );
+		var $img     = $lb.find( '.gd-lightbox__img' );
+		var $counter = $lb.find( '.gd-lightbox__counter' );
+		var $prev    = $lb.find( '.gd-lightbox__prev' );
+		var $next    = $lb.find( '.gd-lightbox__next' );
+		var images   = [];
+		var current  = 0;
+
+		function gdLightboxShow( idx ) {
+			current = idx;
+			$img.attr( 'src', images[ idx ] );
+			$img.attr( 'alt', 'Job photo ' + ( idx + 1 ) + ' of ' + images.length );
+			if ( images.length > 1 ) {
+				$counter.text( ( idx + 1 ) + ' / ' + images.length );
+				$prev.toggle( idx > 0 );
+				$next.toggle( idx < images.length - 1 );
+			} else {
+				$counter.text( '' );
+				$prev.hide();
+				$next.hide();
+			}
+			$lb.addClass( 'gd-lightbox-overlay--open' );
+		}
+
+		function gdLightboxClose() {
+			$lb.removeClass( 'gd-lightbox-overlay--open' );
+			$img.attr( 'src', '' );
+			images = [];
+		}
+
+		$( document ).off( 'click.gdLightbox', '.gd-photo-gallery__link' ).on( 'click.gdLightbox', '.gd-photo-gallery__link', function ( e ) {
+			e.preventDefault();
+			var $gallery = $( this ).closest( '.gd-photo-gallery' );
+			images = [];
+			$gallery.find( '.gd-photo-gallery__link' ).each( function () {
+				images.push( $( this ).attr( 'href' ) );
+			} );
+			var idx = $gallery.find( '.gd-photo-gallery__link' ).index( this );
+			gdLightboxShow( idx < 0 ? 0 : idx );
+		} );
+
+		$lb.on( 'click', '.gd-lightbox__prev', function () {
+			if ( current > 0 ) { gdLightboxShow( current - 1 ); }
+		} );
+
+		$lb.on( 'click', '.gd-lightbox__next', function () {
+			if ( current < images.length - 1 ) { gdLightboxShow( current + 1 ); }
+		} );
+
+		$lb.on( 'click', '.gd-lightbox__close', gdLightboxClose );
+
+		$lb.on( 'click', function ( e ) {
+			if ( $( e.target ).is( '#gd-lightbox' ) ) { gdLightboxClose(); }
+		} );
+
+		$( document ).on( 'keydown.gdLightbox', function ( e ) {
+			if ( ! $lb.hasClass( 'gd-lightbox-overlay--open' ) ) { return; }
+			if ( e.key === 'ArrowLeft' && current > 0 ) { gdLightboxShow( current - 1 ); }
+			if ( e.key === 'ArrowRight' && current < images.length - 1 ) { gdLightboxShow( current + 1 ); }
+			if ( e.key === 'Escape' ) { gdLightboxClose(); }
+		} );
+	}
+
+	// =========================================================================
 	// Document ready
 	// =========================================================================
 
@@ -1562,6 +1642,7 @@
 		gdInitMoverRegistration();
 		gdInitConditionalFields();
 		gdInitQuoteFeePreview();
+		gdInitLightbox();
 	} );
 
 } )( jQuery );
