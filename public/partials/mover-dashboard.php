@@ -798,7 +798,7 @@ $cust_phone = $cust_id ? esc_html( get_user_meta( $cust_id, 'gd_phone', true ) )
 
 $msg_url = $q_job_id ? esc_url( add_query_arg( 'job_id', $q_job_id, $messaging_base_url ) ) : '';
 ?>
-<div class="gd-mover-card" id="gd-accepted-card-<?php echo esc_attr( $q_job_id ); ?>">
+<div class="gd-mover-card">
 <div class="gd-mover-card__header">
 <div>
 <div class="gd-mover-card__job-type"><?php echo $job_type ?: esc_html__( 'Moving Job', 'go-deliver' ); ?></div>

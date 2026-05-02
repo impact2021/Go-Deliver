@@ -1155,8 +1155,14 @@
 					var $completedPanel = $dashboard.find( '#gd-tab-completed-jobs' );
 					var $emptyState     = $completedPanel.find( '.gd-empty-state' );
 
-					// Clone the updated card and append to the completed tab.
-					$completedPanel.append( $card.clone() );
+					// Clone the updated card, strip actions that should not appear in Completed tab.
+					var $cloned = $card.clone();
+					$cloned.find( '.gd-complete-job-btn, .gd-btn--primary' ).remove();
+					if ( ! $cloned.find( '.gd-mover-card__actions .gd-btn' ).length ) {
+						$cloned.find( '.gd-mover-card__actions' ).remove();
+					}
+					$cloned.removeAttr( 'id' );
+					$completedPanel.append( $cloned );
 					$emptyState.hide();
 
 					// Remove the original card from the accepted tab.
