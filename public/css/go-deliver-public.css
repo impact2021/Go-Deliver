@@ -1,6 +1,6 @@
 /* =============================================================================
    Go Deliver – Public-Facing Stylesheet
-   Version: 1.0.0
+   Version: 1.2.5
    ============================================================================= */
 
 /* -----------------------------------------------------------------------------
@@ -3121,5 +3121,105 @@ padding: 0 8px;
 }
 .gd-profile-stat__value {
 font-size: 20px;
+}
+}
+
+/* =============================================================================
+   Custom photo gallery (My Photos)
+   ============================================================================= */
+
+.gd-photo-gallery {
+margin-top: 8px;
+}
+
+.gd-photo-gallery__grid {
+display: flex;
+flex-wrap: wrap;
+gap: 10px;
+margin-bottom: 12px;
+min-height: 0;
+}
+
+.gd-photo-gallery__item {
+position: relative;
+width: 90px;
+height: 90px;
+border-radius: var(--gd-radius);
+overflow: hidden;
+border: 1px solid var(--gd-border);
+background: var(--gd-bg);
+flex-shrink: 0;
+}
+
+.gd-photo-gallery__item img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+}
+
+.gd-photo-delete-btn {
+position: absolute;
+top: 4px;
+right: 4px;
+width: 22px;
+height: 22px;
+line-height: 20px;
+text-align: center;
+background: rgba(0,0,0,.55);
+color: #fff;
+border: none;
+border-radius: 50%;
+font-size: 15px;
+cursor: pointer;
+padding: 0;
+opacity: 0;
+transition: opacity var(--gd-transition), background var(--gd-transition);
+}
+
+.gd-photo-gallery__item:hover .gd-photo-delete-btn {
+opacity: 1;
+}
+
+.gd-photo-delete-btn:hover {
+background: var(--gd-danger);
+}
+
+.gd-photo-gallery__footer {
+display: flex;
+align-items: center;
+gap: 12px;
+flex-wrap: wrap;
+}
+
+.gd-photo-gallery__count {
+font-size: 13px;
+color: var(--gd-text-muted);
+}
+
+.gd-photo-gallery__max-notice {
+font-size: 13px;
+color: var(--gd-warning);
+}
+
+.gd-photo-add-btn {
+cursor: pointer;
+display: inline-flex;
+align-items: center;
+gap: 4px;
+}
+
+.gd-photo-add-btn.gd-btn--loading {
+opacity: .6;
+pointer-events: none;
+}
+
+@media (max-width: 600px) {
+.gd-photo-gallery__item {
+width: 76px;
+height: 76px;
+}
+.gd-photo-delete-btn {
+opacity: 1; /* always visible on touch */
 }
 }

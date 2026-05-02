@@ -477,17 +477,161 @@ $updated_display     = $updated_company
 	: ( $updated_user->first_name ?: $updated_user->display_name );
 $updated_bio         = get_user_meta( $user_id, 'gd_bio', true );
 $updated_suburb      = get_user_meta( $user_id, 'gd_mover_base_suburb', true );
-$updated_photo_id    = (int) get_user_meta( $user_id, 'gd_profile_photo_id', true );
-$updated_photo_url   = $updated_photo_id
-	? wp_get_attachment_image_url( $updated_photo_id, 'thumbnail' )
-	: '';
+$updated_photo_id  = (int) get_user_meta( $user_id, 'gd_profile_photo_id', true );
+$mover_photos_raw  = get_user_meta( $user_id, 'gd_mover_photos', true );
+$mover_photos      = is_string( $mover_photos_raw ) ? (array) json_decode( $mover_photos_raw, true ) : array();
+$mover_photos      = array_values( array_filter( array_map( 'absint', $mover_photos ) ) );
+
+// Profile photo URL: prefer first photo from gallery, fall back to legacy meta.
+if ( ! empty( $mover_photos ) ) {
+	$updated_photo_url = wp_get_attachment_image_url( $mover_photos[0], 'thumbnail' ) ?: '';
+} elseif ( $updated_photo_id ) {
+	$updated_photo_url = wp_get_attachment_image_url( $updated_photo_id, 'thumbnail' ) ?: '';
+} else {
+	$updated_photo_url = '';
+}
 
 wp_send_json_success( array(
-	'message'          => __( 'Profile updated successfully.', 'go-deliver' ),
-	'display_name'     => $updated_display,
-	'bio'              => $updated_bio,
-	'suburb'           => $updated_suburb,
+	'message'           => __( 'Profile updated successfully.', 'go-deliver' ),
+	'display_name'      => $updated_display,
+	'bio'               => $updated_bio,
+	'suburb'            => $updated_suburb,
 	'profile_photo_url' => $updated_photo_url,
 ) );
+}
+
+/**
+ * AJAX: Upload a mover photo.
+ *
+ * Accepts a single file field named 'photo'. The uploaded image is stored as
+ * a WordPress attachment owned by the current user and its ID is appended to
+ * the gd_mover_photos user-meta array (max 10 items).
+ */
+public function ajax_upload_mover_photo() {
+	check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+	if ( ! is_user_logged_in() ) {
+		wp_send_json_error( array( 'message' => __( 'Not logged in.', 'go-deliver' ) ), 401 );
+	}
+
+	$user_id = get_current_user_id();
+	$roles   = (array) wp_get_current_user()->roles;
+
+	if (
+		! in_array( 'gd_mover', $roles, true ) &&
+		! in_array( 'gd_mover_sub', $roles, true ) &&
+		! current_user_can( 'manage_options' )
+	) {
+		wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+	}
+
+	// Load current gallery.
+	$raw    = get_user_meta( $user_id, 'gd_mover_photos', true );
+	$photos = is_string( $raw ) ? (array) json_decode( $raw, true ) : array();
+	$photos = array_values( array_filter( array_map( 'absint', $photos ) ) );
+
+	if ( count( $photos ) >= 10 ) {
+		wp_send_json_error( array( 'message' => __( 'Maximum of 10 photos allowed. Please delete a photo first.', 'go-deliver' ) ) );
+	}
+
+	if ( empty( $_FILES['photo'] ) || UPLOAD_ERR_OK !== (int) $_FILES['photo']['error'] ) {
+		wp_send_json_error( array( 'message' => __( 'Upload failed. Please try again.', 'go-deliver' ) ) );
+	}
+
+	// Validate MIME type before passing to WordPress.
+	$allowed_types = array( 'image/jpeg', 'image/png', 'image/gif', 'image/webp' );
+	$detected_mime = false;
+	if ( function_exists( 'finfo_open' ) ) {
+		try {
+			$finfo = new finfo( FILEINFO_MIME_TYPE );
+			if ( $finfo ) {
+				$detected_mime = $finfo->file( $_FILES['photo']['tmp_name'] );
+			}
+		} catch ( Exception $e ) {
+			$detected_mime = false;
+		}
+	}
+	// Fall back to WordPress's built-in type checker when finfo is unavailable.
+	if ( false === $detected_mime ) {
+		$wp_filetype   = wp_check_filetype( $_FILES['photo']['name'] );
+		$detected_mime = $wp_filetype['type'] ?? '';
+	}
+	if ( ! $detected_mime || ! in_array( $detected_mime, $allowed_types, true ) ) {
+		wp_send_json_error( array( 'message' => __( 'Only JPEG, PNG, GIF or WebP images are allowed.', 'go-deliver' ) ) );
+	}
+
+	// Load WordPress upload helpers (safe to call multiple times).
+	require_once ABSPATH . 'wp-admin/includes/file.php';
+	require_once ABSPATH . 'wp-admin/includes/image.php';
+	require_once ABSPATH . 'wp-admin/includes/media.php';
+
+	$attachment_id = media_handle_upload( 'photo', 0, array( 'post_author' => $user_id ) );
+
+	if ( is_wp_error( $attachment_id ) ) {
+		wp_send_json_error( array( 'message' => $attachment_id->get_error_message() ) );
+	}
+
+	// Persist to user meta.
+	$photos[] = $attachment_id;
+	update_user_meta( $user_id, 'gd_mover_photos', wp_json_encode( $photos ) );
+
+	wp_send_json_success( array(
+		'attachment_id' => $attachment_id,
+		'url'           => wp_get_attachment_image_url( $attachment_id, 'medium' ) ?: wp_get_attachment_url( $attachment_id ),
+		'thumb_url'     => wp_get_attachment_image_url( $attachment_id, 'thumbnail' ) ?: wp_get_attachment_url( $attachment_id ),
+		'count'         => count( $photos ),
+	) );
+}
+
+/**
+ * AJAX: Delete a mover photo.
+ *
+ * Expects 'attachment_id' in POST. Verifies the attachment belongs to the
+ * current user, removes it from gd_mover_photos, and permanently deletes the
+ * file from the media library.
+ */
+public function ajax_delete_mover_photo() {
+	check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+	if ( ! is_user_logged_in() ) {
+		wp_send_json_error( array( 'message' => __( 'Not logged in.', 'go-deliver' ) ), 401 );
+	}
+
+	$user_id       = get_current_user_id();
+	$attachment_id = absint( $_POST['attachment_id'] ?? 0 );
+
+	if ( ! $attachment_id ) {
+		wp_send_json_error( array( 'message' => __( 'Invalid photo.', 'go-deliver' ) ) );
+	}
+
+	// Verify the attachment was uploaded by this user (admins may bypass).
+	$attachment = get_post( $attachment_id );
+	if (
+		! $attachment ||
+		(
+			(int) $attachment->post_author !== $user_id &&
+			! current_user_can( 'manage_options' )
+		)
+	) {
+		wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+	}
+
+	// Remove from gallery meta.
+	$raw    = get_user_meta( $user_id, 'gd_mover_photos', true );
+	$photos = is_string( $raw ) ? (array) json_decode( $raw, true ) : array();
+	$photos = array_values(
+		array_filter(
+			array_map( 'absint', $photos ),
+			function ( $id ) use ( $attachment_id ) {
+				return $id !== $attachment_id;
+			}
+		)
+	);
+	update_user_meta( $user_id, 'gd_mover_photos', wp_json_encode( $photos ) );
+
+	// Permanently delete the attachment and its generated sizes.
+	wp_delete_attachment( $attachment_id, true );
+
+	wp_send_json_success( array( 'count' => count( $photos ) ) );
 }
 }

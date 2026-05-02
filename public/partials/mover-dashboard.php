@@ -102,9 +102,22 @@ if ( ! in_array( $notification_frequency, Go_Deliver_Notifications::VALID_FREQUE
 $company_name    = esc_html( get_user_meta( $user_id, 'gd_company_name', true ) );
 $display_name    = $company_name ?: esc_html( $current_user->first_name ?: $current_user->display_name );
 $bio             = get_user_meta( $user_id, 'gd_bio', true );
-$raw_fleet       = get_user_meta( $user_id, 'gd_fleet_photos', true );
-$fleet_photo_ids = is_array( json_decode( $raw_fleet, true ) ) ? json_decode( $raw_fleet, true ) : array();
-$profile_photo_id = (int) get_user_meta( $user_id, 'gd_profile_photo_id', true );
+
+// Unified photo gallery (gd_mover_photos), with legacy fallback.
+$raw_mover_photos  = get_user_meta( $user_id, 'gd_mover_photos', true );
+$mover_photo_ids   = is_string( $raw_mover_photos ) ? (array) json_decode( $raw_mover_photos, true ) : array();
+$mover_photo_ids   = array_values( array_filter( array_map( 'absint', $mover_photo_ids ) ) );
+
+// Profile photo: first gallery image, else legacy gd_profile_photo_id.
+$profile_photo_id  = ! empty( $mover_photo_ids ) ? $mover_photo_ids[0] : (int) get_user_meta( $user_id, 'gd_profile_photo_id', true );
+
+// Fleet photos for display: photos 2–4 from gallery, else legacy gd_fleet_photos.
+if ( count( $mover_photo_ids ) > 1 ) {
+	$fleet_photo_ids = array_slice( $mover_photo_ids, 1, 3 );
+} else {
+	$raw_fleet       = get_user_meta( $user_id, 'gd_fleet_photos', true );
+	$fleet_photo_ids = is_array( json_decode( $raw_fleet, true ) ) ? json_decode( $raw_fleet, true ) : array();
+}
 $review_count    = (int) get_user_meta( $user_id, 'gd_review_count', true );
 
 // Fetch mover's submitted quotes.
@@ -315,19 +328,18 @@ echo '<span class="gd-profile-card__location"> · ' . esc_html__( 'Based in', 'g
 </button>
 </div>
 
-<!-- Fleet photos -->
+<!-- Fleet photos (display only – manage via Settings > My Photos) -->
 <div class="gd-fleet-photos">
 <?php for ( $_fi = 0; $_fi < 3; $_fi++ ) :
 $_fid  = isset( $fleet_photo_ids[ $_fi ] ) ? (int) $fleet_photo_ids[ $_fi ] : 0;
 $_furl = $_fid ? wp_get_attachment_image_url( $_fid, 'medium' ) : '';
 ?>
-<div class="gd-fleet-photos__slot" data-fleet-idx="<?php echo esc_attr( $_fi ); ?>">
+<div class="gd-fleet-photos__slot">
 <?php if ( $_furl ) : ?>
 <img src="<?php echo esc_url( $_furl ); ?>" alt="<?php esc_attr_e( 'Fleet photo', 'go-deliver' ); ?>">
 <?php else : ?>
 <div class="gd-fleet-photos__empty">📷</div>
 <?php endif; ?>
-<button type="button" class="gd-fleet-upload-btn" data-idx="<?php echo esc_attr( $_fi ); ?>" title="<?php esc_attr_e( 'Upload photo', 'go-deliver' ); ?>">✏️</button>
 </div>
 <?php endfor; ?>
 </div>
@@ -1009,24 +1021,46 @@ $_ar_stars = (int) $_ar['rating'];
 
 <div class="gd-job-detail__grid">
 
-<!-- Profile photo -->
+<!-- My Photos gallery -->
 <div class="gd-job-detail__field" style="grid-column:1/-1;">
-<label class="gd-job-detail__field-label"><?php esc_html_e( 'Profile Photo', 'go-deliver' ); ?></label>
-<div class="gd-media-upload-row">
-<div class="gd-media-upload-preview" id="gd-profile-photo-preview">
-<?php if ( $profile_photo_url ) : ?>
-<img src="<?php echo esc_url( $profile_photo_url ); ?>" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:2px solid var(--gd-border);">
-<?php else : ?>
-<div class="gd-media-upload-placeholder">👤</div>
-<?php endif; ?>
-</div>
-<div>
-<button type="button" class="gd-btn gd-btn--outline gd-btn--sm" id="gd-profile-photo-upload-btn">
-<?php esc_html_e( 'Upload Photo', 'go-deliver' ); ?>
-</button>
-<input type="hidden" name="profile_photo_id" id="gd-profile-photo-id" value="<?php echo esc_attr( $profile_photo_id ?: '' ); ?>">
-<p style="font-size:12px;color:var(--gd-text-muted);margin-top:4px;"><?php esc_html_e( 'Square image recommended. Shown on your public profile.', 'go-deliver' ); ?></p>
-</div>
+<label class="gd-job-detail__field-label"><?php esc_html_e( 'My Photos', 'go-deliver' ); ?></label>
+<?php
+$_gallery_count = count( $mover_photo_ids );
+$_gallery_max   = 10;
+?>
+<div class="gd-photo-gallery" id="gd-photo-gallery"
+	data-max="<?php echo esc_attr( $_gallery_max ); ?>"
+	data-count="<?php echo esc_attr( $_gallery_count ); ?>">
+
+	<div class="gd-photo-gallery__grid" id="gd-photo-grid">
+	<?php foreach ( $mover_photo_ids as $_pid ) :
+		$_purl = wp_get_attachment_image_url( $_pid, 'thumbnail' );
+		if ( ! $_purl ) { continue; }
+	?>
+	<div class="gd-photo-gallery__item" data-id="<?php echo esc_attr( $_pid ); ?>">
+		<img src="<?php echo esc_url( $_purl ); ?>" alt="">
+		<button type="button" class="gd-photo-delete-btn" data-id="<?php echo esc_attr( $_pid ); ?>" title="<?php esc_attr_e( 'Delete photo', 'go-deliver' ); ?>">×</button>
+	</div>
+	<?php endforeach; ?>
+	</div>
+
+	<div class="gd-photo-gallery__footer">
+		<span class="gd-photo-gallery__count" id="gd-photo-count">
+			<?php printf( esc_html__( '%1$d of %2$d photos used', 'go-deliver' ), $_gallery_count, $_gallery_max ); ?>
+		</span>
+		<?php if ( $_gallery_count < $_gallery_max ) : ?>
+		<label class="gd-btn gd-btn--outline gd-btn--sm gd-photo-add-btn" id="gd-photo-add-label">
+			<input type="file" id="gd-photo-file-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;">
+			+ <?php esc_html_e( 'Add Photo', 'go-deliver' ); ?>
+		</label>
+		<?php else : ?>
+		<span class="gd-photo-gallery__max-notice"><?php esc_html_e( 'Maximum photos reached. Delete one to add more.', 'go-deliver' ); ?></span>
+		<?php endif; ?>
+	</div>
+
+	<p style="font-size:12px;color:var(--gd-text-muted);margin-top:8px;">
+		<?php esc_html_e( 'The first photo is used as your profile picture. The next three appear as fleet photos on your public profile.', 'go-deliver' ); ?>
+	</p>
 </div>
 </div>
 
@@ -1059,31 +1093,6 @@ placeholder="<?php esc_attr_e( 'Tell customers about yourself, your experience a
 ><?php echo esc_textarea( get_user_meta( $user_id, 'gd_bio', true ) ); ?></textarea>
 </div>
 
-<!-- Fleet photos -->
-<div class="gd-job-detail__field" style="grid-column:1/-1;">
-<label class="gd-job-detail__field-label"><?php esc_html_e( 'Fleet Photos (up to 3)', 'go-deliver' ); ?></label>
-<div class="gd-fleet-upload-row">
-<?php for ( $_fi = 0; $_fi < 3; $_fi++ ) :
-$_fid  = isset( $fleet_photo_ids[ $_fi ] ) ? (int) $fleet_photo_ids[ $_fi ] : 0;
-$_furl = $_fid ? wp_get_attachment_image_url( $_fid, 'thumbnail' ) : '';
-?>
-<div class="gd-fleet-upload-slot" data-fleet-idx="<?php echo esc_attr( $_fi ); ?>">
-<div class="gd-fleet-upload-slot__preview">
-<?php if ( $_furl ) : ?>
-<img src="<?php echo esc_url( $_furl ); ?>" alt="">
-<?php else : ?>
-<div class="gd-fleet-upload-slot__placeholder">🚛</div>
-<?php endif; ?>
-</div>
-<input type="hidden" name="fleet_photo_<?php echo esc_attr( $_fi ); ?>" id="gd-fleet-photo-<?php echo esc_attr( $_fi ); ?>" value="<?php echo esc_attr( $_fid ?: '' ); ?>">
-<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-fleet-upload-btn" data-idx="<?php echo esc_attr( $_fi ); ?>" style="margin-top:8px;width:100%;">
-<?php echo $_furl ? esc_html__( 'Change', 'go-deliver' ) : esc_html__( 'Upload', 'go-deliver' ); ?>
-</button>
-</div>
-<?php endfor; ?>
-</div>
-<p style="font-size:12px;color:var(--gd-text-muted);margin-top:8px;"><?php esc_html_e( 'Show customers your vehicles. Landscape photos work best.', 'go-deliver' ); ?></p>
-</div>
 </div>
 </div>
 

@@ -77,13 +77,6 @@ class Go_Deliver_Public {
 			)
 		);
 
-		// Load WP media uploader for movers so they can upload fleet/profile photos.
-		if ( is_user_logged_in() ) {
-			$_roles = (array) wp_get_current_user()->roles;
-			if ( in_array( 'gd_mover', $_roles, true ) || in_array( 'gd_mover_sub', $_roles, true ) || current_user_can( 'manage_options' ) ) {
-				wp_enqueue_media();
-			}
-		}
 	}
 
 	// -------------------------------------------------------------------------
