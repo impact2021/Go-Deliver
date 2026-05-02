@@ -736,33 +736,129 @@
 	// Mover Dashboard
 	// =========================================================================
 
+	/**
+	 * Activate a top-level dashboard panel via the sidebar nav.
+	 *
+	 * @param {jQuery} $dashboard
+	 * @param {string} panelId  e.g. 'browse-jobs'
+	 */
+	function gdActivatePanel( $dashboard, panelId ) {
+		$dashboard.find( '.gd-sidebar-nav__item' ).removeClass( 'gd-sidebar-nav__item--active' );
+		$dashboard.find( '.gd-sidebar-nav__item[data-panel="' + panelId + '"]' ).addClass( 'gd-sidebar-nav__item--active' );
+
+		$dashboard.find( '.gd-panel' ).hide().removeClass( 'gd-panel--active' );
+		$dashboard.find( '#gd-panel-' + panelId ).show().addClass( 'gd-panel--active' );
+
+		if ( panelId === 'browse-jobs' ) {
+			gdLoadAvailableJobs( $dashboard );
+		}
+		if ( panelId === 'profile' ) {
+			gdInitLocationFields( $dashboard.find( '#gd-panel-profile' ) );
+		}
+	}
+
 	function gdInitMoverDashboard() {
 		var $dashboard = $( '#gd-mover-dashboard' );
 		if ( ! $dashboard.length ) { return; }
 
-		// Tab switching.
-		$dashboard.on( 'click', '.gd-tab', function () {
-			var target = $( this ).data( 'tab' );
-			$dashboard.find( '.gd-tab' ).removeClass( 'gd-tab--active' );
-			$( this ).addClass( 'gd-tab--active' );
-			$dashboard.find( '.gd-tab-panel' ).removeClass( 'gd-tab-panel--active' ).hide();
-			$dashboard.find( '#gd-tab-' + target ).addClass( 'gd-tab-panel--active' ).show();
-
-			// Lazy-load available jobs when that tab is activated.
-			if ( target === 'available-jobs' ) {
-				gdLoadAvailableJobs( $dashboard );
-			}
-
-			// Init location autocomplete when the profile tab is first opened.
-			if ( target === 'profile' ) {
-				gdInitLocationFields( $dashboard.find( '#gd-tab-profile' ) );
-			}
+		// Sidebar nav panel switching.
+		$dashboard.on( 'click keypress', '.gd-sidebar-nav__item[data-panel]', function ( e ) {
+			if ( e.type === 'keypress' && e.which !== 13 ) { return; }
+			gdActivatePanel( $dashboard, $( this ).data( 'panel' ) );
 		} );
 
-		// Load available jobs on page load if that tab is active.
-		if ( $dashboard.find( '#gd-tab-available-jobs' ).is( ':visible' ) ) {
-			gdLoadAvailableJobs( $dashboard );
-		}
+		// Inner tabs within My Jobs panel (My Quotes / Accepted / Dismissed).
+		$dashboard.on( 'click', '.gd-tab', function () {
+			var target = $( this ).data( 'tab' );
+			var $wrap  = $( this ).closest( '.gd-panel' );
+			$wrap.find( '.gd-tab' ).removeClass( 'gd-tab--active' );
+			$( this ).addClass( 'gd-tab--active' );
+			$wrap.find( '.gd-tab-panel' ).removeClass( 'gd-tab-panel--active' ).hide();
+			$wrap.find( '#gd-tab-' + target ).addClass( 'gd-tab-panel--active' ).show();
+		} );
+
+		// Overview sub-tabs (Reviews / Past Jobs).
+		$dashboard.on( 'click', '.gd-sub-tab', function () {
+			var target = $( this ).data( 'subtab' );
+			var $wrapper = $( this ).closest( '.gd-sub-tabs-wrapper' );
+			$wrapper.find( '.gd-sub-tab' ).removeClass( 'gd-sub-tab--active' );
+			$( this ).addClass( 'gd-sub-tab--active' );
+			$wrapper.find( '.gd-sub-panel' ).hide();
+			$wrapper.find( '#gd-subtab-' + target ).show();
+		} );
+
+		// "Edit Profile" button on overview → open settings panel.
+		$dashboard.on( 'click', '#gd-edit-profile-btn', function () {
+			gdActivatePanel( $dashboard, 'profile' );
+			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
+		} );
+
+		// "View All Reviews" links → open reviews panel.
+		$dashboard.on( 'click', '.gd-view-all-reviews-btn', function () {
+			gdActivatePanel( $dashboard, 'reviews' );
+			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
+		} );
+
+		// "View All Jobs" links → open My Jobs panel.
+		$dashboard.on( 'click', '.gd-view-my-jobs-btn', function () {
+			gdActivatePanel( $dashboard, 'my-jobs' );
+			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
+		} );
+
+		// Fleet photo upload (WordPress media uploader).
+		$dashboard.on( 'click', '.gd-fleet-upload-btn', function () {
+			if ( typeof wp === 'undefined' || ! wp.media ) { return; }
+			var idx    = $( this ).data( 'idx' );
+			var $btn   = $( this );
+			var frame  = wp.media( {
+				title:    'Select Fleet Photo',
+				button:   { text: 'Use This Photo' },
+				multiple: false,
+				library:  { type: 'image' },
+			} );
+			frame.on( 'select', function () {
+				var attachment = frame.state().get( 'selection' ).first().toJSON();
+				// Update hidden input (both in overview card and profile form).
+				$dashboard.find( '#gd-fleet-photo-' + idx ).val( attachment.id );
+				// Update preview images in overview card.
+				var $overviewSlot = $dashboard.find( '.gd-fleet-photos__slot[data-fleet-idx="' + idx + '"]' );
+				$overviewSlot.find( 'img' ).attr( 'src', attachment.url );
+				if ( ! $overviewSlot.find( 'img' ).length ) {
+					$overviewSlot.find( '.gd-fleet-photos__empty' ).replaceWith( '<img src="' + attachment.url + '" alt="">' );
+				}
+				// Update preview in profile form.
+				var $formSlot = $dashboard.find( '.gd-fleet-upload-slot[data-fleet-idx="' + idx + '"]' );
+				var $preview  = $formSlot.find( '.gd-fleet-upload-slot__preview' );
+				$preview.find( 'img' ).attr( 'src', attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url );
+				if ( ! $preview.find( 'img' ).length ) {
+					$preview.find( '.gd-fleet-upload-slot__placeholder' ).replaceWith( '<img src="' + ( attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url ) + '" alt="">' );
+				}
+				$btn.text( 'Change' );
+			} );
+			frame.open();
+		} );
+
+		// Profile photo upload.
+		$dashboard.on( 'click', '#gd-profile-photo-upload-btn', function () {
+			if ( typeof wp === 'undefined' || ! wp.media ) { return; }
+			var frame = wp.media( {
+				title:    'Select Profile Photo',
+				button:   { text: 'Use This Photo' },
+				multiple: false,
+				library:  { type: 'image' },
+			} );
+			frame.on( 'select', function () {
+				var attachment = frame.state().get( 'selection' ).first().toJSON();
+				$dashboard.find( '#gd-profile-photo-id' ).val( attachment.id );
+				var thumbUrl = attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
+				var $preview = $dashboard.find( '#gd-profile-photo-preview' );
+				$preview.find( 'img' ).attr( 'src', thumbUrl );
+				if ( ! $preview.find( 'img' ).length ) {
+					$preview.html( '<img src="' + thumbUrl + '" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:2px solid var(--gd-border);">' );
+				}
+			} );
+			frame.open();
+		} );
 
 		// Filter chips.
 		$dashboard.on( 'click', '.gd-filter-chip', function () {
@@ -883,20 +979,30 @@
 				jobTypes.push( $( this ).val() );
 			} );
 
+			var fleetPhotos = [];
+			for ( var _fi = 0; _fi < 3; _fi++ ) {
+				fleetPhotos.push( $.trim( $form.find( '#gd-fleet-photo-' + _fi ).val() ) );
+			}
+
 			gdBtnLoading( $btn );
 
 			gdAjax(
 				'gd_update_mover_profile',
 				{
-					first_name:  $.trim( $form.find( '[name="first_name"]' ).val() ),
-					last_name:   $.trim( $form.find( '[name="last_name"]' ).val() ),
-					email:       $.trim( $form.find( '[name="email"]' ).val() ),
-					phone:       $.trim( $form.find( '[name="phone"]' ).val() ),
-					base_suburb: $.trim( $form.find( '[name="base_suburb"]' ).val() ),
-					base_lat:    $.trim( $form.find( '[name="base_lat"]' ).val() ),
-					base_lng:    $.trim( $form.find( '[name="base_lng"]' ).val() ),
-					radius:      $.trim( $form.find( '[name="radius"]' ).val() ),
-					job_types:   jobTypes,
+					first_name:             $.trim( $form.find( '[name="first_name"]' ).val() ),
+					last_name:              $.trim( $form.find( '[name="last_name"]' ).val() ),
+					email:                  $.trim( $form.find( '[name="email"]' ).val() ),
+					phone:                  $.trim( $form.find( '[name="phone"]' ).val() ),
+					base_suburb:            $.trim( $form.find( '[name="base_suburb"]' ).val() ),
+					base_lat:               $.trim( $form.find( '[name="base_lat"]' ).val() ),
+					base_lng:               $.trim( $form.find( '[name="base_lng"]' ).val() ),
+					radius:                 $.trim( $form.find( '[name="radius"]' ).val() ),
+					job_types:              jobTypes,
+					company_name:           $.trim( $form.find( '[name="company_name"]' ).val() ),
+					bio:                    $.trim( $form.find( '[name="bio"]' ).val() ),
+					fleet_photos:           JSON.stringify( fleetPhotos ),
+					profile_photo_id:       $.trim( $form.find( '[name="profile_photo_id"]' ).val() ),
+					notification_frequency: $.trim( $form.find( '[name="notification_frequency"]' ).val() ),
 				},
 				function ( data ) {
 					gdBtnReset( $btn );
