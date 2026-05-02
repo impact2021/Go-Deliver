@@ -1230,8 +1230,8 @@ if ( ! is_user_logged_in() || ! current_user_can( 'gd_submit_jobs' ) ) {
 wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
 }
 
-$job_id     = absint( wp_unslash( $_POST['job_id'] ?? 0 ) );
-$exclude_id = absint( wp_unslash( $_POST['exclude_mover_id'] ?? 0 ) );
+$job_id     = absint( isset( $_POST['job_id'] )          ? wp_unslash( $_POST['job_id'] )          : 0 );
+$exclude_id = absint( isset( $_POST['exclude_mover_id'] ) ? wp_unslash( $_POST['exclude_mover_id'] ) : 0 );
 
 if ( ! $job_id ) {
 wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
@@ -1286,7 +1286,7 @@ wp_send_json_error( array( 'message' => $new_job_id->get_error_message() ) );
 // to handle both an empty/non-existent key and a stored array value.
 $stored_excluded = get_post_meta( $job_id, 'gd_excluded_mover_ids', true );
 $existing_excluded = is_array( $stored_excluded ) ? array_map( 'intval', $stored_excluded ) : array();
-$existing_excluded = array_filter( $existing_excluded );
+$existing_excluded = array_filter( $existing_excluded, function ( $id ) { return $id > 0; } );
 
 if ( $exclude_id ) {
 $existing_excluded[] = $exclude_id;

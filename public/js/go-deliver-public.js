@@ -689,6 +689,7 @@
 						// Show/update exclude option if we have a mover name.
 						var $excludeWrap = $repost.find( '#gd-repost-exclude-wrap' );
 						if ( moverId && moverName ) {
+							// .text() sets textContent, so no HTML injection is possible.
 							$repost.find( '#gd-repost-exclude-text' ).text( 'Exclude ' + moverName + ' from seeing this job' );
 							$repost.find( '#gd-repost-exclude-check' ).prop( 'checked', false );
 							$excludeWrap.show();
