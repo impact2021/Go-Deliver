@@ -223,7 +223,7 @@ foreach ( $jobs as $job ) {
 							</button>
 						<?php endif; ?>
 
-						<?php if ( 'open' === $status ) : ?>
+						<?php if ( in_array( $status, array( 'open', 'locked', 'accepted' ), true ) ) : ?>
 							<button
 								type="button"
 								class="gd-btn gd-btn--danger gd-btn--sm gd-job-cancel-btn"

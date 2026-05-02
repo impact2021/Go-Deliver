@@ -373,6 +373,53 @@ class Go_Deliver_Notifications {
 	}
 
 	/**
+	 * Email the mover when a customer cancels a job they had won.
+	 *
+	 * Also informs them of any credits that were refunded to their wallet.
+	 *
+	 * @param int   $job_id        gd_job post ID.
+	 * @param float $refund_amount Amount refunded to the mover's wallet (0 = none).
+	 */
+	public function notify_mover_job_cancelled( $job_id, $refund_amount = 0.0 ) {
+		$accepted_quote_id = (int) get_post_meta( (int) $job_id, 'gd_accepted_quote_id', true );
+		if ( ! $accepted_quote_id ) {
+			return;
+		}
+
+		$mover_id = (int) get_post_meta( $accepted_quote_id, 'gd_mover_id', true );
+		$mover    = $mover_id ? get_userdata( $mover_id ) : null;
+		if ( ! $mover || ! $mover->user_email ) {
+			return;
+		}
+
+		$job_type  = Go_Deliver_Jobs::get_display_title( (int) $job_id );
+		$site_name = get_bloginfo( 'name' );
+
+		$dashboard_page_id = (int) get_option( 'gd_mover_dashboard_page_id', 0 );
+		$dashboard_url     = $dashboard_page_id ? get_permalink( $dashboard_page_id ) : home_url();
+
+		$subject = sprintf(
+			/* translators: %s: site name */
+			__( 'Job Cancelled – Credits Refunded – %s', 'go-deliver' ),
+			$site_name
+		);
+
+		$this->send_html_email(
+			$mover->user_email,
+			$subject,
+			GD_PLUGIN_DIR . 'templates/emails/job-cancelled.php',
+			array(
+				'mover_first_name' => $mover->first_name,
+				'job_type'         => $job_type,
+				'refund_amount'    => (float) $refund_amount,
+				'dashboard_url'    => $dashboard_url,
+				'site_name'        => $site_name,
+				'site_url'         => home_url(),
+			)
+		);
+	}
+
+	/**
 	 * Email the customer when a mover submits a new quote on their job.
 	 *
 	 * @param int $job_id   gd_job post ID.
