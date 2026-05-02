@@ -1,7 +1,7 @@
 /* global gdPublic */
 /**
  * Go Deliver – Public-Facing JavaScript
- * Version: 1.2.0
+ * Version: 1.2.4
  */
 ( function ( $ ) {
 	'use strict';
@@ -1007,6 +1007,44 @@
 				function ( data ) {
 					gdBtnReset( $btn );
 					gdToast( data.message || 'Profile updated.', 'success' );
+
+					// Reflect changes on the overview panel immediately (no reload needed).
+					var name   = data.display_name      || '';
+					var bio    = data.bio                || '';
+					var suburb = data.suburb             || '';
+					var photo  = data.profile_photo_url  || '';
+
+					if ( name ) {
+						$dashboard.find( '.gd-profile-card__name' ).text( name );
+						$dashboard.find( '.gd-about-block__title' ).text( 'About ' + name );
+						$dashboard.find( '.gd-dashboard-header__title' ).text( 'Welcome, ' + name + '!' );
+					}
+
+					var $bioEl = $dashboard.find( '.gd-about-block__text' );
+					if ( bio ) {
+						$bioEl.removeClass( 'gd-text-muted' ).html( bio.replace( /\n/g, '<br>' ) );
+					} else {
+						$bioEl.addClass( 'gd-text-muted' ).text( 'No bio added yet. Go to Settings to tell customers about yourself.' );
+					}
+
+					var $locEl = $dashboard.find( '.gd-profile-card__location' );
+					if ( suburb ) {
+						if ( $locEl.length ) {
+							$locEl.text( ' · Based in ' + suburb );
+						} else {
+							$dashboard.find( '.gd-profile-card__meta' ).append( '<span class="gd-profile-card__location"> · Based in ' + gdEscape( suburb ) + '</span>' );
+						}
+					} else {
+						$locEl.remove();
+					}
+
+					if ( photo ) {
+						var $cardAvatar  = $dashboard.find( '.gd-profile-card__avatar' );
+						var $aboutAvatar = $dashboard.find( '.gd-about-block__avatar' );
+						var imgTag = '<img src="' + gdEscape( photo ) + '" alt="' + gdEscape( name ) + '">';
+						$cardAvatar.find( 'img, .gd-profile-card__avatar-placeholder' ).replaceWith( imgTag );
+						$aboutAvatar.find( 'img, .gd-about-block__avatar-placeholder' ).replaceWith( imgTag );
+					}
 				},
 				function ( msg ) {
 					gdBtnReset( $btn );

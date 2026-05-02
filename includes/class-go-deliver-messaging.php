@@ -22,8 +22,9 @@ class Go_Deliver_Messaging {
  * Register AJAX hooks.
  */
 public function register_hooks() {
-add_action( 'wp_ajax_gd_send_message', array( $this, 'ajax_send_message' ) );
-add_action( 'wp_ajax_gd_get_messages', array( $this, 'ajax_get_messages' ) );
+add_action( 'wp_ajax_gd_send_message',      array( $this, 'ajax_send_message' ) );
+add_action( 'wp_ajax_gd_get_messages',      array( $this, 'ajax_get_messages' ) );
+add_action( 'wp_ajax_gd_get_conversations', array( $this, 'ajax_get_conversations' ) );
 }
 
 // =========================================================================

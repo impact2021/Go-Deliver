@@ -361,16 +361,36 @@ return $jobs;
  * @return array Job array.
  */
 public function get_all_open_jobs() {
+$today = gmdate( 'Y-m-d' );
 $query = new WP_Query(
 array(
 'post_type'      => 'gd_job',
 'post_status'    => 'publish',
 'posts_per_page' => -1,
 'meta_query'     => array(
+'relation' => 'AND',
 array(
 'key'     => 'gd_job_status',
 'value'   => array( 'open', 'locked' ),
 'compare' => 'IN',
+),
+array(
+'relation' => 'OR',
+array(
+'key'     => 'gd_date_requested',
+'value'   => '',
+'compare' => '=',
+),
+array(
+'key'     => 'gd_date_requested',
+'compare' => 'NOT EXISTS',
+),
+array(
+'key'     => 'gd_date_requested',
+'value'   => $today,
+'compare' => '>=',
+'type'    => 'DATE',
+),
 ),
 ),
 'no_found_rows'  => true,
@@ -402,16 +422,36 @@ if ( 'approved' !== $mover_status ) {
 return array();
 }
 
+$today = gmdate( 'Y-m-d' );
 $query = new WP_Query(
 array(
 'post_type'      => 'gd_job',
 'post_status'    => 'publish',
 'posts_per_page' => -1,
 'meta_query'     => array(
+'relation' => 'AND',
 array(
 'key'     => 'gd_job_status',
 'value'   => array( 'open', 'locked' ),
 'compare' => 'IN',
+),
+array(
+'relation' => 'OR',
+array(
+'key'     => 'gd_date_requested',
+'value'   => '',
+'compare' => '=',
+),
+array(
+'key'     => 'gd_date_requested',
+'compare' => 'NOT EXISTS',
+),
+array(
+'key'     => 'gd_date_requested',
+'value'   => $today,
+'compare' => '>=',
+'type'    => 'DATE',
+),
 ),
 ),
 'no_found_rows'  => true,
