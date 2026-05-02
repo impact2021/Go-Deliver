@@ -814,7 +814,7 @@
 				title:    'Select Fleet Photo',
 				button:   { text: 'Use This Photo' },
 				multiple: false,
-				library:  { type: 'image' },
+				library:  { type: 'image', author: parseInt( gdPublic.userId, 10 ) },
 			} );
 			frame.on( 'select', function () {
 				var attachment = frame.state().get( 'selection' ).first().toJSON();
@@ -857,7 +857,7 @@
 				title:    'Select Profile Photo',
 				button:   { text: 'Use This Photo' },
 				multiple: false,
-				library:  { type: 'image' },
+				library:  { type: 'image', author: parseInt( gdPublic.userId, 10 ) },
 			} );
 			frame.on( 'select', function () {
 				var attachment = frame.state().get( 'selection' ).first().toJSON();
