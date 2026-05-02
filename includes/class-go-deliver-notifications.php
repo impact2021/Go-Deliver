@@ -376,7 +376,14 @@ class Go_Deliver_Notifications {
 		);
 	}
 
-
+	/**
+	 * Email the customer when a mover marks a job as completed.
+	 *
+	 * Prompts the customer to leave a review for the mover.
+	 *
+	 * @param int $job_id gd_job post ID.
+	 */
+	public function notify_customer_job_completed( $job_id ) {
 		$customer_id = (int) get_post_meta( (int) $job_id, 'gd_customer_id', true );
 		$customer    = get_userdata( $customer_id );
 		if ( ! $customer || ! $customer->user_email ) {
