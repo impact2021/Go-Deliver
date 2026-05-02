@@ -26,6 +26,7 @@ $current_user = wp_get_current_user();
 $is_mover     = in_array( 'gd_mover', (array) $current_user->roles, true );
 $is_mover_sub = in_array( 'gd_mover_sub', (array) $current_user->roles, true );
 $is_admin     = current_user_can( 'manage_options' );
+$can_post_jobs = ! $is_mover && ! $is_mover_sub;
 
 if ( ! $is_mover && ! $is_mover_sub && ! $is_admin ) {
 	echo '<div class="gd-wrap"><div class="gd-alert gd-alert--warning"><span class="gd-alert__icon">⚠️</span><div class="gd-alert__body">' .
@@ -244,7 +245,7 @@ $profile_photo_url = $profile_photo_id ? wp_get_attachment_image_url( $profile_p
 </a>
 <?php endif; ?>
 </nav>
-<?php if ( $job_form_url && '#' !== $job_form_url ) : ?>
+<?php if ( $job_form_url && '#' !== $job_form_url && $can_post_jobs ) : ?>
 <div class="gd-sidebar-nav__footer">
 <a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--warning" style="width:100%;justify-content:center;">
 <?php esc_html_e( 'Post a Job', 'go-deliver' ); ?>

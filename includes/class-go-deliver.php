@@ -167,6 +167,9 @@ class Go_Deliver {
 		// Hide the admin bar on the front end for non-admin users.
 		add_filter( 'show_admin_bar', array( $this, 'hide_admin_bar_for_non_admins' ) );
 
+		// Restrict the media library so mover roles only see their own uploads.
+		add_filter( 'ajax_query_attachments_args', array( $this, 'restrict_media_library_to_own' ) );
+
 		// ---------------------------------------------------------------
 		// AJAX handlers – logged-in users.
 		// ---------------------------------------------------------------
@@ -334,6 +337,28 @@ class Go_Deliver {
 			return false;
 		}
 		return $show;
+	}
+
+	/**
+	 * Restrict the media library to a user's own uploads for mover roles.
+	 *
+	 * Filters the AJAX attachment query so that gd_mover and gd_mover_sub users
+	 * can only browse files they themselves uploaded.  Admins are unaffected.
+	 *
+	 * @param array $query WP_Query args for the attachment query.
+	 * @return array
+	 */
+	public function restrict_media_library_to_own( $query ) {
+		if ( ! is_user_logged_in() || current_user_can( 'manage_options' ) ) {
+			return $query;
+		}
+
+		$roles = (array) wp_get_current_user()->roles;
+		if ( in_array( 'gd_mover', $roles, true ) || in_array( 'gd_mover_sub', $roles, true ) ) {
+			$query['author'] = get_current_user_id();
+		}
+
+		return $query;
 	}
 
 	/**
