@@ -48,6 +48,7 @@ class Go_Deliver_Roles {
 			__( 'GD Mover', 'go-deliver' ),
 			array(
 				'read'                  => true,
+				'upload_files'          => true,
 				'gd_submit_quotes'      => true,
 				'gd_view_jobs'          => true,
 				'gd_view_own_quotes'    => true,
@@ -63,18 +64,26 @@ class Go_Deliver_Roles {
 			__( 'GD Mover Sub-user', 'go-deliver' ),
 			array(
 				'read'               => true,
+				'upload_files'       => true,
 				'gd_submit_quotes'   => true,
 				'gd_view_jobs'       => true,
 				'gd_view_own_quotes' => true,
 			)
 		);
 
-		// Ensure the gd_customer role has upload_files so job photo uploads
-		// work via wp_handle_upload(). add_role() is a no-op when the role
-		// already exists, so we explicitly add the cap for existing sites.
+		// Ensure upload_files is present on all three roles for existing sites
+		// where add_role() was already a no-op (roles persisted in wp_options).
 		$customer_role = get_role( 'gd_customer' );
 		if ( $customer_role && ! $customer_role->has_cap( 'upload_files' ) ) {
 			$customer_role->add_cap( 'upload_files' );
+		}
+		$mover_role = get_role( 'gd_mover' );
+		if ( $mover_role && ! $mover_role->has_cap( 'upload_files' ) ) {
+			$mover_role->add_cap( 'upload_files' );
+		}
+		$mover_sub_role = get_role( 'gd_mover_sub' );
+		if ( $mover_sub_role && ! $mover_sub_role->has_cap( 'upload_files' ) ) {
+			$mover_sub_role->add_cap( 'upload_files' );
 		}
 	}
 
