@@ -1,7 +1,7 @@
 /* global gdPublic */
 /**
  * Go Deliver – Public-Facing JavaScript
- * Version: 1.2.0
+ * Version: 1.2.1
  */
 ( function ( $ ) {
 	'use strict';
