@@ -2651,3 +2651,436 @@ padding: 0 5px;
 border-radius: 10px;
 flex-shrink: 0;
 }
+
+/* =============================================================================
+   Mover Dashboard – Redesign Components
+   ============================================================================= */
+
+/* Warning / "Post a Job" button colour */
+.gd-btn--warning {
+background: #d97706;
+border-color: #d97706;
+color: #fff;
+}
+.gd-btn--warning:hover {
+background: #b45309;
+border-color: #b45309;
+color: #fff;
+}
+
+/* Sidebar footer (Post a Job) */
+.gd-sidebar-nav__footer {
+padding: 16px;
+border-top: 1px solid var(--gd-border);
+}
+
+/* -----------------------------------------------------------------------
+   Panel switching (replaces old .gd-tab-panel show/hide for top-level)
+   ----------------------------------------------------------------------- */
+.gd-panel { display: none; }
+.gd-panel--active { display: block; }
+
+/* -----------------------------------------------------------------------
+   Profile card
+   ----------------------------------------------------------------------- */
+.gd-profile-card {
+background: var(--gd-white);
+border: 1px solid var(--gd-border);
+border-radius: var(--gd-radius-lg);
+padding: 24px;
+margin-bottom: 24px;
+box-shadow: var(--gd-shadow);
+}
+
+.gd-profile-card__top {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 12px;
+margin-bottom: 16px;
+}
+
+.gd-profile-card__name {
+font-size: 22px;
+font-weight: 800;
+margin: 0 0 6px;
+color: var(--gd-text);
+}
+
+.gd-profile-card__meta {
+display: flex;
+align-items: center;
+flex-wrap: wrap;
+gap: 4px;
+font-size: 14px;
+}
+
+.gd-profile-card__rating-num {
+font-weight: 700;
+color: var(--gd-text);
+margin-left: 4px;
+}
+
+.gd-profile-card__location {
+color: var(--gd-text-muted);
+}
+
+/* Fleet photos */
+.gd-fleet-photos {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 12px;
+margin-bottom: 20px;
+}
+
+.gd-fleet-photos__slot {
+position: relative;
+border-radius: var(--gd-radius);
+overflow: hidden;
+aspect-ratio: 4 / 3;
+background: var(--gd-bg);
+border: 1px solid var(--gd-border);
+}
+
+.gd-fleet-photos__slot img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+display: block;
+}
+
+.gd-fleet-photos__empty {
+display: flex;
+align-items: center;
+justify-content: center;
+height: 100%;
+font-size: 28px;
+color: var(--gd-text-muted);
+}
+
+.gd-fleet-upload-btn {
+position: absolute;
+bottom: 6px;
+right: 6px;
+background: rgba(255,255,255,.85);
+border: 1px solid var(--gd-border);
+border-radius: var(--gd-radius-sm);
+padding: 4px 8px;
+font-size: 13px;
+cursor: pointer;
+line-height: 1;
+backdrop-filter: blur(2px);
+}
+.gd-fleet-upload-btn:hover {
+background: #fff;
+}
+
+/* Stats row */
+.gd-profile-stats {
+display: flex;
+gap: 0;
+border-top: 1px solid var(--gd-border);
+padding-top: 16px;
+flex-wrap: wrap;
+}
+
+.gd-profile-stat {
+flex: 1;
+min-width: 80px;
+text-align: center;
+padding: 0 12px;
+border-right: 1px solid var(--gd-border);
+}
+.gd-profile-stat:last-child {
+border-right: none;
+}
+
+.gd-profile-stat__value {
+display: block;
+font-size: 24px;
+font-weight: 800;
+color: var(--gd-primary);
+line-height: 1;
+}
+
+.gd-profile-stat__label {
+display: block;
+font-size: 11px;
+text-transform: uppercase;
+letter-spacing: .05em;
+color: var(--gd-text-muted);
+margin-top: 4px;
+}
+
+/* -----------------------------------------------------------------------
+   Overview two-column layout
+   ----------------------------------------------------------------------- */
+.gd-overview-cols {
+display: grid;
+grid-template-columns: 1fr 320px;
+gap: 24px;
+align-items: start;
+}
+
+/* -----------------------------------------------------------------------
+   About block
+   ----------------------------------------------------------------------- */
+.gd-about-block {
+display: flex;
+gap: 16px;
+padding: 20px;
+}
+
+.gd-about-block__avatar {
+flex-shrink: 0;
+width: 72px;
+height: 72px;
+border-radius: 50%;
+overflow: hidden;
+border: 2px solid var(--gd-border);
+background: var(--gd-bg);
+}
+
+.gd-about-block__avatar img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.gd-about-block__avatar-placeholder {
+display: flex;
+align-items: center;
+justify-content: center;
+width: 100%;
+height: 100%;
+font-size: 26px;
+font-weight: 800;
+color: var(--gd-primary);
+background: var(--gd-primary-light);
+}
+
+.gd-about-block__title {
+font-size: 17px;
+font-weight: 700;
+margin: 0 0 8px;
+}
+
+.gd-about-block__text {
+font-size: 14px;
+line-height: 1.65;
+color: var(--gd-text);
+margin: 0;
+}
+
+/* -----------------------------------------------------------------------
+   Overview sub-tabs
+   ----------------------------------------------------------------------- */
+.gd-sub-tabs {
+display: flex;
+gap: 0;
+border-bottom: 2px solid var(--gd-border);
+margin-bottom: 16px;
+padding: 0 20px;
+}
+
+.gd-sub-tab {
+padding: 12px 16px;
+font-size: 14px;
+font-weight: 600;
+color: var(--gd-text-muted);
+cursor: pointer;
+border-bottom: 2px solid transparent;
+margin-bottom: -2px;
+white-space: nowrap;
+transition: color var(--gd-transition), border-color var(--gd-transition);
+}
+.gd-sub-tab:hover { color: var(--gd-text); }
+.gd-sub-tab--active {
+color: var(--gd-primary);
+border-bottom-color: var(--gd-primary);
+}
+
+.gd-sub-panel { padding: 0 20px 20px; }
+
+/* -----------------------------------------------------------------------
+   Review cards
+   ----------------------------------------------------------------------- */
+.gd-review-card {
+padding: 16px 0;
+border-bottom: 1px solid var(--gd-border);
+}
+.gd-review-card:last-of-type { border-bottom: none; }
+
+.gd-review-card__header {
+display: flex;
+align-items: center;
+gap: 12px;
+margin-bottom: 6px;
+}
+
+.gd-review-card__avatar {
+flex-shrink: 0;
+width: 44px;
+height: 44px;
+border-radius: 50%;
+overflow: hidden;
+}
+
+.gd-review-card__avatar-img {
+width: 44px !important;
+height: 44px !important;
+border-radius: 50%;
+}
+
+.gd-review-card__avatar-fallback {
+width: 44px;
+height: 44px;
+border-radius: 50%;
+background: var(--gd-bg);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 20px;
+}
+
+.gd-review-card__name {
+font-weight: 700;
+font-size: 14px;
+}
+.gd-review-card__age {
+font-size: 12px;
+color: var(--gd-text-muted);
+}
+.gd-review-card__stars { margin-bottom: 6px; }
+.gd-review-card__comment {
+font-size: 14px;
+line-height: 1.6;
+color: var(--gd-text);
+margin: 0;
+}
+
+/* -----------------------------------------------------------------------
+   Recent job items (overview right column)
+   ----------------------------------------------------------------------- */
+.gd-recent-job-item {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 10px 0;
+border-bottom: 1px solid var(--gd-border);
+font-size: 13px;
+}
+.gd-recent-job-item:last-child { border-bottom: none; }
+
+.gd-recent-job-item--card {
+padding: 12px 16px;
+border-bottom: 1px solid var(--gd-border);
+}
+.gd-recent-job-item--card:last-child { border-bottom: none; }
+
+.gd-recent-job-item__icon {
+font-size: 20px;
+flex-shrink: 0;
+}
+.gd-recent-job-item__body {
+flex: 1;
+min-width: 0;
+}
+.gd-recent-job-item__title {
+font-weight: 700;
+color: var(--gd-text);
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.gd-recent-job-item__route {
+font-size: 12px;
+color: var(--gd-text-muted);
+}
+.gd-recent-job-item__date {
+font-size: 11px;
+color: var(--gd-text-muted);
+margin-top: 1px;
+}
+.gd-recent-job-item__amount {
+font-weight: 800;
+color: var(--gd-warning);
+white-space: nowrap;
+font-size: 15px;
+}
+
+/* -----------------------------------------------------------------------
+   Profile settings: media upload helpers
+   ----------------------------------------------------------------------- */
+.gd-media-upload-row {
+display: flex;
+align-items: center;
+gap: 16px;
+}
+
+.gd-media-upload-placeholder {
+width: 80px;
+height: 80px;
+border-radius: 50%;
+background: var(--gd-bg);
+border: 2px dashed var(--gd-border);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 28px;
+}
+
+.gd-fleet-upload-row {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 12px;
+}
+
+.gd-fleet-upload-slot__preview {
+width: 100%;
+aspect-ratio: 4 / 3;
+border-radius: var(--gd-radius);
+overflow: hidden;
+background: var(--gd-bg);
+border: 1px solid var(--gd-border);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.gd-fleet-upload-slot__preview img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+.gd-fleet-upload-slot__placeholder {
+font-size: 28px;
+}
+
+/* -----------------------------------------------------------------------
+   Responsive overrides
+   ----------------------------------------------------------------------- */
+@media (max-width: 900px) {
+.gd-overview-cols {
+grid-template-columns: 1fr;
+}
+}
+
+@media (max-width: 600px) {
+.gd-fleet-photos,
+.gd-fleet-upload-row {
+grid-template-columns: 1fr 1fr;
+}
+.gd-fleet-photos__slot:last-child {
+display: none; /* hide 3rd on very small screens */
+}
+.gd-profile-stats {
+gap: 8px;
+}
+.gd-profile-stat {
+min-width: 70px;
+padding: 0 8px;
+}
+.gd-profile-stat__value {
+font-size: 20px;
+}
+}

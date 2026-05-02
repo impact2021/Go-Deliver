@@ -440,6 +440,27 @@ update_user_meta( $user_id, 'gd_mover_radius', $radius );
 }
 update_user_meta( $user_id, 'gd_mover_job_types', $job_types );
 
+// Extended profile fields.
+$company_name = sanitize_text_field( wp_unslash( $_POST['company_name'] ?? '' ) );
+update_user_meta( $user_id, 'gd_company_name', $company_name );
+
+$bio = sanitize_textarea_field( wp_unslash( $_POST['bio'] ?? '' ) );
+update_user_meta( $user_id, 'gd_bio', $bio );
+
+$raw_fleet   = isset( $_POST['fleet_photos'] ) ? wp_unslash( $_POST['fleet_photos'] ) : '';
+$fleet_ids   = json_decode( $raw_fleet, true );
+if ( is_array( $fleet_ids ) ) {
+$fleet_ids = array_map( 'absint', $fleet_ids );
+update_user_meta( $user_id, 'gd_fleet_photos', wp_json_encode( $fleet_ids ) );
+}
+
+$profile_photo_id = absint( $_POST['profile_photo_id'] ?? 0 );
+if ( $profile_photo_id ) {
+update_user_meta( $user_id, 'gd_profile_photo_id', $profile_photo_id );
+} elseif ( isset( $_POST['profile_photo_id'] ) && '' === $_POST['profile_photo_id'] ) {
+delete_user_meta( $user_id, 'gd_profile_photo_id' );
+}
+
 $valid_frequencies   = Go_Deliver_Notifications::VALID_FREQUENCIES;
 $notification_frequency = isset( $_POST['notification_frequency'] )
 	? sanitize_key( wp_unslash( $_POST['notification_frequency'] ) )
