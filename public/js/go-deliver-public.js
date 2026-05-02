@@ -838,6 +838,18 @@
 			frame.open();
 		} );
 
+		// Clicking the preview area in the profile form fleet upload slot should trigger the upload button.
+		$dashboard.on( 'click', '.gd-fleet-upload-slot__preview', function () {
+			$( this ).closest( '.gd-fleet-upload-slot' ).find( '.gd-fleet-upload-btn' ).trigger( 'click' );
+		} );
+
+		// Clicking anywhere on the overview fleet photo slot (but not the button itself) should trigger the upload.
+		$dashboard.on( 'click', '.gd-fleet-photos__slot', function ( e ) {
+			if ( ! $( e.target ).closest( '.gd-fleet-upload-btn' ).length ) {
+				$( this ).find( '.gd-fleet-upload-btn' ).trigger( 'click' );
+			}
+		} );
+
 		// Profile photo upload.
 		$dashboard.on( 'click', '#gd-profile-photo-upload-btn', function () {
 			if ( typeof wp === 'undefined' || ! wp.media ) { return; }
