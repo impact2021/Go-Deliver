@@ -1,7 +1,7 @@
 /* global gdPublic */
 /**
  * Go Deliver – Public-Facing JavaScript
- * Version: 1.2.4
+ * Version: 1.2.5
  */
 ( function ( $ ) {
 	'use strict';
@@ -805,71 +805,124 @@
 			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
 		} );
 
-		// Fleet photo upload (WordPress media uploader).
-		$dashboard.on( 'click', '.gd-fleet-upload-btn', function () {
-			if ( typeof wp === 'undefined' || ! wp.media ) { return; }
-			var idx    = $( this ).data( 'idx' );
-			var $btn   = $( this );
-			var frame  = wp.media( {
-				title:    'Select Fleet Photo',
-				button:   { text: 'Use This Photo' },
-				multiple: false,
-				library:  { type: 'image', author: parseInt( gdPublic.userId, 10 ) },
-			} );
-			frame.on( 'select', function () {
-				var attachment = frame.state().get( 'selection' ).first().toJSON();
-				// Update hidden input (both in overview card and profile form).
-				$dashboard.find( '#gd-fleet-photo-' + idx ).val( attachment.id );
-				// Update preview images in overview card.
-				var $overviewSlot = $dashboard.find( '.gd-fleet-photos__slot[data-fleet-idx="' + idx + '"]' );
-				$overviewSlot.find( 'img' ).attr( 'src', attachment.url );
-				if ( ! $overviewSlot.find( 'img' ).length ) {
-					$overviewSlot.find( '.gd-fleet-photos__empty' ).replaceWith( '<img src="' + attachment.url + '" alt="">' );
-				}
-				// Update preview in profile form.
-				var $formSlot = $dashboard.find( '.gd-fleet-upload-slot[data-fleet-idx="' + idx + '"]' );
-				var $preview  = $formSlot.find( '.gd-fleet-upload-slot__preview' );
-				$preview.find( 'img' ).attr( 'src', attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url );
-				if ( ! $preview.find( 'img' ).length ) {
-					$preview.find( '.gd-fleet-upload-slot__placeholder' ).replaceWith( '<img src="' + ( attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url ) + '" alt="">' );
-				}
-				$btn.text( 'Change' );
-			} );
-			frame.open();
-		} );
+		// -------------------------------------------------------------------------
+		// Custom photo gallery upload / delete (Settings > My Photos).
+		// -------------------------------------------------------------------------
 
-		// Clicking the preview area in the profile form fleet upload slot should trigger the upload button.
-		$dashboard.on( 'click', '.gd-fleet-upload-slot__preview', function () {
-			$( this ).closest( '.gd-fleet-upload-slot' ).find( '.gd-fleet-upload-btn' ).trigger( 'click' );
-		} );
+		// Trigger file input when "Add Photo" label is clicked (handled natively by <label>).
+		// Handle file selection → upload via AJAX.
+		$dashboard.on( 'change', '#gd-photo-file-input', function () {
+			var file = this.files && this.files[0];
+			if ( ! file ) { return; }
 
-		// Clicking anywhere on the overview fleet photo slot (but not the button itself) should trigger the upload.
-		$dashboard.on( 'click', '.gd-fleet-photos__slot', function ( e ) {
-			if ( ! $( e.target ).closest( '.gd-fleet-upload-btn' ).length ) {
-				$( this ).find( '.gd-fleet-upload-btn' ).trigger( 'click' );
+			var $gallery = $dashboard.find( '#gd-photo-gallery' );
+			var count    = parseInt( $gallery.data( 'count' ), 10 ) || 0;
+			var max      = parseInt( $gallery.data( 'max' ), 10 ) || 10;
+
+			if ( count >= max ) {
+				gdToast( 'Maximum ' + max + ' photos allowed. Delete a photo first.', 'error' );
+				return;
 			}
+
+			var $label = $dashboard.find( '#gd-photo-add-label' );
+			$label.addClass( 'gd-btn--loading' ).prop( 'disabled', true );
+
+			var formData = new FormData();
+			formData.append( 'action', 'gd_upload_mover_photo' );
+			formData.append( 'nonce',  gdPublic.nonce );
+			formData.append( 'photo',  file );
+
+			$.ajax( {
+				url:         gdPublic.ajaxUrl,
+				type:        'POST',
+				data:        formData,
+				processData: false,
+				contentType: false,
+				success: function ( res ) {
+					if ( res && res.success ) {
+						var newCount = res.data.count;
+						$gallery.data( 'count', newCount );
+
+						// Add item to grid.
+						var $grid = $dashboard.find( '#gd-photo-grid' );
+						var $item = $(
+							'<div class="gd-photo-gallery__item" data-id="' + gdEscape( String( res.data.attachment_id ) ) + '">' +
+							'<img src="' + gdEscape( res.data.thumb_url ) + '" alt="">' +
+							'<button type="button" class="gd-photo-delete-btn" data-id="' + gdEscape( String( res.data.attachment_id ) ) + '" title="Delete photo">\u00d7</button>' +
+							'</div>'
+						);
+						$grid.append( $item );
+
+						// Update count label.
+						$dashboard.find( '#gd-photo-count' ).text( newCount + ' of ' + max + ' photos used' );
+
+						// Hide add button if max reached; swap to max notice.
+						if ( newCount >= max ) {
+							$label.replaceWith( '<span class="gd-photo-gallery__max-notice">Maximum photos reached. Delete one to add more.</span>' );
+						}
+
+						// Refresh avatar display if this is the first photo.
+						if ( newCount === 1 ) {
+							var imgTag = '<img src="' + gdEscape( res.data.thumb_url ) + '" alt="">';
+							$dashboard.find( '.gd-profile-card__avatar' ).find( 'img, .gd-profile-card__avatar-placeholder' ).replaceWith( imgTag );
+							$dashboard.find( '.gd-about-block__avatar' ).find( 'img, .gd-about-block__avatar-placeholder' ).replaceWith( imgTag );
+						}
+
+						gdToast( 'Photo uploaded.', 'success' );
+					} else {
+						gdToast( ( res && res.data && res.data.message ) || 'Upload failed.', 'error' );
+					}
+				},
+				error: function () {
+					gdToast( 'Upload failed. Please try again.', 'error' );
+				},
+				complete: function () {
+					$label.removeClass( 'gd-btn--loading' ).prop( 'disabled', false );
+					// Reset file input so the same file can be re-uploaded if needed.
+					$dashboard.find( '#gd-photo-file-input' ).val( '' );
+				},
+			} );
 		} );
 
-		// Profile photo upload.
-		$dashboard.on( 'click', '#gd-profile-photo-upload-btn', function () {
-			if ( typeof wp === 'undefined' || ! wp.media ) { return; }
-			var frame = wp.media( {
-				title:    'Select Profile Photo',
-				button:   { text: 'Use This Photo' },
-				multiple: false,
-				library:  { type: 'image', author: parseInt( gdPublic.userId, 10 ) },
-			} );
-			frame.on( 'select', function () {
-				var attachment = frame.state().get( 'selection' ).first().toJSON();
-				$dashboard.find( '#gd-profile-photo-id' ).val( attachment.id );
-				var thumbUrl = attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
-				var $preview = $dashboard.find( '#gd-profile-photo-preview' );
-				$preview.find( 'img' ).attr( 'src', thumbUrl );
-				if ( ! $preview.find( 'img' ).length ) {
-					$preview.html( '<img src="' + thumbUrl + '" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:50%;border:2px solid var(--gd-border);">' );
+		// Delete photo.
+		$dashboard.on( 'click', '.gd-photo-delete-btn', function () {
+			if ( ! window.confirm( 'Delete this photo? This cannot be undone.' ) ) { return; }
+
+			var $btn          = $( this );
+			var attachmentId  = $btn.data( 'id' );
+			var $item         = $btn.closest( '.gd-photo-gallery__item' );
+			var $gallery      = $dashboard.find( '#gd-photo-gallery' );
+			var max           = parseInt( $gallery.data( 'max' ), 10 ) || 10;
+
+			$btn.prop( 'disabled', true );
+
+			gdAjax(
+				'gd_delete_mover_photo',
+				{ attachment_id: attachmentId },
+				function ( data ) {
+					var newCount = data.count;
+					$gallery.data( 'count', newCount );
+					$item.remove();
+
+					// Update count label.
+					$dashboard.find( '#gd-photo-count' ).text( newCount + ' of ' + max + ' photos used' );
+
+					// Re-show the add button if it was replaced by the max notice.
+					if ( newCount < max && ! $dashboard.find( '#gd-photo-add-label' ).length ) {
+						$dashboard.find( '.gd-photo-gallery__max-notice' ).replaceWith(
+							'<label class="gd-btn gd-btn--outline gd-btn--sm gd-photo-add-btn" id="gd-photo-add-label">' +
+							'<input type="file" id="gd-photo-file-input" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;">' +
+							'+ Add Photo</label>'
+						);
+					}
+
+					gdToast( 'Photo deleted.', 'success' );
+				},
+				function ( msg ) {
+					$btn.prop( 'disabled', false );
+					gdToast( msg || 'Delete failed.', 'error' );
 				}
-			} );
-			frame.open();
+			);
 		} );
 
 		// Filter chips.
@@ -991,11 +1044,6 @@
 				jobTypes.push( $( this ).val() );
 			} );
 
-			var fleetPhotos = [];
-			for ( var _fi = 0; _fi < 3; _fi++ ) {
-				fleetPhotos.push( $.trim( $form.find( '#gd-fleet-photo-' + _fi ).val() ) );
-			}
-
 			gdBtnLoading( $btn );
 
 			gdAjax(
@@ -1012,8 +1060,6 @@
 					job_types:              jobTypes,
 					company_name:           $.trim( $form.find( '[name="company_name"]' ).val() ),
 					bio:                    $.trim( $form.find( '[name="bio"]' ).val() ),
-					fleet_photos:           JSON.stringify( fleetPhotos ),
-					profile_photo_id:       $.trim( $form.find( '[name="profile_photo_id"]' ).val() ),
 					notification_frequency: $.trim( $form.find( '[name="notification_frequency"]' ).val() ),
 				},
 				function ( data ) {
