@@ -1194,13 +1194,106 @@ if ( ! $job_id ) {
 wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
 }
 
+// Validate and store the cancellation reason when provided.
+$allowed_reasons = array( 'no_longer_needed', 'mover_didnt_read' );
+$cancel_reason   = isset( $_POST['cancel_reason'] ) ? sanitize_key( wp_unslash( $_POST['cancel_reason'] ) ) : '';
+if ( $cancel_reason && ! in_array( $cancel_reason, $allowed_reasons, true ) ) {
+wp_send_json_error( array( 'message' => __( 'Invalid cancellation reason.', 'go-deliver' ) ) );
+}
+
 $result = $this->cancel_job( $job_id, get_current_user_id() );
 
 if ( is_wp_error( $result ) ) {
 wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 }
 
+if ( $cancel_reason ) {
+update_post_meta( $job_id, 'gd_cancel_reason', $cancel_reason );
+}
+
 wp_send_json_success( array( 'message' => __( 'Job cancelled.', 'go-deliver' ) ) );
+}
+
+/**
+ * AJAX: re-post a cancelled job as a new job, optionally excluding a mover.
+ *
+ * Copies all job meta from the original job to create a fresh listing.
+ * When exclude_mover_id is supplied, that mover will not see the new job.
+ */
+public function ajax_repost_job() {
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+if ( ! is_user_logged_in() || ! current_user_can( 'gd_submit_jobs' ) ) {
+wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+}
+
+$job_id     = absint( $_POST['job_id'] ?? 0 );
+$exclude_id = absint( $_POST['exclude_mover_id'] ?? 0 );
+
+if ( ! $job_id ) {
+wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
+}
+
+$post = get_post( $job_id );
+if ( ! $post || 'gd_job' !== $post->post_type ) {
+wp_send_json_error( array( 'message' => __( 'Job not found.', 'go-deliver' ) ) );
+}
+
+$current_user_id    = get_current_user_id();
+$stored_customer_id = (int) get_post_meta( $job_id, 'gd_customer_id', true );
+if ( $stored_customer_id !== $current_user_id ) {
+wp_send_json_error( array( 'message' => __( 'You do not own this job.', 'go-deliver' ) ) );
+}
+
+$current_status = get_post_meta( $job_id, 'gd_job_status', true );
+if ( 'cancelled' !== $current_status ) {
+wp_send_json_error( array( 'message' => __( 'Only cancelled jobs can be re-posted.', 'go-deliver' ) ) );
+}
+
+// Build data array from the original job's meta.
+$pickup_raw  = json_decode( get_post_meta( $job_id, 'gd_pickup_location', true ), true ) ?: array();
+$dropoff_raw = json_decode( get_post_meta( $job_id, 'gd_dropoff_location', true ), true ) ?: array();
+$form_data   = json_decode( get_post_meta( $job_id, 'gd_form_data', true ), true ) ?: array();
+$photos_raw  = json_decode( get_post_meta( $job_id, 'gd_photos', true ), true ) ?: array();
+
+$data = array(
+'job_type'             => get_post_meta( $job_id, 'gd_job_type', true ),
+'listing_title'        => get_post_meta( $job_id, 'gd_listing_title', true ),
+'pickup_location'      => $pickup_raw,
+'dropoff_location'     => $dropoff_raw,
+'date_requested'       => get_post_meta( $job_id, 'gd_date_requested', true ),
+'labour_pickup'        => (bool) get_post_meta( $job_id, 'gd_labour_pickup', true ),
+'labour_dropoff'       => (bool) get_post_meta( $job_id, 'gd_labour_dropoff', true ),
+'inventory'            => get_post_meta( $job_id, 'gd_inventory', true ),
+'special_instructions' => get_post_meta( $job_id, 'gd_special_instructions', true ),
+'customer_id'          => $current_user_id,
+'access_notes'         => get_post_meta( $job_id, 'gd_access_notes', true ),
+'form_data'            => $form_data,
+'photos'               => array_map( 'intval', $photos_raw ),
+);
+
+$new_job_id = $this->create_job( $data );
+
+if ( is_wp_error( $new_job_id ) ) {
+wp_send_json_error( array( 'message' => $new_job_id->get_error_message() ) );
+}
+
+// Carry forward any existing excluded movers and add the new one.
+$existing_excluded = array_map( 'intval', (array) get_post_meta( $job_id, 'gd_excluded_mover_ids', true ) );
+$existing_excluded = array_filter( $existing_excluded );
+
+if ( $exclude_id ) {
+$existing_excluded[] = $exclude_id;
+}
+
+if ( ! empty( $existing_excluded ) ) {
+update_post_meta( $new_job_id, 'gd_excluded_mover_ids', array_values( array_unique( $existing_excluded ) ) );
+}
+
+// Link the new job back to the original for reference.
+update_post_meta( $new_job_id, 'gd_reposted_from', $job_id );
+
+wp_send_json_success( array( 'job_id' => $new_job_id ) );
 }
 
 /**
@@ -1242,6 +1335,12 @@ $jobs = array_values( array_filter( $jobs, function ( $job ) use ( $dismissed ) 
 return ! in_array( (int) $job['id'], $dismissed, true );
 } ) );
 }
+
+// Exclude jobs where this mover has been explicitly blocked by the customer.
+$jobs = array_values( array_filter( $jobs, function ( $job ) use ( $user_id ) {
+$excluded = array_map( 'intval', (array) get_post_meta( (int) $job['id'], 'gd_excluded_mover_ids', true ) );
+return ! in_array( (int) $user_id, $excluded, true );
+} ) );
 }
 
 // Count jobs by type before filtering, for the filter bar counts.
