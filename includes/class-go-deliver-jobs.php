@@ -213,6 +213,9 @@ update_post_meta( $post_id, 'gd_created_at',           current_time( 'mysql' ) )
 $notifications = new Go_Deliver_Notifications();
 $notifications->notify_movers_new_job( $post_id );
 
+// Send the customer a confirmation email with job details and a dashboard link.
+$notifications->notify_customer_job_posted( $post_id );
+
 return $post_id;
 }
 
