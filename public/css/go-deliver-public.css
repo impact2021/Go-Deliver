@@ -552,6 +552,18 @@
 	color: var(--gd-primary);
 }
 
+.gd-sidebar-nav__icon {
+	display: inline-flex;
+	flex-shrink: 0;
+	width: 18px;
+	height: 18px;
+}
+
+.gd-sidebar-nav__icon svg {
+	width: 18px;
+	height: 18px;
+}
+
 /* Tabs */
 .gd-tabs {
 	display: flex;
