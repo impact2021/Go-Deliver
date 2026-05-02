@@ -469,6 +469,25 @@ if ( in_array( $notification_frequency, $valid_frequencies, true ) ) {
 	update_user_meta( $user_id, 'gd_notification_frequency', $notification_frequency );
 }
 
-wp_send_json_success( array( 'message' => __( 'Profile updated successfully.', 'go-deliver' ) ) );
+// Build the values that the overview panel needs to reflect immediately.
+$updated_user        = get_userdata( $user_id );
+$updated_company     = get_user_meta( $user_id, 'gd_company_name', true );
+$updated_display     = $updated_company
+	? $updated_company
+	: ( $updated_user->first_name ?: $updated_user->display_name );
+$updated_bio         = get_user_meta( $user_id, 'gd_bio', true );
+$updated_suburb      = get_user_meta( $user_id, 'gd_mover_base_suburb', true );
+$updated_photo_id    = (int) get_user_meta( $user_id, 'gd_profile_photo_id', true );
+$updated_photo_url   = $updated_photo_id
+	? wp_get_attachment_image_url( $updated_photo_id, 'thumbnail' )
+	: '';
+
+wp_send_json_success( array(
+	'message'          => __( 'Profile updated successfully.', 'go-deliver' ),
+	'display_name'     => $updated_display,
+	'bio'              => $updated_bio,
+	'suburb'           => $updated_suburb,
+	'profile_photo_url' => $updated_photo_url,
+) );
 }
 }
