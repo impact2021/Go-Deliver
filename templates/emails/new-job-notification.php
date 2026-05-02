@@ -43,17 +43,17 @@ $job_url        = isset( $job_url )        ? $job_url        : home_url();
 		.email-body { padding:32px; }
 		.email-greeting { font-size:18px; font-weight:700; margin:0 0 12px; }
 		.email-text { font-size:15px; line-height:1.65; color:#475569; margin:0 0 20px; }
-		.email-details { background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:20px; margin-bottom:24px; }
-		.email-detail-row { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid #e2e8f0; font-size:14px; }
-		.email-detail-row:last-child { border-bottom:none; padding-bottom:0; }
-		.email-detail-label { font-weight:600; color:#64748b; min-width:140px; }
-		.email-detail-value { color:#1e293b; }
+		.email-section { border-top:2px solid #e2e8f0; border-bottom:2px solid #e2e8f0; padding:20px 0; margin:20px 0; }
+		.email-section__title { font-size:16px; font-weight:700; color:#1e293b; margin:0 0 10px; }
+		.email-section__text { font-size:15px; line-height:1.65; color:#475569; margin:0 0 8px; }
+		.email-section__list { font-size:15px; line-height:1.65; color:#475569; margin:0; padding-left:20px; }
+		.email-section__list li { margin-bottom:6px; }
 		.email-cta { text-align:center; margin:28px 0; }
 		.email-cta__btn { display:inline-block; background:#2563eb; color:#fff; text-decoration:none; padding:14px 32px; border-radius:6px; font-size:15px; font-weight:700; }
 		.email-cta__btn:hover { background:#1d4ed8; }
 		.email-footer { background:#f1f5f9; padding:20px 32px; text-align:center; font-size:12px; color:#94a3b8; border-top:1px solid #e2e8f0; }
 		.email-footer a { color:#64748b; }
-		@media (max-width:600px) { .email-body { padding:20px; } .email-detail-row { flex-direction:column; gap:2px; } }
+		@media (max-width:600px) { .email-body { padding:20px; } }
 	</style>
 </head>
 <body>
@@ -78,37 +78,39 @@ $job_url        = isset( $job_url )        ? $job_url        : home_url();
 		</h1>
 
 		<p class="email-text">
-			<?php esc_html_e( 'A new moving job has been posted in your service area! Review the details below and submit your quote to win the job.', 'go-deliver' ); ?>
+			<?php esc_html_e( 'A new job has just been posted on GoDeliver that matches your service area and job type.', 'go-deliver' ); ?>
 		</p>
 
-		<div class="email-details">
-			<div class="email-detail-row">
-				<span class="email-detail-label"><?php esc_html_e( 'Job Type', 'go-deliver' ); ?></span>
-				<span class="email-detail-value"><?php echo esc_html( $job_type ); ?></span>
-			</div>
-			<div class="email-detail-row">
-				<span class="email-detail-label"><?php esc_html_e( 'Pickup Suburb', 'go-deliver' ); ?></span>
-				<span class="email-detail-value"><?php echo esc_html( $pickup_suburb ?: __( 'Not specified', 'go-deliver' ) ); ?></span>
-			</div>
-			<div class="email-detail-row">
-				<span class="email-detail-label"><?php esc_html_e( 'Drop-off Suburb', 'go-deliver' ); ?></span>
-				<span class="email-detail-value"><?php echo esc_html( $dropoff_suburb ?: __( 'Not specified', 'go-deliver' ) ); ?></span>
-			</div>
-			<div class="email-detail-row">
-				<span class="email-detail-label"><?php esc_html_e( 'Date Requested', 'go-deliver' ); ?></span>
-				<span class="email-detail-value"><?php echo esc_html( $date_requested ?: __( 'Flexible', 'go-deliver' ) ); ?></span>
-			</div>
+		<div class="email-section">
+			<p class="email-section__title">&#128230; <?php esc_html_e( 'Job Alert', 'go-deliver' ); ?></p>
+			<p class="email-section__text"><?php esc_html_e( 'Customers are actively looking for providers right now.', 'go-deliver' ); ?></p>
+			<p class="email-section__text">&#128073; <?php esc_html_e( 'Log in to view full job details, pricing, and submit your quote.', 'go-deliver' ); ?></p>
 		</div>
 
-		<p class="email-text">
-			<?php esc_html_e( 'Full address details will be revealed once the customer accepts your quote. Be the first to quote and increase your chances!', 'go-deliver' ); ?>
-		</p>
+		<div class="email-section">
+			<p class="email-section__title">&#9889; <?php esc_html_e( 'Why act fast?', 'go-deliver' ); ?></p>
+			<ul class="email-section__list">
+				<li><?php esc_html_e( 'Jobs are limited to a set number of quotes', 'go-deliver' ); ?></li>
+				<li><?php esc_html_e( 'Early quotes get seen first', 'go-deliver' ); ?></li>
+				<li><?php esc_html_e( 'Faster responses = higher chance of winning', 'go-deliver' ); ?></li>
+			</ul>
+		</div>
+
+		<div class="email-section">
+			<p class="email-section__title">&#128188; <?php esc_html_e( 'Start Quoting', 'go-deliver' ); ?></p>
+			<p class="email-section__text"><?php esc_html_e( 'Click below to view the job and submit your quote:', 'go-deliver' ); ?></p>
+		</div>
 
 		<div class="email-cta">
 			<a href="<?php echo esc_url( $job_url ); ?>" class="email-cta__btn">
 				<?php esc_html_e( 'View Job & Quote Now', 'go-deliver' ); ?>
 			</a>
 		</div>
+
+		<p class="email-text">
+			<?php esc_html_e( 'From a single box to a full house move — there\'s always work available.', 'go-deliver' ); ?><br>
+			<?php esc_html_e( 'Stay active, quote early, and win more jobs.', 'go-deliver' ); ?>
+		</p>
 	</div>
 
 	<div class="email-footer">
@@ -122,7 +124,8 @@ $job_url        = isset( $job_url )        ? $job_url        : home_url();
 			?>
 		</p>
 		<p>
-			<a href="<?php echo esc_url( $site_url ); ?>"><?php echo esc_html( $site_name ); ?></a>
+			<a href="<?php echo esc_url( $site_url ); ?>"><?php echo esc_html( $site_name ); ?></a><br>
+			<?php esc_html_e( 'New Zealand\'s Own Delivery Marketplace', 'go-deliver' ); ?>
 		</p>
 	</div>
 
