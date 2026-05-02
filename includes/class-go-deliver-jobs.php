@@ -1227,8 +1227,8 @@ if ( ! is_user_logged_in() || ! current_user_can( 'gd_submit_jobs' ) ) {
 wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
 }
 
-$job_id     = absint( $_POST['job_id'] ?? 0 );
-$exclude_id = absint( $_POST['exclude_mover_id'] ?? 0 );
+$job_id     = absint( wp_unslash( $_POST['job_id'] ?? 0 ) );
+$exclude_id = absint( wp_unslash( $_POST['exclude_mover_id'] ?? 0 ) );
 
 if ( ! $job_id ) {
 wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
@@ -1279,7 +1279,10 @@ wp_send_json_error( array( 'message' => $new_job_id->get_error_message() ) );
 }
 
 // Carry forward any existing excluded movers and add the new one.
-$existing_excluded = array_map( 'intval', (array) get_post_meta( $job_id, 'gd_excluded_mover_ids', true ) );
+// get_post_meta returns the stored (possibly serialized) value; cast to array
+// to handle both an empty/non-existent key and a stored array value.
+$stored_excluded = get_post_meta( $job_id, 'gd_excluded_mover_ids', true );
+$existing_excluded = is_array( $stored_excluded ) ? array_map( 'intval', $stored_excluded ) : array();
 $existing_excluded = array_filter( $existing_excluded );
 
 if ( $exclude_id ) {
@@ -1338,7 +1341,8 @@ return ! in_array( (int) $job['id'], $dismissed, true );
 
 // Exclude jobs where this mover has been explicitly blocked by the customer.
 $jobs = array_values( array_filter( $jobs, function ( $job ) use ( $user_id ) {
-$excluded = array_map( 'intval', (array) get_post_meta( (int) $job['id'], 'gd_excluded_mover_ids', true ) );
+$stored   = get_post_meta( (int) $job['id'], 'gd_excluded_mover_ids', true );
+$excluded = is_array( $stored ) ? array_map( 'intval', $stored ) : array();
 return ! in_array( (int) $user_id, $excluded, true );
 } ) );
 }
