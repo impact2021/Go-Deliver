@@ -164,12 +164,17 @@ $accepted_quotes = $accepted_quotes_query->posts;
 wp_reset_postdata();
 
 // Compute stats and recent past jobs from accepted quotes.
-$completed_count  = 0;
-$recent_past_jobs = array();
+// Separate into active (job accepted), completed, and cancelled buckets.
+$active_accepted_quotes   = array();
+$completed_job_quotes     = array();
+$cancelled_job_quotes     = array();
+$completed_count          = 0;
+$recent_past_jobs         = array();
 foreach ( $accepted_quotes as $_aq ) {
 	$_aq_jid   = (int) get_post_meta( $_aq->ID, 'gd_job_id', true );
 	$_aq_jstat = $_aq_jid ? get_post_meta( $_aq_jid, 'gd_job_status', true ) : '';
 	if ( 'completed' === $_aq_jstat ) {
+		$completed_job_quotes[] = $_aq;
 		$completed_count++;
 		if ( count( $recent_past_jobs ) < 3 ) {
 			$recent_past_jobs[] = array(
@@ -181,6 +186,11 @@ foreach ( $accepted_quotes as $_aq ) {
 				'date'     => esc_html( get_the_date( 'd M Y', $_aq->ID ) ),
 			);
 		}
+	} elseif ( 'cancelled' === $_aq_jstat ) {
+		$cancelled_job_quotes[] = $_aq;
+	} else {
+		// 'accepted' or any unexpected status – treat as still-active.
+		$active_accepted_quotes[] = $_aq;
 	}
 }
 $quoted_count = count( $my_quotes );
@@ -236,8 +246,8 @@ $profile_photo_url = $profile_photo_id ? wp_get_attachment_image_url( $profile_p
 </a>
 <a class="gd-sidebar-nav__item" data-panel="my-jobs" role="button" tabindex="0">
 <span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span> <?php esc_html_e( 'My Jobs', 'go-deliver' ); ?>
-<?php if ( ! empty( $accepted_quotes ) ) : ?>
-<span class="gd-badge gd-badge--accepted" style="margin-left:auto;"><?php echo esc_html( count( $accepted_quotes ) ); ?></span>
+<?php if ( ! empty( $active_accepted_quotes ) ) : ?>
+<span class="gd-badge gd-badge--accepted" style="margin-left:auto;"><?php echo esc_html( count( $active_accepted_quotes ) ); ?></span>
 <?php endif; ?>
 </a>
 <a class="gd-sidebar-nav__item" href="<?php echo esc_url( $messaging_base_url ); ?>">
@@ -359,7 +369,7 @@ $_furl = $_fid ? wp_get_attachment_image_url( $_fid, 'medium' ) : '';
 <span class="gd-profile-stat__label"><?php esc_html_e( 'Reviews', 'go-deliver' ); ?></span>
 </div>
 <div class="gd-profile-stat">
-<span class="gd-profile-stat__value"><?php echo esc_html( count( $accepted_quotes ) ); ?></span>
+<span class="gd-profile-stat__value"><?php echo esc_html( count( $active_accepted_quotes ) ); ?></span>
 <span class="gd-profile-stat__label"><?php esc_html_e( 'Active Jobs', 'go-deliver' ); ?></span>
 </div>
 </div>
@@ -662,8 +672,20 @@ foreach ( $available_types as $slug => $label ) :
 </div>
 <div class="gd-tab" data-tab="accepted-jobs" role="tab" tabindex="0">
 <?php esc_html_e( 'Accepted Jobs', 'go-deliver' ); ?>
-<?php if ( ! empty( $accepted_quotes ) ) : ?>
-<span class="gd-badge gd-badge--accepted" style="margin-left:6px;"><?php echo esc_html( count( $accepted_quotes ) ); ?></span>
+<?php if ( ! empty( $active_accepted_quotes ) ) : ?>
+<span class="gd-badge gd-badge--accepted" style="margin-left:6px;"><?php echo esc_html( count( $active_accepted_quotes ) ); ?></span>
+<?php endif; ?>
+</div>
+<div class="gd-tab" data-tab="completed-jobs" role="tab" tabindex="0">
+<?php esc_html_e( 'Completed Jobs', 'go-deliver' ); ?>
+<?php if ( ! empty( $completed_job_quotes ) ) : ?>
+<span class="gd-badge gd-badge--accepted" style="margin-left:6px;"><?php echo esc_html( count( $completed_job_quotes ) ); ?></span>
+<?php endif; ?>
+</div>
+<div class="gd-tab" data-tab="cancelled-jobs" role="tab" tabindex="0">
+<?php esc_html_e( 'Cancelled Jobs', 'go-deliver' ); ?>
+<?php if ( ! empty( $cancelled_job_quotes ) ) : ?>
+<span class="gd-badge gd-badge--open" style="margin-left:6px;"><?php echo esc_html( count( $cancelled_job_quotes ) ); ?></span>
 <?php endif; ?>
 </div>
 <div class="gd-tab" data-tab="dismissed-jobs" role="tab" tabindex="0">
@@ -746,13 +768,13 @@ $<?php echo esc_html( number_format( (float) get_post_meta( $q_id, 'gd_fee_amoun
 
 <!-- Tab: Accepted Jobs -->
 <div class="gd-tab-panel" id="gd-tab-accepted-jobs" role="tabpanel" style="display:none;">
-<?php if ( empty( $accepted_quotes ) ) : ?>
+<?php if ( empty( $active_accepted_quotes ) ) : ?>
 <div class="gd-empty-state">
 <div class="gd-empty-state__icon">✅</div>
 <p class="gd-empty-state__text"><?php esc_html_e( 'No accepted jobs yet.', 'go-deliver' ); ?></p>
 </div>
 <?php else : ?>
-<?php foreach ( $accepted_quotes as $quote ) :
+<?php foreach ( $active_accepted_quotes as $quote ) :
 $q_id        = $quote->ID;
 $q_amount    = (float) get_post_meta( $q_id, 'gd_amount', true );
 $q_fee       = (float) get_post_meta( $q_id, 'gd_fee_amount', true );
@@ -776,7 +798,7 @@ $cust_phone = $cust_id ? esc_html( get_user_meta( $cust_id, 'gd_phone', true ) )
 
 $msg_url = $q_job_id ? esc_url( add_query_arg( 'job_id', $q_job_id, $messaging_base_url ) ) : '';
 ?>
-<div class="gd-mover-card">
+<div class="gd-mover-card" id="gd-accepted-card-<?php echo esc_attr( $q_job_id ); ?>">
 <div class="gd-mover-card__header">
 <div>
 <div class="gd-mover-card__job-type"><?php echo $job_type ?: esc_html__( 'Moving Job', 'go-deliver' ); ?></div>
@@ -786,11 +808,7 @@ $msg_url = $q_job_id ? esc_url( add_query_arg( 'job_id', $q_job_id, $messaging_b
 <div style="font-size:22px;font-weight:800;color:var(--gd-primary);">
 $<?php echo esc_html( number_format( $q_amount, 0 ) ); ?>
 </div>
-<?php if ( 'completed' === $q_job_status ) : ?>
-<span class="gd-badge gd-badge--accepted">✓ <?php esc_html_e( 'Completed', 'go-deliver' ); ?></span>
-<?php else : ?>
 <span class="gd-badge gd-badge--accepted"><?php esc_html_e( 'Accepted', 'go-deliver' ); ?></span>
-<?php endif; ?>
 </div>
 </div>
 
@@ -848,16 +866,180 @@ $<?php echo esc_html( number_format( $q_amount, 0 ) ); ?>
 💬 <?php esc_html_e( 'Open Messaging', 'go-deliver' ); ?>
 </a>
 <?php endif; ?>
-<?php if ( $q_job_id && 'accepted' === $q_job_status ) : ?>
-<button type="button" class="gd-btn gd-btn--success gd-btn--sm gd-complete-job-btn" data-job-id="<?php echo esc_attr( $q_job_id ); ?>">
+<button type="button" class="gd-btn gd-btn--success gd-btn--sm gd-complete-job-btn" data-job-id="<?php echo esc_attr( $q_job_id ); ?>" data-quote-amount="<?php echo esc_attr( number_format( $q_amount, 0 ) ); ?>" data-job-type="<?php echo esc_attr( $raw_job_type ); ?>" data-accepted-date="<?php echo esc_attr( $q_date ); ?>">
 ✓ <?php esc_html_e( 'Mark as Complete', 'go-deliver' ); ?>
+</button>
+</div>
+</div>
+<?php endforeach; ?>
+<?php endif; ?>
+</div><!-- /#gd-tab-accepted-jobs -->
+
+<!-- Tab: Completed Jobs -->
+<div class="gd-tab-panel" id="gd-tab-completed-jobs" role="tabpanel" style="display:none;">
+<?php if ( empty( $completed_job_quotes ) ) : ?>
+<div class="gd-empty-state">
+<div class="gd-empty-state__icon">🏁</div>
+<p class="gd-empty-state__text"><?php esc_html_e( 'No completed jobs yet.', 'go-deliver' ); ?></p>
+</div>
+<?php else : ?>
+<?php foreach ( $completed_job_quotes as $quote ) :
+$q_id        = $quote->ID;
+$q_amount    = (float) get_post_meta( $q_id, 'gd_amount', true );
+$q_fee       = (float) get_post_meta( $q_id, 'gd_fee_amount', true );
+$q_job_id    = (int) get_post_meta( $q_id, 'gd_job_id', true );
+$q_date      = esc_html( get_the_date( 'd M Y', $q_id ) );
+
+$raw_job_type = $q_job_id ? Go_Deliver_Jobs::get_display_title( $q_job_id ) : '';
+$raw_pickup   = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_pickup_address', true ) ?: get_post_meta( $q_job_id, 'gd_pickup_suburb', true ) ) : '';
+$raw_dropoff  = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_dropoff_address', true ) ?: get_post_meta( $q_job_id, 'gd_dropoff_suburb', true ) ) : '';
+$job_type     = esc_html( $raw_job_type );
+$pickup_full  = esc_html( $raw_pickup );
+$dropoff_full = esc_html( $raw_dropoff );
+$date_req     = $q_job_id ? esc_html( get_post_meta( $q_job_id, 'gd_date_requested', true ) ) : '';
+
+$cust_id    = $q_job_id ? (int) get_post_meta( $q_job_id, 'gd_customer_id', true ) : 0;
+$cust_obj   = $cust_id ? get_userdata( $cust_id ) : null;
+$cust_name  = $cust_obj ? esc_html( trim( $cust_obj->first_name . ' ' . $cust_obj->last_name ) ?: $cust_obj->display_name ) : '';
+?>
+<div class="gd-mover-card">
+<div class="gd-mover-card__header">
+<div>
+<div class="gd-mover-card__job-type"><?php echo $job_type ?: esc_html__( 'Moving Job', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__suburb"><?php echo $pickup_full ?: '—'; ?></div>
+</div>
+<div style="text-align:right;">
+<div style="font-size:22px;font-weight:800;color:var(--gd-primary);">
+$<?php echo esc_html( number_format( $q_amount, 0 ) ); ?>
+</div>
+<span class="gd-badge gd-badge--accepted">✓ <?php esc_html_e( 'Completed', 'go-deliver' ); ?></span>
+</div>
+</div>
+
+<div class="gd-mover-card__info-grid">
+<?php if ( $pickup_full ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Pickup', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $pickup_full; ?></div>
+</div>
+<?php endif; ?>
+<?php if ( $dropoff_full ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Dropoff', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $dropoff_full; ?></div>
+</div>
+<?php endif; ?>
+<?php if ( $date_req ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Date', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $date_req; ?></div>
+</div>
+<?php endif; ?>
+<?php if ( $cust_name ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Customer', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $cust_name; ?></div>
+</div>
+<?php endif; ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Accepted', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $q_date; ?></div>
+</div>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Fee Charged', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value">$<?php echo esc_html( number_format( $q_fee, 2 ) ); ?></div>
+</div>
+</div>
+
+<div class="gd-mover-card__actions">
+<?php if ( $q_job_id ) : ?>
+<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-job-view-btn" data-job-id="<?php echo esc_attr( $q_job_id ); ?>">
+<?php esc_html_e( 'View Job', 'go-deliver' ); ?>
 </button>
 <?php endif; ?>
 </div>
 </div>
 <?php endforeach; ?>
 <?php endif; ?>
-</div><!-- /#gd-tab-accepted-jobs -->
+</div><!-- /#gd-tab-completed-jobs -->
+
+<!-- Tab: Cancelled Jobs -->
+<div class="gd-tab-panel" id="gd-tab-cancelled-jobs" role="tabpanel" style="display:none;">
+<?php if ( empty( $cancelled_job_quotes ) ) : ?>
+<div class="gd-empty-state">
+<div class="gd-empty-state__icon">❌</div>
+<p class="gd-empty-state__text"><?php esc_html_e( 'No cancelled jobs.', 'go-deliver' ); ?></p>
+</div>
+<?php else : ?>
+<?php foreach ( $cancelled_job_quotes as $quote ) :
+$q_id        = $quote->ID;
+$q_amount    = (float) get_post_meta( $q_id, 'gd_amount', true );
+$q_fee       = (float) get_post_meta( $q_id, 'gd_fee_amount', true );
+$q_refunded  = (bool) get_post_meta( $q_id, 'gd_fee_refunded', true );
+$q_job_id    = (int) get_post_meta( $q_id, 'gd_job_id', true );
+$q_date      = esc_html( get_the_date( 'd M Y', $q_id ) );
+
+$raw_job_type = $q_job_id ? Go_Deliver_Jobs::get_display_title( $q_job_id ) : '';
+$raw_pickup   = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_pickup_address', true ) ?: get_post_meta( $q_job_id, 'gd_pickup_suburb', true ) ) : '';
+$raw_dropoff  = $q_job_id ? ( get_post_meta( $q_job_id, 'gd_dropoff_address', true ) ?: get_post_meta( $q_job_id, 'gd_dropoff_suburb', true ) ) : '';
+$job_type     = esc_html( $raw_job_type );
+$pickup_full  = esc_html( $raw_pickup );
+$dropoff_full = esc_html( $raw_dropoff );
+$date_req     = $q_job_id ? esc_html( get_post_meta( $q_job_id, 'gd_date_requested', true ) ) : '';
+?>
+<div class="gd-mover-card">
+<div class="gd-mover-card__header">
+<div>
+<div class="gd-mover-card__job-type"><?php echo $job_type ?: esc_html__( 'Moving Job', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__suburb"><?php echo $pickup_full ?: '—'; ?></div>
+</div>
+<div style="text-align:right;">
+<div style="font-size:22px;font-weight:800;color:var(--gd-primary);">
+$<?php echo esc_html( number_format( $q_amount, 0 ) ); ?>
+</div>
+<span class="gd-badge gd-badge--open"><?php esc_html_e( 'Cancelled', 'go-deliver' ); ?></span>
+</div>
+</div>
+
+<div class="gd-mover-card__info-grid">
+<?php if ( $pickup_full ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Pickup', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $pickup_full; ?></div>
+</div>
+<?php endif; ?>
+<?php if ( $dropoff_full ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Dropoff', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $dropoff_full; ?></div>
+</div>
+<?php endif; ?>
+<?php if ( $date_req ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Date', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $date_req; ?></div>
+</div>
+<?php endif; ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Accepted', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value"><?php echo $q_date; ?></div>
+</div>
+<?php if ( $q_refunded && $q_fee > 0 ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Fee Refunded', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value gd-text-success">+$<?php echo esc_html( number_format( $q_fee, 2 ) ); ?></div>
+</div>
+<?php elseif ( $q_fee > 0 ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Fee Charged', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value">$<?php echo esc_html( number_format( $q_fee, 2 ) ); ?></div>
+</div>
+<?php endif; ?>
+</div>
+</div>
+<?php endforeach; ?>
+<?php endif; ?>
+</div><!-- /#gd-tab-cancelled-jobs -->
 
 <!-- Tab: Dismissed Jobs -->
 <div class="gd-tab-panel" id="gd-tab-dismissed-jobs" role="tabpanel" style="display:none;">

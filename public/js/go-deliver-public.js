@@ -1137,16 +1137,53 @@
 			if ( ! window.confirm( 'Mark this job as completed? The customer will be notified and asked to leave a review.' ) ) {
 				return;
 			}
-			var $btn  = $( this );
-			var jobId = $btn.data( 'job-id' );
+			var $btn      = $( this );
+			var $card     = $btn.closest( '.gd-mover-card' );
+			var jobId     = $btn.data( 'job-id' );
 			gdBtnLoading( $btn );
 			gdAjax(
 				'gd_complete_job',
 				{ job_id: jobId },
 				function ( data ) {
 					gdToast( data.message || 'Job marked as completed.', 'success' );
-					$btn.closest( '.gd-mover-card' ).find( '.gd-badge--accepted' ).text( '✓ Completed' );
+
+					// Update the badge on the card and remove the Complete button.
+					$card.find( '.gd-badge--accepted' ).text( '✓ Completed' );
 					$btn.remove();
+
+					// Move the card from the Accepted Jobs tab to the Completed Jobs tab.
+					var $completedPanel = $dashboard.find( '#gd-tab-completed-jobs' );
+					var $emptyState     = $completedPanel.find( '.gd-empty-state' );
+
+					// Clone the updated card and append to the completed tab.
+					$completedPanel.append( $card.clone() );
+					$emptyState.hide();
+
+					// Remove the original card from the accepted tab.
+					$card.fadeOut( 300, function () { $card.remove(); } );
+
+					// Update tab badges.
+					var $acceptedTab   = $dashboard.find( '.gd-tab[data-tab="accepted-jobs"]' );
+					var $completedTab  = $dashboard.find( '.gd-tab[data-tab="completed-jobs"]' );
+					var $acceptedBadge = $acceptedTab.find( '.gd-badge' );
+					var $compBadge     = $completedTab.find( '.gd-badge' );
+
+					// Decrement accepted badge.
+					if ( $acceptedBadge.length ) {
+						var acceptedCount = parseInt( $acceptedBadge.text(), 10 ) - 1;
+						if ( acceptedCount > 0 ) {
+							$acceptedBadge.text( acceptedCount );
+						} else {
+							$acceptedBadge.remove();
+						}
+					}
+
+					// Increment (or create) completed badge.
+					if ( $compBadge.length ) {
+						$compBadge.text( parseInt( $compBadge.text(), 10 ) + 1 );
+					} else {
+						$completedTab.append( '<span class="gd-badge gd-badge--accepted" style="margin-left:6px;">1</span>' );
+					}
 				},
 				function ( msg ) {
 					gdBtnReset( $btn );

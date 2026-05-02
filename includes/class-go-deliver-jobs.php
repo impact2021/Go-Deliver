@@ -515,7 +515,10 @@ return true;
 }
 
 /**
- * Cancel a job (customer only, must be open).
+ * Cancel a job (customer only; must be open, locked, or accepted).
+ *
+ * When an accepted job is cancelled the mover's platform fee is automatically
+ * refunded to their wallet and they are notified by email.
  *
  * @param int $job_id      Post ID.
  * @param int $customer_id Customer user ID.
@@ -533,11 +536,47 @@ return new WP_Error( 'permission_denied', __( 'You do not own this job.', 'go-de
 }
 
 $current_status = get_post_meta( (int) $job_id, 'gd_job_status', true );
-if ( 'open' !== $current_status ) {
-return new WP_Error( 'invalid_status', __( 'Only open jobs can be cancelled.', 'go-deliver' ) );
+if ( ! in_array( $current_status, array( 'open', 'locked', 'accepted' ), true ) ) {
+return new WP_Error( 'invalid_status', __( 'This job cannot be cancelled.', 'go-deliver' ) );
 }
 
-return $this->update_job_status( $job_id, 'cancelled' );
+$result = $this->update_job_status( $job_id, 'cancelled' );
+if ( is_wp_error( $result ) ) {
+return $result;
+}
+
+// Refund the mover's platform fee when cancelling an accepted job.
+$refund_amount = 0.0;
+if ( 'accepted' === $current_status ) {
+$accepted_quote_id = (int) get_post_meta( (int) $job_id, 'gd_accepted_quote_id', true );
+if ( $accepted_quote_id ) {
+$fee_charged = (bool) get_post_meta( $accepted_quote_id, 'gd_fee_charged', true );
+$fee_amount  = (float) get_post_meta( $accepted_quote_id, 'gd_fee_amount', true );
+$mover_id    = (int) get_post_meta( $accepted_quote_id, 'gd_mover_id', true );
+
+if ( $fee_charged && $fee_amount > 0 && $mover_id ) {
+$wallet = new Go_Deliver_Wallet();
+$wallet->credit(
+$mover_id,
+$fee_amount,
+sprintf(
+/* translators: %d: job ID */
+__( 'Refund – customer cancelled job #%d', 'go-deliver' ),
+(int) $job_id
+)
+);
+// Mark fee as refunded so it is not refunded twice.
+update_post_meta( $accepted_quote_id, 'gd_fee_refunded', 1 );
+$refund_amount = $fee_amount;
+}
+}
+}
+
+// Notify the mover (if there was an accepted quote).
+$notifications = new Go_Deliver_Notifications();
+$notifications->notify_mover_job_cancelled( $job_id, $refund_amount );
+
+return true;
 }
 
 /**
@@ -1144,7 +1183,7 @@ wp_send_json_success( array( 'job_id' => $result ) );
  * AJAX: cancel a job.
  */
 public function ajax_cancel_job() {
-check_ajax_referer( 'gd_cancel_job', 'nonce' );
+check_ajax_referer( 'gd_public_nonce', 'nonce' );
 
 if ( ! is_user_logged_in() || ! current_user_can( 'gd_submit_jobs' ) ) {
 wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
