@@ -228,6 +228,11 @@ foreach ( $jobs as $job ) {
 								type="button"
 								class="gd-btn gd-btn--danger gd-btn--sm gd-job-cancel-btn"
 								data-job-id="<?php echo esc_attr( $job_id ); ?>"
+								data-job-status="<?php echo esc_attr( $status ); ?>"
+								<?php if ( 'accepted' === $status && $accepted_mover_id ) : ?>
+								data-accepted-mover-id="<?php echo esc_attr( $accepted_mover_id ); ?>"
+								data-accepted-mover-company="<?php echo esc_attr( get_user_meta( $accepted_mover_id, 'gd_company_name', true ) ?: ( $accepted_mover ? $accepted_mover->display_name : '' ) ); ?>"
+								<?php endif; ?>
 							>
 								<?php esc_html_e( 'Cancel Job', 'go-deliver' ); ?>
 							</button>
@@ -387,3 +392,59 @@ foreach ( $jobs as $job ) {
 	<div id="gd-job-detail-container" style="margin-top:20px;"></div>
 
 </div><!-- /.gd-wrap -->
+
+<!-- Modal: Cancel job – reason selection (shown for accepted jobs) -->
+<div class="gd-modal-overlay" id="gd-cancel-reason-modal" role="dialog" aria-modal="true" aria-labelledby="gd-cancel-reason-title">
+	<div class="gd-modal" style="max-width:460px;">
+		<div class="gd-modal__header">
+			<h3 class="gd-modal__title" id="gd-cancel-reason-title"><?php esc_html_e( 'Cancel Job', 'go-deliver' ); ?></h3>
+			<button type="button" class="gd-modal__close" aria-label="<?php esc_attr_e( 'Close', 'go-deliver' ); ?>">✕</button>
+		</div>
+		<div class="gd-modal__body">
+			<p style="margin-bottom:16px;"><?php esc_html_e( 'Please let us know why you\'re cancelling:', 'go-deliver' ); ?></p>
+			<div class="gd-radio-group">
+				<label class="gd-radio-label">
+					<input type="radio" name="gd_cancel_reason" value="no_longer_needed" checked>
+					<?php esc_html_e( 'No longer needed', 'go-deliver' ); ?>
+				</label>
+				<label class="gd-radio-label">
+					<input type="radio" name="gd_cancel_reason" value="mover_didnt_read">
+					<?php esc_html_e( 'Mover didn\'t read the job clearly', 'go-deliver' ); ?>
+				</label>
+			</div>
+		</div>
+		<div class="gd-modal__footer">
+			<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-modal__close">
+				<?php esc_html_e( 'Keep Job', 'go-deliver' ); ?>
+			</button>
+			<button type="button" class="gd-btn gd-btn--danger gd-btn--sm" id="gd-cancel-reason-confirm">
+				<?php esc_html_e( 'Confirm Cancellation', 'go-deliver' ); ?>
+			</button>
+		</div>
+	</div>
+</div><!-- /#gd-cancel-reason-modal -->
+
+<!-- Modal: Re-post job (shown when cancellation reason is "mover didn't read") -->
+<div class="gd-modal-overlay" id="gd-repost-job-modal" role="dialog" aria-modal="true" aria-labelledby="gd-repost-job-title">
+	<div class="gd-modal" style="max-width:460px;">
+		<div class="gd-modal__header">
+			<h3 class="gd-modal__title" id="gd-repost-job-title"><?php esc_html_e( 'Re-post This Job?', 'go-deliver' ); ?></h3>
+			<button type="button" class="gd-modal__close" aria-label="<?php esc_attr_e( 'Close', 'go-deliver' ); ?>">✕</button>
+		</div>
+		<div class="gd-modal__body">
+			<p style="margin-bottom:16px;"><?php esc_html_e( 'Would you like to re-post this job so other movers can quote on it?', 'go-deliver' ); ?></p>
+			<label class="gd-checkbox-label" id="gd-repost-exclude-wrap" style="display:none;">
+				<input type="checkbox" id="gd-repost-exclude-check">
+				<span id="gd-repost-exclude-text"><?php esc_html_e( 'Exclude previous mover from seeing this job', 'go-deliver' ); ?></span>
+			</label>
+		</div>
+		<div class="gd-modal__footer">
+			<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-modal__close">
+				<?php esc_html_e( 'No Thanks', 'go-deliver' ); ?>
+			</button>
+			<button type="button" class="gd-btn gd-btn--primary gd-btn--sm" id="gd-repost-job-confirm">
+				<?php esc_html_e( 'Re-post Job', 'go-deliver' ); ?>
+			</button>
+		</div>
+	</div>
+</div><!-- /#gd-repost-job-modal -->

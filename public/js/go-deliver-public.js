@@ -627,9 +627,27 @@
 
 		// Cancel job.
 		$dashboard.on( 'click', '.gd-job-cancel-btn', function () {
-			var jobId = $( this ).data( 'job-id' );
+			var $btn       = $( this );
+			var jobId      = $btn.data( 'job-id' );
+			var jobStatus  = $btn.data( 'job-status' );
+			var moverId    = $btn.data( 'accepted-mover-id' ) || 0;
+			var moverName  = $btn.data( 'accepted-mover-company' ) || '';
+
+			// For accepted jobs, show the reason-selection modal.
+			if ( 'accepted' === jobStatus ) {
+				var $modal = $( '#gd-cancel-reason-modal' );
+				// Reset radio to default.
+				$modal.find( '[name="gd_cancel_reason"][value="no_longer_needed"]' ).prop( 'checked', true );
+				// Store context for the confirm handler.
+				$modal.data( 'job-id', jobId );
+				$modal.data( 'mover-id', moverId );
+				$modal.data( 'mover-name', moverName );
+				$modal.addClass( 'gd-modal-overlay--open' );
+				return;
+			}
+
+			// For open/locked jobs use a simple confirm dialog.
 			if ( ! window.confirm( 'Are you sure you want to cancel this job? This cannot be undone.' ) ) { return; }
-			var $btn = $( this );
 			gdBtnLoading( $btn );
 			gdAjax(
 				'gd_cancel_job',
@@ -643,6 +661,86 @@
 					gdToast( msg, 'error' );
 				}
 			);
+		} );
+
+		// Confirm cancellation from the reason modal.
+		$( document ).on( 'click', '#gd-cancel-reason-confirm', function () {
+			var $modal    = $( '#gd-cancel-reason-modal' );
+			var jobId     = $modal.data( 'job-id' );
+			var moverId   = $modal.data( 'mover-id' );
+			var moverName = $modal.data( 'mover-name' );
+			var reason    = $modal.find( '[name="gd_cancel_reason"]:checked' ).val() || 'no_longer_needed';
+			var $btn      = $( this );
+
+			gdBtnLoading( $btn );
+			gdAjax(
+				'gd_cancel_job',
+				{ job_id: jobId, cancel_reason: reason },
+				function () {
+					$modal.removeClass( 'gd-modal-overlay--open' );
+					gdBtnReset( $btn );
+
+					if ( 'mover_didnt_read' === reason ) {
+						// Show the re-post modal.
+						var $repost = $( '#gd-repost-job-modal' );
+						$repost.data( 'job-id', jobId );
+						$repost.data( 'mover-id', moverId );
+
+						// Show/update exclude option if we have a mover name.
+						var $excludeWrap = $repost.find( '#gd-repost-exclude-wrap' );
+						if ( moverId && moverName ) {
+							// .text() sets textContent, so no HTML injection is possible.
+							$repost.find( '#gd-repost-exclude-text' ).text( 'Exclude ' + moverName + ' from seeing this job' );
+							$repost.find( '#gd-repost-exclude-check' ).prop( 'checked', false );
+							$excludeWrap.show();
+						} else {
+							$excludeWrap.hide();
+						}
+						$repost.addClass( 'gd-modal-overlay--open' );
+					} else {
+						gdToast( 'Job cancelled successfully.', 'success' );
+						location.reload();
+					}
+				},
+				function ( msg ) {
+					gdBtnReset( $btn );
+					$modal.removeClass( 'gd-modal-overlay--open' );
+					gdToast( msg, 'error' );
+				}
+			);
+		} );
+
+		// Re-post job confirm.
+		$( document ).on( 'click', '#gd-repost-job-confirm', function () {
+			var $repost   = $( '#gd-repost-job-modal' );
+			var jobId     = $repost.data( 'job-id' );
+			var moverId   = $repost.data( 'mover-id' );
+			var excludeId = $repost.find( '#gd-repost-exclude-check' ).is( ':checked' ) ? moverId : 0;
+			var $btn      = $( this );
+
+			gdBtnLoading( $btn );
+			gdAjax(
+				'gd_repost_job',
+				{ job_id: jobId, exclude_mover_id: excludeId },
+				function () {
+					gdBtnReset( $btn );
+					$repost.removeClass( 'gd-modal-overlay--open' );
+					gdToast( 'Job re-posted successfully!', 'success', 5000 );
+					location.reload();
+				},
+				function ( msg ) {
+					gdBtnReset( $btn );
+					$repost.removeClass( 'gd-modal-overlay--open' );
+					gdToast( msg, 'error' );
+				}
+			);
+		} );
+
+		// "No thanks" on the re-post modal – just reload to reflect the cancellation.
+		$( document ).on( 'click', '#gd-repost-job-modal .gd-modal__close', function () {
+			$( '#gd-repost-job-modal' ).removeClass( 'gd-modal-overlay--open' );
+			gdToast( 'Job cancelled successfully.', 'success' );
+			location.reload();
 		} );
 
 		// Accept quote.

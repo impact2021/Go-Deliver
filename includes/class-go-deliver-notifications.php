@@ -329,6 +329,54 @@ class Go_Deliver_Notifications {
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Send a confirmation email to the customer immediately after they post a job.
+	 *
+	 * Includes a summary of the job details and a link to their dashboard
+	 * where they can view quotes or cancel the listing.
+	 *
+	 * @param int $job_id Newly-created gd_job post ID.
+	 */
+	public function notify_customer_job_posted( $job_id ) {
+		$customer_id = (int) get_post_meta( (int) $job_id, 'gd_customer_id', true );
+		$customer    = get_userdata( $customer_id );
+		if ( ! $customer || ! $customer->user_email ) {
+			return;
+		}
+
+		$site_name      = get_bloginfo( 'name' );
+		$job_type       = Go_Deliver_Jobs::get_display_title( (int) $job_id );
+		$pickup_suburb  = get_post_meta( (int) $job_id, 'gd_pickup_suburb', true );
+		$dropoff_suburb = get_post_meta( (int) $job_id, 'gd_dropoff_suburb', true );
+		$date_requested = get_post_meta( (int) $job_id, 'gd_date_requested', true );
+
+		$dashboard_page_id = (int) get_option( 'gd_customer_dashboard_page_id', 0 );
+		$dashboard_url     = $dashboard_page_id ? get_permalink( $dashboard_page_id ) : home_url();
+
+		$subject = sprintf(
+			/* translators: %s: site name */
+			__( 'Your Job Has Been Posted – %s', 'go-deliver' ),
+			$site_name
+		);
+
+		$this->send_html_email(
+			$customer->user_email,
+			$subject,
+			GD_PLUGIN_DIR . 'templates/emails/job-posted-confirmation.php',
+			array(
+				'customer_first_name' => $customer->first_name ?: $customer->display_name,
+				'job_id'              => (int) $job_id,
+				'job_type'            => $job_type,
+				'pickup_suburb'       => $pickup_suburb,
+				'dropoff_suburb'      => $dropoff_suburb,
+				'date_requested'      => $date_requested,
+				'dashboard_url'       => $dashboard_url,
+				'site_name'           => $site_name,
+				'site_url'            => home_url(),
+			)
+		);
+	}
+
+	/**
 	 * Email the customer when a mover marks a job as completed.
 	 *
 	 * Prompts the customer to leave a review for the mover.
