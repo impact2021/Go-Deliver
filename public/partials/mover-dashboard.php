@@ -206,7 +206,6 @@ $fee_percentage     = (float) get_option( 'gd_fee_percentage', 10 );
 // Profile photo URL.
 $profile_photo_url = $profile_photo_id ? wp_get_attachment_image_url( $profile_photo_id, 'thumbnail' ) : '';
 ?>
-?>
 <div class="gd-wrap" id="gd-mover-dashboard">
 <div class="gd-dashboard">
 
@@ -283,6 +282,14 @@ esc_html( $display_name )
 <!-- Profile card -->
 <div class="gd-profile-card">
 <div class="gd-profile-card__top">
+<div class="gd-profile-card__top-left">
+<div class="gd-profile-card__avatar">
+<?php if ( $profile_photo_url ) : ?>
+<img src="<?php echo esc_url( $profile_photo_url ); ?>" alt="<?php echo esc_attr( $display_name ); ?>">
+<?php else : ?>
+<div class="gd-profile-card__avatar-placeholder"><?php echo esc_html( mb_substr( $display_name, 0, 1 ) ); ?></div>
+<?php endif; ?>
+</div>
 <div class="gd-profile-card__info">
 <h2 class="gd-profile-card__name"><?php echo esc_html( $display_name ); ?></h2>
 <div class="gd-profile-card__meta">
@@ -299,6 +306,7 @@ if ( $base_suburb ) {
 echo '<span class="gd-profile-card__location"> · ' . esc_html__( 'Based in', 'go-deliver' ) . ' ' . esc_html( $base_suburb ) . '</span>';
 }
 ?>
+</div>
 </div>
 </div>
 <button type="button" id="gd-edit-profile-btn" class="gd-btn gd-btn--outline gd-btn--sm">
