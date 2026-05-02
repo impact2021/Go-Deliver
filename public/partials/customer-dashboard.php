@@ -148,12 +148,21 @@ foreach ( $jobs as $job ) {
 				$created     = esc_html( get_the_date( 'd M Y', $job_id ) );
 
 				// Expiry date for open/locked jobs.
-				$expiry_label = '';
-				if ( in_array( $status, array( 'open', 'locked' ), true ) ) {
-					$expiry_days  = (int) get_option( 'gd_job_expiry_days', 14 );
-					$expiry_ts    = strtotime( get_post_field( 'post_date', $job_id ) ) + $expiry_days * DAY_IN_SECONDS;
-					$expiry_label = date_i18n( 'd M Y', $expiry_ts );
+			$expiry_label = '';
+			if ( in_array( $status, array( 'open', 'locked' ), true ) ) {
+				$expiry_days = (int) get_option( 'gd_job_expiry_days', 14 );
+				$expiry_ts   = strtotime( get_post_field( 'post_date', $job_id ) ) + $expiry_days * DAY_IN_SECONDS;
+				// Cap expiry at the job date: no point showing a listing-expiry date
+				// that is later than the actual moving date.
+				$raw_date_req = get_post_meta( $job_id, 'gd_date_requested', true );
+				if ( $raw_date_req ) {
+					$job_date_ts = strtotime( $raw_date_req );
+					if ( $job_date_ts && $job_date_ts < $expiry_ts ) {
+						$expiry_ts = $job_date_ts;
+					}
 				}
+				$expiry_label = date_i18n( 'd M Y', $expiry_ts );
+			}
 
 				// Fetch accepted quote (if any).
 				$accepted_quote_id  = get_post_meta( $job_id, 'gd_accepted_quote_id', true );
@@ -238,7 +247,7 @@ foreach ( $jobs as $job ) {
 							</button>
 						<?php endif; ?>
 
-						<?php if ( in_array( $status, array( 'accepted', 'completed' ), true ) && $accepted_mover && ! $review_submitted ) : ?>
+						<?php if ( 'completed' === $status && $accepted_mover && ! $review_submitted ) : ?>
 							<button
 								type="button"
 								class="gd-btn gd-btn--outline gd-btn--sm"
@@ -335,7 +344,7 @@ foreach ( $jobs as $job ) {
 					<?php endif; ?>
 
 					<!-- Review section for completed jobs -->
-					<?php if ( in_array( $status, array( 'accepted', 'completed' ), true ) && $accepted_mover ) : ?>
+					<?php if ( 'completed' === $status && $accepted_mover ) : ?>
 						<div id="gd-review-<?php echo esc_attr( $job_id ); ?>" class="gd-review-section" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--gd-border);">
 							<?php if ( $review_submitted ) : ?>
 								<p class="gd-text-success">✓ <?php esc_html_e( 'Review submitted for this job.', 'go-deliver' ); ?></p>

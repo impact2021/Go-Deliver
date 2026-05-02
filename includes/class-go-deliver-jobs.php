@@ -209,6 +209,15 @@ update_post_meta( $post_id, 'gd_photos',               wp_json_encode( $photos )
 update_post_meta( $post_id, 'gd_job_status',           'open' );
 update_post_meta( $post_id, 'gd_created_at',           current_time( 'mysql' ) );
 
+// If excluded mover IDs were supplied (e.g. on a repost), persist them
+// BEFORE sending notifications so excluded movers are never emailed.
+if ( ! empty( $data['excluded_mover_ids'] ) && is_array( $data['excluded_mover_ids'] ) ) {
+$excluded = array_values( array_unique( array_filter( array_map( 'intval', $data['excluded_mover_ids'] ) ) ) );
+if ( ! empty( $excluded ) ) {
+update_post_meta( $post_id, 'gd_excluded_mover_ids', $excluded );
+}
+}
+
 // Notify eligible movers about the new job.
 $notifications = new Go_Deliver_Notifications();
 $notifications->notify_movers_new_job( $post_id );
@@ -863,12 +872,19 @@ wp_send_json_success( array( 'message' => __( 'Job marked as completed. The cust
 /**
  * Expire old open/locked jobs via cron.
  *
+ * A job is expired when either:
+ *  - it was posted more than gd_job_expiry_days days ago (age-based expiry), or
+ *  - its gd_date_requested field represents a date that is now in the past
+ *    (i.e. the actual moving date has already passed).
+ *
  * @return void
  */
 public function expire_jobs() {
 $expiry_days = (int) get_option( 'gd_job_expiry_days', 14 );
 $cutoff_date = date( 'Y-m-d H:i:s', strtotime( "-{$expiry_days} days" ) );
+$today       = gmdate( 'Y-m-d' );
 
+// 1. Age-based expiry: posted before the cutoff date.
 $query = new WP_Query(
 array(
 'post_type'      => 'gd_job',
@@ -893,6 +909,37 @@ array(
 );
 
 foreach ( $query->posts as $job_id ) {
+$this->update_job_status( $job_id, 'expired' );
+}
+
+wp_reset_postdata();
+
+// 2. Date-based expiry: the requested moving date is in the past.
+$dated_query = new WP_Query(
+array(
+'post_type'      => 'gd_job',
+'post_status'    => 'publish',
+'posts_per_page' => -1,
+'meta_query'     => array(
+'relation' => 'AND',
+array(
+'key'     => 'gd_job_status',
+'value'   => array( 'open', 'locked' ),
+'compare' => 'IN',
+),
+array(
+'key'     => 'gd_date_requested',
+'value'   => $today,
+'compare' => '<',
+'type'    => 'DATE',
+),
+),
+'no_found_rows'  => true,
+'fields'         => 'ids',
+)
+);
+
+foreach ( $dated_query->posts as $job_id ) {
 $this->update_job_status( $job_id, 'expired' );
 }
 
@@ -1259,6 +1306,17 @@ $dropoff_raw = json_decode( get_post_meta( $job_id, 'gd_dropoff_location', true 
 $form_data   = json_decode( get_post_meta( $job_id, 'gd_form_data', true ), true ) ?: array();
 $photos_raw  = json_decode( get_post_meta( $job_id, 'gd_photos', true ), true ) ?: array();
 
+// Carry forward any existing excluded movers and add the newly-requested one.
+$stored_excluded   = get_post_meta( $job_id, 'gd_excluded_mover_ids', true );
+$existing_excluded = is_array( $stored_excluded ) ? array_map( 'intval', $stored_excluded ) : array();
+$existing_excluded = array_filter( $existing_excluded, function ( int $id ) { return $id > 0; } );
+
+if ( $exclude_id ) {
+$existing_excluded[] = $exclude_id;
+}
+
+$excluded_mover_ids = array_values( array_unique( $existing_excluded ) );
+
 $data = array(
 'job_type'             => get_post_meta( $job_id, 'gd_job_type', true ),
 'listing_title'        => get_post_meta( $job_id, 'gd_listing_title', true ),
@@ -1273,27 +1331,14 @@ $data = array(
 'access_notes'         => get_post_meta( $job_id, 'gd_access_notes', true ),
 'form_data'            => $form_data,
 'photos'               => array_map( 'intval', $photos_raw ),
+// Pass excluded IDs so create_job() saves them BEFORE sending notifications.
+'excluded_mover_ids'   => $excluded_mover_ids,
 );
 
 $new_job_id = $this->create_job( $data );
 
 if ( is_wp_error( $new_job_id ) ) {
 wp_send_json_error( array( 'message' => $new_job_id->get_error_message() ) );
-}
-
-// Carry forward any existing excluded movers and add the new one.
-// get_post_meta returns the stored (possibly serialized) value; cast to array
-// to handle both an empty/non-existent key and a stored array value.
-$stored_excluded = get_post_meta( $job_id, 'gd_excluded_mover_ids', true );
-$existing_excluded = is_array( $stored_excluded ) ? array_map( 'intval', $stored_excluded ) : array();
-$existing_excluded = array_filter( $existing_excluded, function ( $id ) { return $id > 0; } );
-
-if ( $exclude_id ) {
-$existing_excluded[] = $exclude_id;
-}
-
-if ( ! empty( $existing_excluded ) ) {
-update_post_meta( $new_job_id, 'gd_excluded_mover_ids', array_values( array_unique( $existing_excluded ) ) );
 }
 
 // Link the new job back to the original for reference.

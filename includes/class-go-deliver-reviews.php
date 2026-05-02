@@ -51,10 +51,10 @@ if ( ! $post || 'gd_job' !== $post->post_type ) {
 return new WP_Error( 'job_not_found', __( 'Job not found.', 'go-deliver' ) );
 }
 
-// Job must be accepted/completed.
+// Job must be completed.
 $job_status = get_post_meta( $job_id, 'gd_job_status', true );
-if ( ! in_array( $job_status, array( 'accepted', 'completed' ), true ) ) {
-return new WP_Error( 'job_not_completed', __( 'Reviews can only be submitted for accepted or completed jobs.', 'go-deliver' ) );
+if ( 'completed' !== $job_status ) {
+return new WP_Error( 'job_not_completed', __( 'Reviews can only be submitted once the mover has marked the job as completed.', 'go-deliver' ) );
 }
 
 // Ensure customer owns the job.
