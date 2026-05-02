@@ -540,9 +540,23 @@ public function ajax_upload_mover_photo() {
 
 	// Validate MIME type before passing to WordPress.
 	$allowed_types = array( 'image/jpeg', 'image/png', 'image/gif', 'image/webp' );
-	$finfo         = new finfo( FILEINFO_MIME_TYPE );
-	$mime          = $finfo->file( $_FILES['photo']['tmp_name'] );
-	if ( ! in_array( $mime, $allowed_types, true ) ) {
+	$detected_mime = false;
+	if ( function_exists( 'finfo_open' ) ) {
+		try {
+			$finfo = new finfo( FILEINFO_MIME_TYPE );
+			if ( $finfo ) {
+				$detected_mime = $finfo->file( $_FILES['photo']['tmp_name'] );
+			}
+		} catch ( Exception $e ) {
+			$detected_mime = false;
+		}
+	}
+	// Fall back to WordPress's built-in type checker when finfo is unavailable.
+	if ( false === $detected_mime ) {
+		$wp_filetype   = wp_check_filetype( $_FILES['photo']['name'] );
+		$detected_mime = $wp_filetype['type'] ?? '';
+	}
+	if ( ! $detected_mime || ! in_array( $detected_mime, $allowed_types, true ) ) {
 		wp_send_json_error( array( 'message' => __( 'Only JPEG, PNG, GIF or WebP images are allowed.', 'go-deliver' ) ) );
 	}
 
@@ -551,14 +565,11 @@ public function ajax_upload_mover_photo() {
 	require_once ABSPATH . 'wp-admin/includes/image.php';
 	require_once ABSPATH . 'wp-admin/includes/media.php';
 
-	$attachment_id = media_handle_upload( 'photo', 0 );
+	$attachment_id = media_handle_upload( 'photo', 0, array( 'post_author' => $user_id ) );
 
 	if ( is_wp_error( $attachment_id ) ) {
 		wp_send_json_error( array( 'message' => $attachment_id->get_error_message() ) );
 	}
-
-	// Ensure the attachment is owned by the uploading user.
-	wp_update_post( array( 'ID' => $attachment_id, 'post_author' => $user_id ) );
 
 	// Persist to user meta.
 	$photos[] = $attachment_id;

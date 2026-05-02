@@ -809,7 +809,34 @@
 		// Custom photo gallery upload / delete (Settings > My Photos).
 		// -------------------------------------------------------------------------
 
-		// Trigger file input when "Add Photo" label is clicked (handled natively by <label>).
+		/**
+		 * Build the HTML for a single photo gallery item.
+		 *
+		 * @param {number|string} attachmentId
+		 * @param {string}        thumbUrl
+		 * @return {jQuery}
+		 */
+		function gdPhotoItemHtml( attachmentId, thumbUrl ) {
+			var id = gdEscape( String( attachmentId ) );
+			return $(
+				'<div class="gd-photo-gallery__item" data-id="' + id + '">' +
+				'<img src="' + gdEscape( thumbUrl ) + '" alt="">' +
+				'<button type="button" class="gd-photo-delete-btn" data-id="' + id + '" title="Delete photo">\u00d7</button>' +
+				'</div>'
+			);
+		}
+
+		/**
+		 * Update the photo count label inside the gallery.
+		 *
+		 * @param {jQuery} $dashboard
+		 * @param {number} count  Current number of uploaded photos.
+		 * @param {number} max    Maximum allowed photos.
+		 */
+		function gdUpdatePhotoCount( $dashboard, count, max ) {
+			$dashboard.find( '#gd-photo-count' ).text( count + ' of ' + max + ' photos used' );
+		}
+
 		// Handle file selection → upload via AJAX.
 		$dashboard.on( 'change', '#gd-photo-file-input', function () {
 			var file = this.files && this.files[0];
@@ -845,16 +872,10 @@
 
 						// Add item to grid.
 						var $grid = $dashboard.find( '#gd-photo-grid' );
-						var $item = $(
-							'<div class="gd-photo-gallery__item" data-id="' + gdEscape( String( res.data.attachment_id ) ) + '">' +
-							'<img src="' + gdEscape( res.data.thumb_url ) + '" alt="">' +
-							'<button type="button" class="gd-photo-delete-btn" data-id="' + gdEscape( String( res.data.attachment_id ) ) + '" title="Delete photo">\u00d7</button>' +
-							'</div>'
-						);
-						$grid.append( $item );
+						$grid.append( gdPhotoItemHtml( res.data.attachment_id, res.data.thumb_url ) );
 
 						// Update count label.
-						$dashboard.find( '#gd-photo-count' ).text( newCount + ' of ' + max + ' photos used' );
+						gdUpdatePhotoCount( $dashboard, newCount, max );
 
 						// Hide add button if max reached; swap to max notice.
 						if ( newCount >= max ) {
@@ -905,7 +926,7 @@
 					$item.remove();
 
 					// Update count label.
-					$dashboard.find( '#gd-photo-count' ).text( newCount + ' of ' + max + ' photos used' );
+					gdUpdatePhotoCount( $dashboard, newCount, max );
 
 					// Re-show the add button if it was replaced by the max notice.
 					if ( newCount < max && ! $dashboard.find( '#gd-photo-add-label' ).length ) {
