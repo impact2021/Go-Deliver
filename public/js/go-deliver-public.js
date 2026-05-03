@@ -1,7 +1,7 @@
 /* global gdPublic */
 /**
  * Go Deliver – Public-Facing JavaScript
- * Version: 1.2.5
+ * Version: 1.2.14
  */
 ( function ( $ ) {
 	'use strict';
@@ -1996,6 +1996,12 @@
 	// =========================================================================
 
 	function gdInitModals() {
+		// Move every modal overlay to <body> so it is never trapped inside a
+		// Divi (or other theme) stacking context created by CSS transform /
+		// will-change / filter on a parent element.  position:fixed elements
+		// inside such a context are clipped to it regardless of z-index.
+		$( '.gd-modal-overlay' ).appendTo( 'body' );
+
 		// Close on overlay click.
 		$( document ).on( 'click', '.gd-modal-overlay', function ( e ) {
 			if ( $( e.target ).is( '.gd-modal-overlay' ) ) {
