@@ -82,13 +82,13 @@ $job_url        = isset( $job_url )        ? $job_url        : home_url();
 		</p>
 
 		<div class="email-section">
-			<p class="email-section__title">&#128230; <?php esc_html_e( 'Job Alert', 'go-deliver' ); ?></p>
+			<p class="email-section__title"><?php esc_html_e( 'Job Alert', 'go-deliver' ); ?></p>
 			<p class="email-section__text"><?php esc_html_e( 'Customers are actively looking for providers right now.', 'go-deliver' ); ?></p>
-			<p class="email-section__text">&#128073; <?php esc_html_e( 'Log in to view full job details, pricing, and submit your quote.', 'go-deliver' ); ?></p>
+			<p class="email-section__text"><?php esc_html_e( 'Log in to view full job details, pricing, and submit your quote.', 'go-deliver' ); ?></p>
 		</div>
 
 		<div class="email-section">
-			<p class="email-section__title">&#9889; <?php esc_html_e( 'Why act fast?', 'go-deliver' ); ?></p>
+			<p class="email-section__title"><?php esc_html_e( 'Why act fast?', 'go-deliver' ); ?></p>
 			<ul class="email-section__list">
 				<li><?php esc_html_e( 'Jobs are limited to a set number of quotes', 'go-deliver' ); ?></li>
 				<li><?php esc_html_e( 'Early quotes get seen first', 'go-deliver' ); ?></li>
@@ -97,7 +97,7 @@ $job_url        = isset( $job_url )        ? $job_url        : home_url();
 		</div>
 
 		<div class="email-section">
-			<p class="email-section__title">&#128188; <?php esc_html_e( 'Start Quoting', 'go-deliver' ); ?></p>
+			<p class="email-section__title"><?php esc_html_e( 'Start Quoting', 'go-deliver' ); ?></p>
 			<p class="email-section__text"><?php esc_html_e( 'Click below to view the job and submit your quote:', 'go-deliver' ); ?></p>
 		</div>
 
