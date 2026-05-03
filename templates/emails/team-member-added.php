@@ -61,7 +61,7 @@ $dashboard_url     = isset( $dashboard_url )     ? $dashboard_url     : home_url
 
 	<div class="email-header">
 		<a href="<?php echo esc_url( $site_url ); ?>" class="email-header__logo">
-			🚚 <?php echo esc_html( $site_name ); ?>
+			<?php echo esc_html( $site_name ); ?>
 		</a>
 	</div>
 

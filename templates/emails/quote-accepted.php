@@ -43,12 +43,12 @@ body{margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSys
 .highlight{background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:16px;margin-bottom:20px;font-size:14px}
 </style></head><body>
 <div class="ew">
-<div class="eh"><a href="<?php echo esc_url( $site_url ); ?>">🚚 <?php echo esc_html( $site_name ); ?></a></div>
+<div class="eh"><a href="<?php echo esc_url( $site_url ); ?>"><?php echo esc_html( $site_name ); ?></a></div>
 <div class="eb">
 <h1 class="eg"><?php $mover_first_name ? printf( esc_html__( 'Congratulations, %s!', 'go-deliver' ), esc_html( $mover_first_name ) ) : esc_html_e( 'Congratulations!', 'go-deliver' ); ?></h1>
 <p class="et"><?php esc_html_e( 'Your quote has been accepted! The customer is expecting your contact. Please reach out promptly to confirm the moving arrangements.', 'go-deliver' ); ?></p>
 <div class="highlight">
-⚠️ <?php printf( esc_html__( 'A platform fee of $%s has been deducted from your wallet.', 'go-deliver' ), esc_html( number_format( (float) $fee_amount, 2 ) ) ); ?>
+<?php printf( esc_html__( 'A platform fee of $%s has been deducted from your wallet.', 'go-deliver' ), esc_html( number_format( (float) $fee_amount, 2 ) ) ); ?>
 </div>
 <div class="ed">
 <div class="dr"><span class="dl"><?php esc_html_e( 'Job Type', 'go-deliver' ); ?></span><span><?php echo esc_html( $job_type ); ?></span></div>

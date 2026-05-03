@@ -39,15 +39,15 @@ body{margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSys
 .ef{background:#f1f5f9;padding:20px 32px;text-align:center;font-size:12px;color:#94a3b8;border-top:1px solid #e2e8f0}
 </style></head><body>
 <div class="ew">
-<div class="eh"><a href="<?php echo esc_url( $site_url ); ?>">🚚 <?php echo esc_html( $site_name ); ?></a></div>
+<div class="eh"><a href="<?php echo esc_url( $site_url ); ?>"><?php echo esc_html( $site_name ); ?></a></div>
 <div class="eb">
 <h1 class="eg">
 <?php
 if ( $customer_first_name ) {
 	/* translators: %s: customer first name */
-	printf( esc_html__( 'Hi %s, your job has been posted! 🎉', 'go-deliver' ), esc_html( $customer_first_name ) );
+	printf( esc_html__( 'Hi %s, your job has been posted!', 'go-deliver' ), esc_html( $customer_first_name ) );
 } else {
-	esc_html_e( 'Your job has been posted! 🎉', 'go-deliver' );
+	esc_html_e( 'Your job has been posted!', 'go-deliver' );
 }
 ?>
 </h1>
