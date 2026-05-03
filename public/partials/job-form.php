@@ -24,10 +24,6 @@ $form_builder = new Go_Deliver_Form_Builder();
 <?php else : ?>
 <div class="gd-job-form" id="gd-job-form-wrap">
 
-	<div class="gd-job-form__header">
-		<h1 class="gd-job-form__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h1>
-	</div><!-- /.gd-job-form__header -->
-
 	<form id="gd-job-form" method="post" enctype="multipart/form-data" novalidate>
 		<?php wp_nonce_field( 'gd_submit_job', 'gd_submit_job_nonce' ); ?>
 		<input type="hidden" name="action" value="gd_submit_job">
