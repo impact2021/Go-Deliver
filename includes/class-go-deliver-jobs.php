@@ -84,7 +84,7 @@ public static function time_since( $datetime ): string {
 	if ( ! $ts ) {
 		return '';
 	}
-	$diff = max( 0, time() - $ts );
+	$diff = max( 0, current_time( 'timestamp' ) - $ts );
 
 	if ( $diff < DAY_IN_SECONDS ) {
 		$hours = (int) floor( $diff / HOUR_IN_SECONDS );
@@ -343,7 +343,7 @@ $job = array(
 'form_data'            => json_decode( get_post_meta( $post->ID, 'gd_form_data', true ), true ) ?: array(),
 'photos'               => json_decode( get_post_meta( $post->ID, 'gd_photos', true ), true ) ?: array(),
 'status'               => get_post_meta( $post->ID, 'gd_job_status', true ),
-'created_at'           => get_post_meta( $post->ID, 'gd_created_at', true ),
+'created_at'           => get_post_meta( $post->ID, 'gd_created_at', true ) ?: get_post_field( 'post_date', $post->ID ),
 'first_quote_at'       => get_post_meta( $post->ID, 'gd_first_quote_at', true ),
 );
 

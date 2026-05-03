@@ -164,6 +164,21 @@
 	color: var(--gd-white);
 }
 
+/* CTA – large yellow "Post a Job" call-to-action */
+.gd-btn--cta {
+	background: #f59e0b;
+	border-color: #f59e0b;
+	color: #1c1917;
+	font-weight: 700;
+	font-size: 16px;
+	padding: 14px 28px;
+}
+.gd-btn--cta:hover {
+	background: #d97706;
+	border-color: #d97706;
+	color: #1c1917;
+}
+
 /* Small / Large sizes */
 .gd-btn--sm {
 	padding: 6px 12px;
@@ -1599,6 +1614,37 @@
 	justify-content: flex-end;
 	gap: 10px;
 	flex-shrink: 0;
+}
+
+/* Wider modal variant used for the multi-step job form */
+.gd-modal--job-form {
+	max-width: 760px;
+}
+
+/* Job-form modal footer: prev on left, next/submit on right */
+.gd-modal--job-form .gd-modal__footer {
+	justify-content: space-between;
+	padding: 16px 24px 20px;
+}
+
+/* Modal header title + progress bar stacked */
+.gd-job-form-modal__title-wrap {
+	flex: 1;
+	min-width: 0;
+	margin-right: 16px;
+}
+
+.gd-job-form-modal__title-wrap .gd-modal__title {
+	margin-bottom: 10px;
+}
+
+.gd-job-form-modal__title-wrap .gd-form-progress {
+	border-radius: var(--gd-radius);
+}
+
+/* Step-1 inline footer (Continue button row) */
+.gd-job-form__step1-footer {
+	padding: 0 32px 28px;
 }
 
 /* -----------------------------------------------------------------------------

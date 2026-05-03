@@ -209,18 +209,36 @@
 
 		var currentStep = 1;
 		var totalSteps  = $form.find( '.gd-form-section' ).length;
+		var $modal      = $form.find( '#gd-job-form-modal' );
 
 		function showStep( step ) {
 			$form.find( '.gd-form-section' ).hide().removeClass( 'gd-form-section--active' );
 			$form.find( '.gd-form-section[data-step="' + step + '"]' ).show().addClass( 'gd-form-section--active' );
 
-			// Update progress bar.
-			var pct = Math.round( ( step / totalSteps ) * 100 );
-			$form.closest( '.gd-job-form' ).find( '.gd-form-progress__fill' ).css( 'width', pct + '%' );
-			$form.closest( '.gd-job-form' ).find( '.gd-form-progress' ).attr( 'aria-valuenow', pct );
+			// Open / close the modal for steps 2+.
+			if ( step > 1 ) {
+				$modal.addClass( 'gd-modal-overlay--open' );
+			} else {
+				$modal.removeClass( 'gd-modal-overlay--open' );
+			}
 
-			// Prev button.
-			$form.find( '#gd-job-prev' ).toggle( step > 1 );
+			// Show / hide the step-1 Continue button.
+			$form.find( '#gd-job-step1-continue' ).toggle( step === 1 );
+
+			// Update progress bar (steps 2-6 map to 1-5 out of 5).
+			if ( step > 1 ) {
+				var modalStep  = step - 1;
+				var modalTotal = totalSteps - 1;
+				var pct = Math.round( ( modalStep / modalTotal ) * 100 );
+				$form.closest( '.gd-job-form' ).find( '.gd-form-progress__fill' ).css( 'width', pct + '%' );
+				$form.closest( '.gd-job-form' ).find( '.gd-form-progress' ).attr( 'aria-valuenow', pct );
+			} else {
+				$form.closest( '.gd-job-form' ).find( '.gd-form-progress__fill' ).css( 'width', '0%' );
+				$form.closest( '.gd-job-form' ).find( '.gd-form-progress' ).attr( 'aria-valuenow', 0 );
+			}
+
+			// Prev button: shown from step 3 onwards (step 2's Back closes the modal).
+			$form.find( '#gd-job-prev' ).toggle( step > 2 );
 
 			// Next / Submit visibility.
 			var $next   = $form.find( '#gd-job-next' );
@@ -319,12 +337,21 @@
 			return valid;
 		}
 
-		// Next button.
+		// Step-1 Continue button → validate step 1, open modal at step 2.
+		$form.on( 'click', '#gd-job-step1-continue', function () {
+			if ( validateStep( 1 ) ) {
+				currentStep = 2;
+				showStep( 2 );
+				$modal.find( '.gd-modal__body' ).scrollTop( 0 );
+			}
+		} );
+
+		// Next button (steps 2-5).
 		$form.on( 'click', '#gd-job-next', function () {
 			if ( validateStep( currentStep ) ) {
 				currentStep++;
 				showStep( currentStep );
-				$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
+				$modal.find( '.gd-modal__body' ).scrollTop( 0 );
 			}
 		} );
 
@@ -333,6 +360,28 @@
 			if ( currentStep > 1 ) {
 				currentStep--;
 				showStep( currentStep );
+				if ( currentStep > 1 ) {
+					$modal.find( '.gd-modal__body' ).scrollTop( 0 );
+				} else {
+					$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
+				}
+			}
+		} );
+
+		// Modal close button (×) or step-2 Back → return to step 1, keep form data.
+		$form.on( 'click', '#gd-job-form-modal-close', function ( e ) {
+			e.stopPropagation();
+			currentStep = 1;
+			showStep( 1 );
+			$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
+		} );
+
+		// Clicking the modal backdrop also returns to step 1.
+		$modal.on( 'click', function ( e ) {
+			if ( $( e.target ).is( $modal ) ) {
+				e.stopPropagation();
+				currentStep = 1;
+				showStep( 1 );
 				$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
 			}
 		} );
@@ -2091,6 +2140,63 @@
 	}
 
 	// =========================================================================
+	// Time-since live updater
+	// =========================================================================
+
+	/**
+	 * Format a number of seconds into a human-readable "time since" string,
+	 * matching the PHP Go_Deliver_Jobs::time_since() output.
+	 *
+	 * @param {number} diffSecs Elapsed seconds (>= 0).
+	 * @return {string}
+	 */
+	function gdTimeSinceFormat( diffSecs ) {
+		if ( diffSecs < 60 ) {
+			return 'Just now';
+		}
+		if ( diffSecs < 3600 ) {
+			var mins = Math.floor( diffSecs / 60 );
+			return mins === 1 ? '1 minute ago' : mins + ' minutes ago';
+		}
+		if ( diffSecs < 86400 ) {
+			var hours = Math.floor( diffSecs / 3600 );
+			return hours === 1 ? '1 hour ago' : hours + ' hours ago';
+		}
+		var days = Math.floor( diffSecs / 86400 );
+		return days === 1 ? '1 day ago' : days + ' days ago';
+	}
+
+	/**
+	 * Find every `.gd-job-card__time-since[data-gd-posted-utc]` element on the
+	 * page (including those injected via AJAX) and refresh the displayed text.
+	 * Runs immediately on DOM-ready and then every 30 seconds, stopping
+	 * automatically once no matching elements remain.
+	 */
+	function gdInitTimeSince() {
+		function updateAll() {
+			var $elements = $( '.gd-job-card__time-since[data-gd-posted-utc]' );
+			if ( ! $elements.length ) { return; }
+			var nowUtc = Math.floor( Date.now() / 1000 );
+			$elements.each( function () {
+				var postedUtc = parseInt( $( this ).attr( 'data-gd-posted-utc' ), 10 );
+				if ( ! postedUtc ) { return; }
+				var diff = Math.max( 0, nowUtc - postedUtc );
+				var text = gdTimeSinceFormat( diff );
+				// job-list.php wraps in "Posted %s"; customer-dashboard uses raw text.
+				var $el = $( this );
+				if ( $el.closest( '#gd-job-list, #gd-available-jobs-list' ).length ) {
+					$el.text( 'Posted ' + text );
+				} else {
+					$el.text( text );
+				}
+			} );
+		}
+
+		updateAll();
+		setInterval( updateAll, 30000 );
+	}
+
+	// =========================================================================
 	// Document ready
 	// =========================================================================
 
@@ -2108,6 +2214,7 @@
 		gdInitConditionalFields();
 		gdInitQuoteFeePreview();
 		gdInitLightbox();
+		gdInitTimeSince();
 	} );
 
 } )( jQuery );

@@ -270,7 +270,7 @@ $profile_photo_url = $profile_photo_id ? wp_get_attachment_image_url( $profile_p
 </nav>
 <?php if ( $job_form_url && '#' !== $job_form_url && $can_post_jobs ) : ?>
 <div class="gd-sidebar-nav__footer">
-<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--warning" style="width:100%;justify-content:center;">
+<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--cta" style="width:100%;justify-content:center;">
 <?php esc_html_e( 'Post a Job', 'go-deliver' ); ?>
 </a>
 </div>
