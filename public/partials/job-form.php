@@ -135,7 +135,7 @@ $form_builder = new Go_Deliver_Form_Builder();
 		<!-- Step 1 Continue button (shown inline, opens modal) -->
 		<div class="gd-job-form__step1-footer">
 			<button type="button" id="gd-job-step1-continue" class="gd-btn gd-btn--cta gd-btn--block">
-				<?php esc_html_e( 'Continue →', 'go-deliver' ); ?>
+				<?php esc_html_e( 'Post a Job', 'go-deliver' ); ?>
 			</button>
 		</div>
 

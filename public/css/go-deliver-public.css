@@ -168,15 +168,15 @@
 .gd-btn--cta {
 	background: #f59e0b;
 	border-color: #f59e0b;
-	color: #1c1917;
+	color: #fff;
 	font-weight: 700;
-	font-size: 16px;
+	font-size: 18px;
 	padding: 14px 28px;
 }
 .gd-btn--cta:hover {
 	background: #d97706;
 	border-color: #d97706;
-	color: #1c1917;
+	color: #fff;
 }
 
 /* Small / Large sizes */
