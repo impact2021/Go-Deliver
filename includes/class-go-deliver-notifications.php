@@ -298,6 +298,13 @@ class Go_Deliver_Notifications {
 		);
 
 		foreach ( $movers as $mover_id ) {
+			// Skip movers explicitly excluded from this job by the customer.
+			$stored_excluded = get_post_meta( (int) $job_id, 'gd_excluded_mover_ids', true );
+			$excluded_ids    = is_array( $stored_excluded ) ? array_map( 'intval', $stored_excluded ) : array();
+			if ( in_array( (int) $mover_id, $excluded_ids, true ) ) {
+				continue;
+			}
+
 			$matching = $location_handler->filter_jobs_by_radius( array( $job_data ), $mover_id );
 			if ( empty( $matching ) ) {
 				continue;
