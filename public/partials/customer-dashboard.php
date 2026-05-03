@@ -173,6 +173,7 @@ foreach ( $jobs as $job ) {
 			$created     = esc_html( get_the_date( 'd M Y', $job_id ) );
 			$created_at  = get_post_meta( $job_id, 'gd_created_at', true ) ?: get_post_field( 'post_date', $job_id );
 			$time_since  = Go_Deliver_Jobs::time_since( (string) $created_at );
+			$posted_utc  = $created_at ? strtotime( get_gmt_from_date( (string) $created_at ) ) : 0;
 
 			// Expiry date for open/locked jobs.
 		$expiry_label = '';
@@ -207,7 +208,7 @@ foreach ( $jobs as $job ) {
 						<p class="gd-job-card__meta">
 							<?php esc_html_e( 'Posted', 'go-deliver' ); ?> <?php echo $created; ?>
 							<?php if ( $time_since ) : ?>
-								— <span class="gd-job-card__time-since"><?php echo esc_html( $time_since ); ?></span>
+								— <span class="gd-job-card__time-since"<?php echo $posted_utc ? ' data-gd-posted-utc="' . esc_attr( $posted_utc ) . '"' : ''; ?>><?php echo esc_html( $time_since ); ?></span>
 							<?php endif; ?>
 							<?php if ( $expiry_label ) : ?>
 								(<?php printf( esc_html__( 'listing expires %s', 'go-deliver' ), esc_html( $expiry_label ) ); ?>)

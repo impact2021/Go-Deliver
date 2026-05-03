@@ -2091,6 +2091,63 @@
 	}
 
 	// =========================================================================
+	// Time-since live updater
+	// =========================================================================
+
+	/**
+	 * Format a number of seconds into a human-readable "time since" string,
+	 * matching the PHP Go_Deliver_Jobs::time_since() output.
+	 *
+	 * @param {number} diffSecs Elapsed seconds (>= 0).
+	 * @return {string}
+	 */
+	function gdTimeSinceFormat( diffSecs ) {
+		if ( diffSecs < 60 ) {
+			return 'Just now';
+		}
+		if ( diffSecs < 3600 ) {
+			var mins = Math.floor( diffSecs / 60 );
+			return mins === 1 ? '1 minute ago' : mins + ' minutes ago';
+		}
+		if ( diffSecs < 86400 ) {
+			var hours = Math.floor( diffSecs / 3600 );
+			return hours === 1 ? '1 hour ago' : hours + ' hours ago';
+		}
+		var days = Math.floor( diffSecs / 86400 );
+		return days === 1 ? '1 day ago' : days + ' days ago';
+	}
+
+	/**
+	 * Find every `.gd-job-card__time-since[data-gd-posted-utc]` element on the
+	 * page (including those injected via AJAX) and refresh the displayed text.
+	 * Runs immediately on DOM-ready and then every 30 seconds, stopping
+	 * automatically once no matching elements remain.
+	 */
+	function gdInitTimeSince() {
+		function updateAll() {
+			var $elements = $( '.gd-job-card__time-since[data-gd-posted-utc]' );
+			if ( ! $elements.length ) { return; }
+			var nowUtc = Math.floor( Date.now() / 1000 );
+			$elements.each( function () {
+				var postedUtc = parseInt( $( this ).attr( 'data-gd-posted-utc' ), 10 );
+				if ( ! postedUtc ) { return; }
+				var diff = Math.max( 0, nowUtc - postedUtc );
+				var text = gdTimeSinceFormat( diff );
+				// job-list.php wraps in "Posted %s"; customer-dashboard uses raw text.
+				var $el = $( this );
+				if ( $el.closest( '#gd-job-list, #gd-available-jobs-list' ).length ) {
+					$el.text( 'Posted ' + text );
+				} else {
+					$el.text( text );
+				}
+			} );
+		}
+
+		updateAll();
+		setInterval( updateAll, 30000 );
+	}
+
+	// =========================================================================
 	// Document ready
 	// =========================================================================
 
@@ -2108,6 +2165,7 @@
 		gdInitConditionalFields();
 		gdInitQuoteFeePreview();
 		gdInitLightbox();
+		gdInitTimeSince();
 	} );
 
 } )( jQuery );
