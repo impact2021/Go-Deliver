@@ -680,6 +680,12 @@
 	color: var(--gd-text-muted);
 }
 
+.gd-job-card__time-since {
+	font-size: 12px;
+	color: var(--gd-text-muted);
+	white-space: nowrap;
+}
+
 .gd-job-card__details {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -2324,6 +2330,15 @@
 	color: rgba(255,255,255,0.85);
 	letter-spacing: 0.01em;
 	line-height: 1.2;
+}
+
+#gd-job-list .gd-job-card__time-since,
+#gd-available-jobs-list .gd-job-card__time-since {
+	font-size: 12px;
+	color: rgba(255,255,255,0.65);
+	white-space: nowrap;
+	margin-left: auto;
+	align-self: center;
 }
 
 /* Info row: columns + CTA button
