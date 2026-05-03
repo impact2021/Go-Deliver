@@ -92,7 +92,7 @@ foreach ( $jobs as $job ) {
 </nav>
 <?php if ( $job_form_url ) : ?>
 <div class="gd-sidebar-nav__footer">
-<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--primary" style="width:100%;justify-content:center;">
+<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--cta" style="width:100%;justify-content:center;">
 + <?php esc_html_e( 'Post New Job', 'go-deliver' ); ?>
 </a>
 </div>
@@ -146,7 +146,7 @@ foreach ( $jobs as $job ) {
 			<div class="gd-empty-state__icon">📦</div>
 			<p class="gd-empty-state__text"><?php esc_html_e( 'You haven\'t posted any jobs yet.', 'go-deliver' ); ?></p>
 			<?php if ( $job_form_url ) : ?>
-				<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--primary" style="margin-top:12px;">
+				<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--cta" style="margin-top:12px;">
 					+ <?php esc_html_e( 'Post Your First Job', 'go-deliver' ); ?>
 				</a>
 			<?php endif; ?>
