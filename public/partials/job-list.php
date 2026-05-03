@@ -114,6 +114,7 @@ $status_labels = array(
 				$date          = ! empty( $job['date_requested'] ) ? date_i18n( get_option( 'date_format' ), strtotime( $job['date_requested'] ) ) : '';
 				$date_flexible = ! empty( $job['form_data']['date_flexible'] );
 				$photos        = ! empty( $job['photos'] ) && is_array( $job['photos'] ) ? $job['photos'] : array();
+				$time_since    = ! empty( $job['created_at'] ) ? Go_Deliver_Jobs::time_since( $job['created_at'] ) : '';
 
 				// Additional information with read-more support.
 				$inventory       = ! empty( $job['inventory'] ) ? wp_strip_all_tags( $job['inventory'] ) : '';
@@ -135,6 +136,11 @@ $status_labels = array(
 							<span class="gd-job-card__listing-title"><?php echo esc_html( $listing_title ); ?></span>
 						<?php endif; ?>
 					</div>
+					<?php if ( $time_since ) : ?>
+						<span class="gd-job-card__time-since">
+							<?php printf( esc_html__( 'Posted %s', 'go-deliver' ), esc_html( $time_since ) ); ?>
+						</span>
+					<?php endif; ?>
 				</div>
 
 				<!-- Info row: From / To / Date columns + CTA button -->

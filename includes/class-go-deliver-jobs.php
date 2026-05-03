@@ -68,6 +68,43 @@ return $labels[ $type ] ?? ( $type ? ucwords( str_replace( '_', ' ', $type ) ) :
 }
 
 /**
+ * Return a human-readable "time since" string for a given datetime.
+ *
+ * Shows hours (up to 23 h 59 m), then switches to days once ≥ 24 hours
+ * have elapsed.  Returns an empty string when no valid timestamp is given.
+ *
+ * @param string|int $datetime MySQL datetime string or Unix timestamp.
+ * @return string E.g. "3 hours ago", "1 day ago", "5 days ago".
+ */
+public static function time_since( $datetime ): string {
+	if ( empty( $datetime ) ) {
+		return '';
+	}
+	$ts   = is_numeric( $datetime ) ? (int) $datetime : strtotime( $datetime );
+	if ( ! $ts ) {
+		return '';
+	}
+	$diff = max( 0, time() - $ts );
+
+	if ( $diff < DAY_IN_SECONDS ) {
+		$hours = (int) floor( $diff / HOUR_IN_SECONDS );
+		if ( $hours < 1 ) {
+			$mins = (int) floor( $diff / MINUTE_IN_SECONDS );
+			/* translators: %d: number of minutes */
+			return $mins <= 1
+				? __( 'Just now', 'go-deliver' )
+				: sprintf( _n( '%d minute ago', '%d minutes ago', $mins, 'go-deliver' ), $mins );
+		}
+		/* translators: %d: number of hours */
+		return sprintf( _n( '%d hour ago', '%d hours ago', $hours, 'go-deliver' ), $hours );
+	}
+
+	$days = (int) floor( $diff / DAY_IN_SECONDS );
+	/* translators: %d: number of days */
+	return sprintf( _n( '%d day ago', '%d days ago', $days, 'go-deliver' ), $days );
+}
+
+/**
  * Return true if $text appears to contain a phone number or street address.
  *
  * Phone detection: strip common separators, then look for 7+ consecutive
