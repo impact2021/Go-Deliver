@@ -610,14 +610,49 @@
 		var $dashboard = $( '#gd-customer-dashboard' );
 		if ( ! $dashboard.length ) { return; }
 
-		// Tab switching.
-		$dashboard.on( 'click', '.gd-tab', function () {
-			var target = $( this ).data( 'tab' );
-			$dashboard.find( '.gd-tab' ).removeClass( 'gd-tab--active' );
-			$( this ).addClass( 'gd-tab--active' );
-			$dashboard.find( '.gd-tab-panel' ).removeClass( 'gd-tab-panel--active' ).hide();
-			$dashboard.find( '#gd-tab-' + target ).addClass( 'gd-tab-panel--active' ).show();
+		// Sidebar panel switching.
+		$dashboard.on( 'click keypress', '.gd-sidebar-nav__item[data-panel]', function ( e ) {
+			if ( e.type === 'keypress' && e.which !== 13 ) { return; }
+			var panelId = $( this ).data( 'panel' );
+			$dashboard.find( '.gd-sidebar-nav__item' ).removeClass( 'gd-sidebar-nav__item--active' );
+			$dashboard.find( '.gd-sidebar-nav__item[data-panel="' + panelId + '"]' ).addClass( 'gd-sidebar-nav__item--active' );
+			$dashboard.find( '.gd-panel' ).hide().removeClass( 'gd-panel--active' );
+			$dashboard.find( '#gd-panel-' + panelId ).show().addClass( 'gd-panel--active' );
 		} );
+
+		// Customer profile save.
+		$dashboard.on( 'submit', '#gd-customer-profile-form', function ( e ) {
+			e.preventDefault();
+			var $form = $( this );
+			var $btn  = $form.find( '#gd-customer-profile-save-btn' );
+
+			gdBtnLoading( $btn );
+
+			gdAjax(
+				'gd_update_customer_profile',
+				{
+					first_name: $.trim( $form.find( '[name="first_name"]' ).val() ),
+					last_name:  $.trim( $form.find( '[name="last_name"]' ).val() ),
+					email:      $.trim( $form.find( '[name="email"]' ).val() ),
+					phone:      $.trim( $form.find( '[name="phone"]' ).val() ),
+				},
+				function ( data ) {
+					gdBtnReset( $btn );
+					gdToast( data.message, 'success' );
+					// Update the welcome heading immediately.
+					if ( data.display_name ) {
+						$dashboard.find( '.gd-dashboard-header__title' ).text(
+							'Welcome back, ' + data.display_name + '!'
+						);
+					}
+				},
+				function ( msg ) {
+					gdBtnReset( $btn );
+					gdToast( msg, 'error' );
+				}
+			);
+		} );
+
 
 		// Show job detail inline.
 		$dashboard.on( 'click', '.gd-job-view-btn', function () {

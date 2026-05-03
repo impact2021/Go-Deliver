@@ -621,7 +621,14 @@ class Go_Deliver_Admin {
 			return;
 		}
 
-		$updated_timestamp = filemtime( GD_PLUGIN_DIR . 'go-deliver.php' );
+		$plugin_file       = GD_PLUGIN_DIR . 'go-deliver.php';
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$plugin_data       = get_plugin_data( $plugin_file, false, false );
+		$display_version   = ! empty( $plugin_data['Version'] ) ? $plugin_data['Version'] : GD_VERSION;
+
+		$updated_timestamp = filemtime( $plugin_file );
 		$updated_label     = false !== $updated_timestamp
 			? date_i18n( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated_timestamp )
 			: __( 'Unknown', 'go-deliver' );
@@ -632,7 +639,7 @@ class Go_Deliver_Admin {
 				'title' => sprintf(
 					/* translators: 1: plugin version number, 2: last-updated date/time */
 					esc_html__( 'Go Deliver v%1$s | Updated: %2$s', 'go-deliver' ),
-					esc_html( GD_VERSION ),
+					esc_html( $display_version ),
 					esc_html( $updated_label )
 				),
 				'href'  => admin_url( 'admin.php?page=go-deliver' ),
