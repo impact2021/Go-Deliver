@@ -141,6 +141,158 @@ foreach ( $jobs as $job ) {
 		</div>
 	</div>
 
+	<?php
+	// ----------------------------------------------------------------
+	// Your Current Job hero card (most recently accepted job)
+	// ----------------------------------------------------------------
+	$hero_job = null;
+	foreach ( $jobs as $j ) {
+		if ( 'accepted' === get_post_meta( $j->ID, 'gd_job_status', true ) ) {
+			$hero_job = $j;
+			break;
+		}
+	}
+
+	if ( $hero_job ) :
+		$hj_id           = $hero_job->ID;
+		$hj_title        = esc_html( Go_Deliver_Jobs::get_display_title( $hj_id ) ) ?: esc_html__( 'Moving Job', 'go-deliver' );
+		$hj_pickup       = esc_html( get_post_meta( $hj_id, 'gd_pickup_address', true ) ) ?: esc_html( get_post_meta( $hj_id, 'gd_pickup_suburb', true ) );
+		$hj_dropoff      = esc_html( get_post_meta( $hj_id, 'gd_dropoff_address', true ) ) ?: esc_html( get_post_meta( $hj_id, 'gd_dropoff_suburb', true ) );
+		$hj_date_raw     = get_post_meta( $hj_id, 'gd_date_requested', true );
+		$hj_date_fmt     = $hj_date_raw ? date_i18n( 'F j', strtotime( $hj_date_raw ) ) : '';
+		$hj_acc_qid      = (int) get_post_meta( $hj_id, 'gd_accepted_quote_id', true );
+		$hj_mover_id     = $hj_acc_qid ? (int) get_post_meta( $hj_acc_qid, 'gd_mover_id', true ) : 0;
+		$hj_amount       = $hj_acc_qid ? (float) get_post_meta( $hj_acc_qid, 'gd_amount', true ) : 0.0;
+		$hj_mover        = $hj_mover_id ? get_userdata( $hj_mover_id ) : null;
+		$hj_company      = $hj_mover_id ? ( esc_html( get_user_meta( $hj_mover_id, 'gd_company_name', true ) ) ?: esc_html( $hj_mover ? $hj_mover->display_name : '' ) ) : '';
+		$hj_rating       = $hj_mover_id ? (float) get_user_meta( $hj_mover_id, 'gd_average_rating', true ) : 0.0;
+		$hj_review_count = $hj_mover_id ? (int) get_user_meta( $hj_mover_id, 'gd_review_count', true ) : 0;
+
+		// Resolve mover profile + fleet photo URLs.
+		$hj_profile_url = '';
+		$hj_fleet_url   = '';
+		if ( $hj_mover_id ) {
+			$raw_photos = get_user_meta( $hj_mover_id, 'gd_mover_photos', true );
+			$photo_ids  = is_string( $raw_photos ) ? (array) json_decode( $raw_photos, true ) : array();
+			$photo_ids  = array_values( array_filter( array_map( 'absint', $photo_ids ) ) );
+
+			if ( ! empty( $photo_ids ) ) {
+				$hj_profile_url = wp_get_attachment_image_url( $photo_ids[0], 'thumbnail' ) ?: '';
+				if ( isset( $photo_ids[1] ) ) {
+					$hj_fleet_url = wp_get_attachment_image_url( $photo_ids[1], 'medium_large' ) ?: '';
+				}
+			}
+			if ( ! $hj_profile_url ) {
+				$legacy_photo_id = (int) get_user_meta( $hj_mover_id, 'gd_profile_photo_id', true );
+				if ( $legacy_photo_id ) {
+					$hj_profile_url = wp_get_attachment_image_url( $legacy_photo_id, 'thumbnail' ) ?: '';
+				}
+			}
+			if ( ! $hj_fleet_url ) {
+				$raw_fleet    = get_user_meta( $hj_mover_id, 'gd_fleet_photos', true );
+				$fleet_decode = json_decode( $raw_fleet, true );
+				if ( is_array( $fleet_decode ) && ! empty( $fleet_decode ) ) {
+					$hj_fleet_url = wp_get_attachment_image_url( absint( $fleet_decode[0] ), 'medium_large' ) ?: '';
+				}
+			}
+		}
+
+		$hj_msg_url = ( $messaging_page_id && $hj_mover_id )
+			? esc_url( add_query_arg( 'with', $hj_mover_id, get_permalink( $messaging_page_id ) ) )
+			: '';
+	?>
+	<h2 class="gd-current-job-hero__section-heading"><?php esc_html_e( 'Your Current Job', 'go-deliver' ); ?></h2>
+	<div class="gd-current-job-hero">
+		<div class="gd-current-job-hero__body">
+
+			<!-- Fleet photo / media column -->
+			<div class="gd-current-job-hero__media"<?php if ( $hj_fleet_url ) echo ' style="background-image:url(\'' . esc_url( $hj_fleet_url ) . '\')"'; ?>>
+				<div class="gd-current-job-hero__avatar-wrap">
+					<?php if ( $hj_profile_url ) : ?>
+						<img src="<?php echo esc_url( $hj_profile_url ); ?>" alt="<?php echo esc_attr( $hj_company ); ?>" class="gd-current-job-hero__avatar-img">
+					<?php else : ?>
+						<span class="gd-current-job-hero__avatar-initials" aria-hidden="true">
+							<?php echo esc_html( strtoupper( mb_substr( $hj_company ?: 'M', 0, 1 ) ) ); ?>
+						</span>
+					<?php endif; ?>
+				</div>
+			</div><!-- /.gd-current-job-hero__media -->
+
+			<!-- Content column -->
+			<div class="gd-current-job-hero__info">
+
+				<!-- Top row: title + price/badge -->
+				<div class="gd-current-job-hero__top">
+					<div class="gd-current-job-hero__title-group">
+						<h3 class="gd-current-job-hero__title"><?php echo $hj_title; ?></h3>
+						<?php if ( $hj_pickup || $hj_dropoff ) : ?>
+							<p class="gd-current-job-hero__route">
+								<?php
+								if ( $hj_pickup && $hj_dropoff ) {
+									echo $hj_pickup . ' <span aria-hidden="true">→</span> ' . $hj_dropoff;
+								} else {
+									echo $hj_pickup ?: $hj_dropoff;
+								}
+								?>
+							</p>
+						<?php endif; ?>
+					</div>
+					<div class="gd-current-job-hero__price-group">
+						<?php if ( $hj_amount ) : ?>
+							<span class="gd-current-job-hero__price">$<?php echo esc_html( number_format( $hj_amount, 0 ) ); ?></span>
+						<?php endif; ?>
+						<span class="gd-badge gd-badge--accepted"><?php esc_html_e( 'Accepted', 'go-deliver' ); ?></span>
+						<?php if ( $hj_date_fmt ) : ?>
+							<p class="gd-current-job-hero__date">
+								<?php esc_html_e( 'Moving Date:', 'go-deliver' ); ?>
+								<strong><?php echo esc_html( $hj_date_fmt ); ?></strong>
+							</p>
+						<?php endif; ?>
+					</div>
+				</div><!-- /.gd-current-job-hero__top -->
+
+				<!-- Mover row: name/rating + View Mover button -->
+				<?php if ( $hj_mover ) : ?>
+				<div class="gd-current-job-hero__mover-row">
+					<div class="gd-current-job-hero__mover-info">
+						<?php if ( $hj_company ) : ?>
+							<strong class="gd-current-job-hero__mover-name"><?php echo $hj_company; ?></strong>
+						<?php endif; ?>
+						<?php if ( $hj_rating > 0 ) : ?>
+							<div class="gd-rating-display">
+								<?php
+								$hj_rating_int = (int) round( $hj_rating );
+								for ( $s = 1; $s <= 5; $s++ ) {
+									$star_cls = $s <= $hj_rating_int ? 'gd-star gd-star--filled' : 'gd-star';
+									echo '<span class="' . esc_attr( $star_cls ) . '">★</span>';
+								}
+								?>
+								<span class="gd-current-job-hero__rating-score"><?php echo esc_html( number_format( $hj_rating, 1 ) ); ?></span>
+								<?php if ( $hj_review_count ) : ?>
+									<span class="gd-rating-display__count">(<?php echo esc_html( $hj_review_count ); ?>)</span>
+								<?php endif; ?>
+							</div>
+						<?php endif; ?>
+					</div>
+					<?php if ( $hj_msg_url ) : ?>
+						<a href="<?php echo $hj_msg_url; ?>" class="gd-btn gd-btn--dark gd-btn--sm">
+							<?php esc_html_e( 'View Mover', 'go-deliver' ); ?>
+						</a>
+					<?php endif; ?>
+				</div><!-- /.gd-current-job-hero__mover-row -->
+				<?php endif; ?>
+
+			</div><!-- /.gd-current-job-hero__info -->
+		</div><!-- /.gd-current-job-hero__body -->
+
+		<div class="gd-current-job-hero__footer">
+			<button type="button" class="gd-current-job-hero__view-link gd-job-view-btn" data-job-id="<?php echo esc_attr( $hj_id ); ?>">
+				<?php esc_html_e( 'View Job Details', 'go-deliver' ); ?> &rsaquo;
+			</button>
+		</div>
+	</div><!-- /.gd-current-job-hero -->
+	<?php endif; // hero job ?>
+
 	<?php if ( empty( $jobs ) ) : ?>
 		<div class="gd-empty-state">
 			<div class="gd-empty-state__icon">📦</div>

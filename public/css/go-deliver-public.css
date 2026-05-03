@@ -838,6 +838,213 @@
 }
 
 /* -----------------------------------------------------------------------------
+   Current Job Hero Card (customer dashboard – accepted job)
+   ----------------------------------------------------------------------------- */
+.gd-current-job-hero__section-heading {
+	font-size: 18px;
+	font-weight: 700;
+	margin: 0 0 12px;
+}
+
+.gd-current-job-hero {
+	background: var(--gd-white);
+	border: 1px solid var(--gd-border);
+	border-radius: var(--gd-radius-lg);
+	margin-bottom: 28px;
+	overflow: hidden;
+	box-shadow: var(--gd-shadow-md);
+}
+
+.gd-current-job-hero__body {
+	display: flex;
+	min-height: 160px;
+}
+
+/* Left media column – fleet photo background */
+.gd-current-job-hero__media {
+	flex: 0 0 36%;
+	background-color: #c8d9e6;
+	background-size: cover;
+	background-position: center;
+	position: relative;
+}
+
+/* Circular mover avatar overlapping the media/content boundary */
+.gd-current-job-hero__avatar-wrap {
+	position: absolute;
+	right: -28px;
+	bottom: 18px;
+	width: 58px;
+	height: 58px;
+	border-radius: 50%;
+	border: 3px solid var(--gd-white);
+	box-shadow: var(--gd-shadow);
+	overflow: hidden;
+	background: var(--gd-primary-light);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1;
+}
+
+.gd-current-job-hero__avatar-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+.gd-current-job-hero__avatar-initials {
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--gd-primary);
+	line-height: 1;
+}
+
+/* Right content column */
+.gd-current-job-hero__info {
+	flex: 1;
+	padding: 18px 20px 16px 36px; /* extra left to clear the avatar */
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 12px;
+	min-width: 0;
+}
+
+/* Top row: title group (left) + price/badge group (right) */
+.gd-current-job-hero__top {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.gd-current-job-hero__title-group {
+	min-width: 0;
+}
+
+.gd-current-job-hero__title {
+	font-size: 19px;
+	font-weight: 700;
+	color: var(--gd-primary);
+	margin: 0 0 4px;
+	line-height: 1.25;
+}
+
+.gd-current-job-hero__route {
+	font-size: 13px;
+	color: var(--gd-text-muted);
+	margin: 0;
+}
+
+/* Price + badge + date (right side) */
+.gd-current-job-hero__price-group {
+	flex-shrink: 0;
+	text-align: right;
+}
+
+.gd-current-job-hero__price {
+	display: block;
+	font-size: 26px;
+	font-weight: 800;
+	color: #d97706;
+	line-height: 1;
+	margin-bottom: 6px;
+}
+
+.gd-current-job-hero__date {
+	font-size: 12px;
+	color: var(--gd-text-muted);
+	margin: 8px 0 0;
+}
+
+.gd-current-job-hero__date strong {
+	color: var(--gd-text);
+	font-weight: 700;
+}
+
+/* Mover row: name/rating (left) + View Mover button (right) */
+.gd-current-job-hero__mover-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.gd-current-job-hero__mover-info {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.gd-current-job-hero__mover-name {
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--gd-text);
+}
+
+.gd-current-job-hero__rating-score {
+	font-weight: 700;
+	color: var(--gd-text);
+	font-size: 13px;
+}
+
+/* Footer: View Job Details link */
+.gd-current-job-hero__footer {
+	padding: 10px 20px;
+	border-top: 1px solid var(--gd-border);
+	text-align: right;
+}
+
+.gd-current-job-hero__view-link {
+	background: none;
+	border: none;
+	color: var(--gd-primary);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	padding: 0;
+	font-family: var(--gd-font);
+	text-decoration: none;
+}
+
+.gd-current-job-hero__view-link:hover {
+	text-decoration: underline;
+	color: var(--gd-primary-dark);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+	.gd-current-job-hero__body {
+		flex-direction: column;
+	}
+
+	.gd-current-job-hero__media {
+		flex: 0 0 120px;
+	}
+
+	.gd-current-job-hero__avatar-wrap {
+		right: 18px;
+		bottom: -28px;
+	}
+
+	.gd-current-job-hero__info {
+		padding: 40px 16px 16px; /* top gap to clear the avatar */
+	}
+
+	.gd-current-job-hero__top {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.gd-current-job-hero__price-group {
+		text-align: left;
+	}
+}
+
+/* -----------------------------------------------------------------------------
    Mover Job Card (mover view)
    ----------------------------------------------------------------------------- */
 .gd-mover-card {
