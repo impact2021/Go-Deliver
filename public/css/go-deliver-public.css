@@ -1849,6 +1849,12 @@
 	border-radius: var(--gd-radius);
 }
 
+/* Progress bar inside the inline wizard header */
+.gd-job-form__header .gd-form-progress {
+	border-radius: var(--gd-radius);
+	margin-top: 12px;
+}
+
 /* Step-1 inline footer (Continue button row) */
 .gd-job-form__step1-footer {
 	padding: 0 32px 28px;
