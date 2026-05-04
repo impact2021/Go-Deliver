@@ -28,8 +28,16 @@ $form_builder = new Go_Deliver_Form_Builder();
 		<?php wp_nonce_field( 'gd_submit_job', 'gd_submit_job_nonce' ); ?>
 		<input type="hidden" name="action" value="gd_submit_job">
 
+		<!-- Wizard header: title + progress bar (shown for steps 2+) -->
+		<div class="gd-job-form__header" style="display:none;">
+			<h2 class="gd-job-form__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h2>
+			<div class="gd-form-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+				<div class="gd-form-progress__fill"></div>
+			</div>
+		</div>
+
 		<!-- ============================================================
-		     Step 1 (inline): What are you moving?
+		     Form steps (all inline; step 1 shown on load, steps 2-6 on Next)
 		     ============================================================ -->
 		<div class="gd-job-form__body">
 
@@ -130,32 +138,7 @@ $form_builder = new Go_Deliver_Form_Builder();
 
 			</div><!-- /step 1 -->
 
-		</div><!-- /.gd-job-form__body (inline step 1) -->
-
-		<!-- Step 1 Continue button (shown inline, opens modal) -->
-		<div class="gd-job-form__step1-footer">
-			<button type="button" id="gd-job-step1-continue" class="gd-btn gd-btn--cta gd-btn--block">
-				<?php esc_html_e( 'Post a Job', 'go-deliver' ); ?>
-			</button>
-		</div>
-
-		<!-- ============================================================
-		     Modal: Steps 2-6 (opens after step 1 is completed)
-		     ============================================================ -->
-		<div id="gd-job-form-modal" class="gd-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="gd-job-form-modal-title">
-			<div class="gd-modal gd-modal--job-form">
-
-				<div class="gd-modal__header">
-					<div class="gd-job-form-modal__title-wrap">
-						<h2 id="gd-job-form-modal-title" class="gd-modal__title"><?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></h2>
-						<div class="gd-form-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-							<div class="gd-form-progress__fill"></div>
-						</div>
-					</div>
-					<button type="button" class="gd-modal__close" id="gd-job-form-modal-close" aria-label="<?php esc_attr_e( 'Close', 'go-deliver' ); ?>">&#x2715;</button>
-				</div><!-- /.gd-modal__header -->
-
-				<div class="gd-modal__body gd-job-form__body">
+		<!-- (steps 2–6 continue inside the same body below) -->
 
 			<!-- ============================================================
 			     Step 2: Collection Address
@@ -537,25 +520,29 @@ $form_builder = new Go_Deliver_Form_Builder();
 
 			</div><!-- /step 6 -->
 
-				</div><!-- /.gd-modal__body -->
+			</div><!-- /.gd-job-form__body -->
 
-				<!-- Modal navigation: Prev / Next / Submit -->
-				<div class="gd-modal__footer">
-					<button type="button" id="gd-job-prev" class="gd-btn gd-btn--outline" style="display:none;">
-						<?php esc_html_e( '← Back', 'go-deliver' ); ?>
-					</button>
-					<div>
-						<button type="button" id="gd-job-next" class="gd-btn gd-btn--primary">
-							<?php esc_html_e( 'Next →', 'go-deliver' ); ?>
-						</button>
-						<button type="submit" id="gd-job-submit" class="gd-btn gd-btn--success" style="display:none;">
-							&#x2713; <?php esc_html_e( 'Submit Job', 'go-deliver' ); ?>
-						</button>
-					</div>
-				</div><!-- /.gd-modal__footer -->
+		<!-- Step 1 Continue button (shown for step 1) -->
+		<div class="gd-job-form__step1-footer">
+			<button type="button" id="gd-job-step1-continue" class="gd-btn gd-btn--cta gd-btn--block">
+				<?php esc_html_e( 'Post a Job', 'go-deliver' ); ?>
+			</button>
+		</div>
 
-			</div><!-- /.gd-modal -->
-		</div><!-- /#gd-job-form-modal -->
+		<!-- Navigation: Prev / Next / Submit (shown for steps 2+) -->
+		<div class="gd-job-form__footer" style="display:none;">
+			<button type="button" id="gd-job-prev" class="gd-btn gd-btn--outline" style="display:none;">
+				<?php esc_html_e( '← Back', 'go-deliver' ); ?>
+			</button>
+			<div>
+				<button type="button" id="gd-job-next" class="gd-btn gd-btn--primary">
+					<?php esc_html_e( 'Next →', 'go-deliver' ); ?>
+				</button>
+				<button type="submit" id="gd-job-submit" class="gd-btn gd-btn--success" style="display:none;">
+					&#x2713; <?php esc_html_e( 'Submit Job', 'go-deliver' ); ?>
+				</button>
+			</div>
+		</div><!-- /.gd-job-form__footer -->
 
 	</form>
 </div><!-- /.gd-job-form -->

@@ -209,21 +209,25 @@
 
 		var currentStep = 1;
 		var totalSteps  = $form.find( '.gd-form-section' ).length;
-		var $modal      = $form.find( '#gd-job-form-modal' );
+		var $wizardHeader  = $form.closest( '.gd-job-form' ).find( '.gd-job-form__header' );
+		var $wizardFooter  = $form.closest( '.gd-job-form' ).find( '.gd-job-form__footer' );
+		var $step1Footer   = $form.find( '.gd-job-form__step1-footer' );
 
 		function showStep( step ) {
 			$form.find( '.gd-form-section' ).hide().removeClass( 'gd-form-section--active' );
 			$form.find( '.gd-form-section[data-step="' + step + '"]' ).show().addClass( 'gd-form-section--active' );
 
-			// Open / close the modal for steps 2+.
+			// Show / hide wizard header and footer for steps 2+.
 			if ( step > 1 ) {
-				$modal.addClass( 'gd-modal-overlay--open' );
+				$wizardHeader.show();
+				$wizardFooter.show();
 			} else {
-				$modal.removeClass( 'gd-modal-overlay--open' );
+				$wizardHeader.hide();
+				$wizardFooter.hide();
 			}
 
-			// Show / hide the step-1 Continue button.
-			$form.find( '#gd-job-step1-continue' ).toggle( step === 1 );
+			// Show / hide the step-1 Continue button footer.
+			$step1Footer.toggle( step === 1 );
 
 			// Update progress bar (steps 2-6 map to 1-5 out of 5).
 			if ( step > 1 ) {
@@ -237,8 +241,8 @@
 				$form.closest( '.gd-job-form' ).find( '.gd-form-progress' ).attr( 'aria-valuenow', 0 );
 			}
 
-			// Prev button: shown from step 3 onwards (step 2's Back closes the modal).
-			$form.find( '#gd-job-prev' ).toggle( step > 2 );
+			// Prev button: shown from step 2 onwards.
+			$form.find( '#gd-job-prev' ).toggle( step >= 2 );
 
 			// Next / Submit visibility.
 			var $next   = $form.find( '#gd-job-next' );
@@ -337,12 +341,12 @@
 			return valid;
 		}
 
-		// Step-1 Continue button → validate step 1, open modal at step 2.
+		// Step-1 Continue button → validate step 1, advance to step 2.
 		$form.on( 'click', '#gd-job-step1-continue', function () {
 			if ( validateStep( 1 ) ) {
 				currentStep = 2;
 				showStep( 2 );
-				$modal.find( '.gd-modal__body' ).scrollTop( 0 );
+				$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
 			}
 		} );
 
@@ -351,7 +355,7 @@
 			if ( validateStep( currentStep ) ) {
 				currentStep++;
 				showStep( currentStep );
-				$modal.find( '.gd-modal__body' ).scrollTop( 0 );
+				$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
 			}
 		} );
 
@@ -360,28 +364,6 @@
 			if ( currentStep > 1 ) {
 				currentStep--;
 				showStep( currentStep );
-				if ( currentStep > 1 ) {
-					$modal.find( '.gd-modal__body' ).scrollTop( 0 );
-				} else {
-					$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
-				}
-			}
-		} );
-
-		// Modal close button (×) or step-2 Back → return to step 1, keep form data.
-		$form.on( 'click', '#gd-job-form-modal-close', function ( e ) {
-			e.stopPropagation();
-			currentStep = 1;
-			showStep( 1 );
-			$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
-		} );
-
-		// Clicking the modal backdrop also returns to step 1.
-		$modal.on( 'click', function ( e ) {
-			if ( $( e.target ).is( $modal ) ) {
-				e.stopPropagation();
-				currentStep = 1;
-				showStep( 1 );
 				$( 'html, body' ).animate( { scrollTop: $form.offset().top - 20 }, 300 );
 			}
 		} );
@@ -2000,10 +1982,7 @@
 		// Divi (or other theme) stacking context created by CSS transform /
 		// will-change / filter on a parent element.  position:fixed elements
 		// inside such a context are clipped to it regardless of z-index.
-		// #gd-job-form-modal is intentionally excluded: it must remain inside
-		// <form id="gd-job-form"> so that event delegation and the submit
-		// button's implicit form association continue to work correctly.
-		$( '.gd-modal-overlay' ).not( '#gd-job-form-modal' ).appendTo( 'body' );
+		$( '.gd-modal-overlay' ).appendTo( 'body' );
 
 		// Close on overlay click.
 		$( document ).on( 'click', '.gd-modal-overlay', function ( e ) {
