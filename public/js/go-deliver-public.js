@@ -2000,7 +2000,10 @@
 		// Divi (or other theme) stacking context created by CSS transform /
 		// will-change / filter on a parent element.  position:fixed elements
 		// inside such a context are clipped to it regardless of z-index.
-		$( '.gd-modal-overlay' ).appendTo( 'body' );
+		// #gd-job-form-modal is intentionally excluded: it must remain inside
+		// <form id="gd-job-form"> so that event delegation and the submit
+		// button's implicit form association continue to work correctly.
+		$( '.gd-modal-overlay' ).not( '#gd-job-form-modal' ).appendTo( 'body' );
 
 		// Close on overlay click.
 		$( document ).on( 'click', '.gd-modal-overlay', function ( e ) {
