@@ -25,10 +25,9 @@ $current_user = wp_get_current_user();
 $user_id      = get_current_user_id();
 
 // Page links.
-$messaging_page_id  = (int) get_option( 'gd_messaging_page_id', 0 );
-$messaging_base_url = $messaging_page_id ? get_permalink( $messaging_page_id ) : home_url();
-$job_form_page_id   = (int) get_option( 'gd_job_form_page_id', 0 );
-$job_form_url       = $job_form_page_id ? get_permalink( $job_form_page_id ) : '';
+$job_form_page_id = (int) get_option( 'gd_job_form_page_id', 0 );
+$job_form_url     = $job_form_page_id ? get_permalink( $job_form_page_id ) : '';
+$help_centre_url  = get_option( 'gd_help_centre_url', '' );
 
 // Fetch customer's jobs.
 $jobs_query = new WP_Query( array(
@@ -51,23 +50,42 @@ $jobs = $jobs_query->posts;
 wp_reset_postdata();
 
 // Calculate stats.
-$total_jobs   = count( $jobs );
-$active_jobs  = 0;
-$pending_jobs = 0;
-$total_quotes = 0;
+$total_jobs      = count( $jobs );
+$active_jobs     = 0;
+$completed_jobs  = 0;
+$pending_quotes  = 0;
+$total_quotes    = 0;
 
 foreach ( $jobs as $job ) {
 	$status      = get_post_meta( $job->ID, 'gd_job_status', true );
 	$quote_count = (int) get_post_meta( $job->ID, 'gd_quote_count', true );
 
-	if ( in_array( $status, array( 'open', 'locked' ), true ) ) {
+	if ( in_array( $status, array( 'open', 'locked', 'accepted' ), true ) ) {
 		$active_jobs++;
 	}
-	if ( 'open' === $status && $quote_count > 0 ) {
-		$pending_jobs++;
+	if ( 'completed' === $status ) {
+		$completed_jobs++;
+	}
+	if ( 'open' === $status && 0 === $quote_count ) {
+		$pending_quotes++;
 	}
 	$total_quotes += $quote_count;
 }
+
+// Unread messages count.
+$unread_messages = Go_Deliver_DB::get_unread_message_count( $user_id );
+
+// Conversations for messages panel.
+$conversations = Go_Deliver_DB::get_conversations_for_user( $user_id );
+
+// Messaging nonce for inline panel.
+$messaging_nonce = wp_create_nonce( 'gd_messaging' );
+
+// 3 most recent jobs for overview.
+$recent_jobs = array_slice( $jobs, 0, 3 );
+
+// Display name.
+$display_first_name = $current_user->first_name ?: $current_user->display_name;
 ?>
 <div class="gd-wrap" id="gd-customer-dashboard">
 <div class="gd-dashboard">
@@ -77,23 +95,56 @@ foreach ( $jobs as $job ) {
      ============================================================ -->
 <aside class="gd-dashboard__sidebar">
 <nav class="gd-sidebar-nav">
-<a class="gd-sidebar-nav__item gd-sidebar-nav__item--active" data-panel="jobs" role="button" tabindex="0">
-<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> <?php esc_html_e( 'My Jobs', 'go-deliver' ); ?>
+
+<a class="gd-sidebar-nav__item gd-sidebar-nav__item--active" data-panel="dashboard" role="button" tabindex="0">
+<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+<?php esc_html_e( 'Dashboard', 'go-deliver' ); ?>
+</a>
+
+<a class="gd-sidebar-nav__item" data-panel="jobs" role="button" tabindex="0">
+<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span>
+<?php esc_html_e( 'My Jobs', 'go-deliver' ); ?>
 <?php if ( $total_jobs ) : ?>
 <span class="gd-badge gd-badge--open" style="margin-left:auto;"><?php echo esc_html( $total_jobs ); ?></span>
 <?php endif; ?>
 </a>
-<a class="gd-sidebar-nav__item" href="<?php echo esc_url( $messaging_base_url ); ?>">
-<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> <?php esc_html_e( 'Messages', 'go-deliver' ); ?>
+
+<a class="gd-sidebar-nav__item" data-panel="messages" role="button" tabindex="0">
+<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+<?php esc_html_e( 'Messages', 'go-deliver' ); ?>
+<?php if ( $unread_messages > 0 ) : ?>
+<span class="gd-badge gd-badge--unread" style="margin-left:auto;"><?php echo esc_html( $unread_messages ); ?></span>
+<?php endif; ?>
 </a>
+
+<?php if ( $job_form_url ) : ?>
+<a class="gd-sidebar-nav__item" href="<?php echo esc_url( $job_form_url ); ?>">
+<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span>
+<?php esc_html_e( 'Post a Job', 'go-deliver' ); ?>
+</a>
+<?php endif; ?>
+
 <a class="gd-sidebar-nav__item" data-panel="profile" role="button" tabindex="0">
-<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> <?php esc_html_e( 'My Profile', 'go-deliver' ); ?>
+<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+<?php esc_html_e( 'Profile', 'go-deliver' ); ?>
 </a>
+
+<a class="gd-sidebar-nav__item" <?php if ( $help_centre_url ) : ?>href="<?php echo esc_url( $help_centre_url ); ?>" target="_blank" rel="noopener noreferrer"<?php else : ?>data-panel="profile" role="button" tabindex="0"<?php endif; ?>>
+<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+<?php esc_html_e( 'Help Centre', 'go-deliver' ); ?>
+</a>
+
+<a class="gd-sidebar-nav__item" data-panel="profile" role="button" tabindex="0">
+<span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+<?php esc_html_e( 'Settings', 'go-deliver' ); ?>
+</a>
+
 </nav>
 <?php if ( $job_form_url ) : ?>
 <div class="gd-sidebar-nav__footer">
-<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--cta" style="width:100%;justify-content:center;">
-+ <?php esc_html_e( 'Post New Job', 'go-deliver' ); ?>
+<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--primary gd-btn--cta-sidebar">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+<?php esc_html_e( 'Post a New Job', 'go-deliver' ); ?>
 </a>
 </div>
 <?php endif; ?>
@@ -105,27 +156,358 @@ foreach ( $jobs as $job ) {
 <div class="gd-dashboard__main">
 
 <!-- ========================================================
-     Panel: My Jobs (default)
+     Panel: Dashboard Overview (default)
      ======================================================== -->
-<div class="gd-panel gd-panel--active" id="gd-panel-jobs">
+<div class="gd-panel gd-panel--active" id="gd-panel-dashboard">
+
+	<!-- Welcome hero -->
+	<div class="gd-welcome-hero">
+		<div class="gd-welcome-hero__text">
+			<h1 class="gd-welcome-hero__title">
+				<?php
+				printf(
+					/* translators: %s: user first name */
+					esc_html__( 'Welcome back, %s!', 'go-deliver' ),
+					esc_html( $display_first_name )
+				);
+				?>
+			</h1>
+			<p class="gd-welcome-hero__subtitle"><?php esc_html_e( "Here's what's happening with your jobs.", 'go-deliver' ); ?></p>
+		</div>
+		<div class="gd-welcome-hero__illustration" aria-hidden="true">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 120" fill="none">
+				<!-- City skyline -->
+				<rect x="130" y="55" width="20" height="45" rx="2" fill="#dde8f5"/>
+				<rect x="155" y="45" width="25" height="55" rx="2" fill="#c8d8ed"/>
+				<rect x="185" y="60" width="18" height="40" rx="2" fill="#dde8f5"/>
+				<rect x="205" y="65" width="15" height="35" rx="2" fill="#c8d8ed"/>
+				<!-- Windows -->
+				<rect x="133" y="58" width="4" height="4" rx="1" fill="#a0bcd8"/>
+				<rect x="140" y="58" width="4" height="4" rx="1" fill="#a0bcd8"/>
+				<rect x="133" y="66" width="4" height="4" rx="1" fill="#a0bcd8"/>
+				<rect x="140" y="66" width="4" height="4" rx="1" fill="#a0bcd8"/>
+				<rect x="158" y="50" width="5" height="5" rx="1" fill="#a0bcd8"/>
+				<rect x="168" y="50" width="5" height="5" rx="1" fill="#a0bcd8"/>
+				<rect x="158" y="60" width="5" height="5" rx="1" fill="#a0bcd8"/>
+				<rect x="168" y="60" width="5" height="5" rx="1" fill="#a0bcd8"/>
+				<!-- Road -->
+				<rect x="0" y="100" width="220" height="20" rx="0" fill="#e8eef4"/>
+				<rect x="60" y="107" width="20" height="3" rx="2" fill="#c5cdd8"/>
+				<rect x="100" y="107" width="20" height="3" rx="2" fill="#c5cdd8"/>
+				<!-- Van body -->
+				<rect x="10" y="72" width="90" height="38" rx="6" fill="white" stroke="#d0d8e4" stroke-width="1.5"/>
+				<!-- Van cab -->
+				<path d="M85 72 L100 72 L110 82 L110 110 L85 110 Z" fill="white" stroke="#d0d8e4" stroke-width="1.5"/>
+				<!-- Windscreen -->
+				<path d="M87 76 L100 76 L108 84 L87 84 Z" fill="#dde8f5"/>
+				<!-- Wheels -->
+				<circle cx="35" cy="110" r="10" fill="#94a3b8"/>
+				<circle cx="35" cy="110" r="5" fill="#cbd5e1"/>
+				<circle cx="95" cy="110" r="10" fill="#94a3b8"/>
+				<circle cx="95" cy="110" r="5" fill="#cbd5e1"/>
+				<!-- Box on the ground -->
+				<rect x="118" y="90" width="18" height="18" rx="2" fill="#fbbf24" stroke="#f59e0b" stroke-width="1"/>
+				<line x1="127" y1="90" x2="127" y2="108" stroke="#f59e0b" stroke-width="1"/>
+				<line x1="118" y1="99" x2="136" y2="99" stroke="#f59e0b" stroke-width="1"/>
+			</svg>
+		</div>
+	</div>
+
+	<!-- 4 Stat cards -->
+	<div class="gd-stat-overview-bar">
+
+		<div class="gd-stat-overview-card">
+			<div class="gd-stat-overview-card__icon gd-stat-overview-card__icon--blue">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+			</div>
+			<div class="gd-stat-overview-card__body">
+				<div class="gd-stat-overview-card__value"><?php echo esc_html( $active_jobs ); ?></div>
+				<div class="gd-stat-overview-card__label"><?php esc_html_e( 'Active Jobs', 'go-deliver' ); ?></div>
+				<a class="gd-stat-overview-card__link gd-dashboard-switch-panel" data-panel="jobs"><?php esc_html_e( 'View all', 'go-deliver' ); ?></a>
+			</div>
+		</div>
+
+		<div class="gd-stat-overview-card">
+			<div class="gd-stat-overview-card__icon gd-stat-overview-card__icon--green">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+			</div>
+			<div class="gd-stat-overview-card__body">
+				<div class="gd-stat-overview-card__value"><?php echo esc_html( $completed_jobs ); ?></div>
+				<div class="gd-stat-overview-card__label"><?php esc_html_e( 'Completed', 'go-deliver' ); ?></div>
+				<a class="gd-stat-overview-card__link gd-dashboard-switch-panel" data-panel="jobs"><?php esc_html_e( 'View all', 'go-deliver' ); ?></a>
+			</div>
+		</div>
+
+		<div class="gd-stat-overview-card">
+			<div class="gd-stat-overview-card__icon gd-stat-overview-card__icon--orange">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+			</div>
+			<div class="gd-stat-overview-card__body">
+				<div class="gd-stat-overview-card__value"><?php echo esc_html( $pending_quotes ); ?></div>
+				<div class="gd-stat-overview-card__label"><?php esc_html_e( 'Pending Quote', 'go-deliver' ); ?></div>
+				<a class="gd-stat-overview-card__link gd-dashboard-switch-panel" data-panel="jobs"><?php esc_html_e( 'View all', 'go-deliver' ); ?></a>
+			</div>
+		</div>
+
+		<div class="gd-stat-overview-card">
+			<div class="gd-stat-overview-card__icon gd-stat-overview-card__icon--purple">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+			</div>
+			<div class="gd-stat-overview-card__body">
+				<div class="gd-stat-overview-card__value"><?php echo esc_html( $unread_messages ); ?></div>
+				<div class="gd-stat-overview-card__label"><?php esc_html_e( 'Unread Messages', 'go-deliver' ); ?></div>
+				<a class="gd-stat-overview-card__link gd-dashboard-switch-panel" data-panel="messages"><?php esc_html_e( 'View messages', 'go-deliver' ); ?></a>
+			</div>
+		</div>
+
+	</div><!-- /.gd-stat-overview-bar -->
+
+	<!-- Overview columns: Recent Jobs + Recent Messages / Need Help -->
+	<div class="gd-overview-columns">
+
+		<!-- Left: Recent Jobs -->
+		<div class="gd-overview-recent-jobs">
+			<div class="gd-overview-section-header">
+				<h2 class="gd-overview-section-header__title"><?php esc_html_e( 'My Recent Jobs', 'go-deliver' ); ?></h2>
+				<a class="gd-overview-section-header__link gd-dashboard-switch-panel" data-panel="jobs"><?php esc_html_e( 'View all jobs', 'go-deliver' ); ?></a>
+			</div>
+
+			<?php if ( empty( $recent_jobs ) ) : ?>
+				<div class="gd-empty-state">
+					<div class="gd-empty-state__icon">📦</div>
+					<p class="gd-empty-state__text"><?php esc_html_e( 'No jobs yet.', 'go-deliver' ); ?></p>
+					<?php if ( $job_form_url ) : ?>
+						<a href="<?php echo esc_url( $job_form_url ); ?>" class="gd-btn gd-btn--primary gd-btn--sm" style="margin-top:10px;">+ <?php esc_html_e( 'Post a Job', 'go-deliver' ); ?></a>
+					<?php endif; ?>
+				</div>
+			<?php else : ?>
+			<?php foreach ( $recent_jobs as $rj ) :
+				$rj_id          = $rj->ID;
+				$rj_status      = get_post_meta( $rj_id, 'gd_job_status', true ) ?: 'open';
+				$rj_quote_count = (int) get_post_meta( $rj_id, 'gd_quote_count', true );
+				$rj_title       = esc_html( Go_Deliver_Jobs::get_display_title( $rj_id ) ) ?: esc_html__( 'Moving Job', 'go-deliver' );
+				$rj_pickup      = esc_html( get_post_meta( $rj_id, 'gd_pickup_address', true ) ) ?: esc_html( get_post_meta( $rj_id, 'gd_pickup_suburb', true ) );
+				$rj_dropoff     = esc_html( get_post_meta( $rj_id, 'gd_dropoff_address', true ) ) ?: esc_html( get_post_meta( $rj_id, 'gd_dropoff_suburb', true ) );
+				$rj_date        = esc_html( get_post_meta( $rj_id, 'gd_date_requested', true ) );
+				$rj_items_count = (int) get_post_meta( $rj_id, 'gd_item_count', true );
+				$rj_job_type    = get_post_meta( $rj_id, 'gd_job_type', true );
+
+				// Determine compact card status label and detail.
+				if ( 'completed' === $rj_status ) {
+					$rj_status_slug  = 'completed';
+					$rj_status_label = __( 'Completed', 'go-deliver' );
+					$rj_status_detail = __( 'Job Completed', 'go-deliver' );
+				} elseif ( 'accepted' === $rj_status ) {
+					$rj_status_slug  = 'active';
+					$rj_status_label = __( 'Active', 'go-deliver' );
+					$rj_status_detail = __( 'Mover Booked', 'go-deliver' );
+				} elseif ( in_array( $rj_status, array( 'open', 'locked' ), true ) && $rj_quote_count > 0 ) {
+					$rj_status_slug  = 'active';
+					$rj_status_label = __( 'Active', 'go-deliver' );
+					$rj_status_detail = sprintf( _n( '%d Quote Received', '%d Quotes Received', $rj_quote_count, 'go-deliver' ), $rj_quote_count );
+				} elseif ( 'open' === $rj_status || 'locked' === $rj_status ) {
+					$rj_status_slug  = 'pending';
+					$rj_status_label = __( 'Pending Quotes', 'go-deliver' );
+					$rj_status_detail = __( 'Waiting for movers', 'go-deliver' );
+				} elseif ( 'cancelled' === $rj_status ) {
+					$rj_status_slug  = 'cancelled';
+					$rj_status_label = __( 'Cancelled', 'go-deliver' );
+					$rj_status_detail = '';
+				} else {
+					$rj_status_slug  = esc_attr( $rj_status );
+					$rj_status_label = ucfirst( $rj_status );
+					$rj_status_detail = '';
+				}
+
+				// Pick icon type by job type.
+				if ( in_array( $rj_job_type, array( 'move' ), true ) ) {
+					$rj_icon_class = 'gd-compact-card__icon--orange';
+					$rj_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+				} elseif ( in_array( $rj_job_type, array( 'car', 'vehicle', 'vehicle_or_boat', 'other_vehicle', 'motorcycle', 'boat' ), true ) ) {
+					$rj_icon_class = 'gd-compact-card__icon--green';
+					$rj_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>';
+				} else {
+					$rj_icon_class = 'gd-compact-card__icon--blue';
+					$rj_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>';
+				}
+			?>
+				<div class="gd-compact-card">
+					<div class="gd-compact-card__icon <?php echo esc_attr( $rj_icon_class ); ?>"><?php echo $rj_icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+					<div class="gd-compact-card__body">
+						<div class="gd-compact-card__title"><?php echo $rj_title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+						<?php if ( $rj_pickup || $rj_dropoff ) : ?>
+						<div class="gd-compact-card__route">
+							<?php if ( $rj_pickup ) : ?><span><?php echo $rj_pickup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><?php endif; ?>
+							<?php if ( $rj_pickup && $rj_dropoff ) : ?><span class="gd-compact-card__route-arrow">→</span><?php endif; ?>
+							<?php if ( $rj_dropoff ) : ?><span><?php echo $rj_dropoff; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span><?php endif; ?>
+						</div>
+						<?php endif; ?>
+						<div class="gd-compact-card__meta">
+							<?php if ( $rj_date ) : ?>
+							<span>📅 <?php echo $rj_date; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+							<?php endif; ?>
+							<?php if ( $rj_items_count ) : ?>
+							<span>&bull; <?php echo esc_html( $rj_items_count ); ?> <?php echo esc_html( _n( 'item', 'items', $rj_items_count, 'go-deliver' ) ); ?></span>
+							<?php endif; ?>
+						</div>
+					</div>
+					<div class="gd-compact-card__status">
+						<span class="gd-compact-card__badge gd-compact-card__badge--<?php echo esc_attr( $rj_status_slug ); ?>"><?php echo esc_html( $rj_status_label ); ?></span>
+						<?php if ( $rj_status_detail ) : ?>
+						<div class="gd-compact-card__detail"><?php echo esc_html( $rj_status_detail ); ?></div>
+						<?php endif; ?>
+					</div>
+					<div class="gd-compact-card__action">
+						<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-compact-view-job-btn" data-job-id="<?php echo esc_attr( $rj_id ); ?>">
+							<?php esc_html_e( 'View Job', 'go-deliver' ); ?> ›
+						</button>
+					</div>
+				</div>
+			<?php endforeach; ?>
+			<?php endif; ?>
+		</div><!-- /.gd-overview-recent-jobs -->
+
+		<!-- Right: Recent Messages + Need Help -->
+		<div class="gd-overview-right">
+
+			<!-- Recent Messages -->
+			<div class="gd-section-card gd-recent-messages-card">
+				<div class="gd-section-card__header">
+					<h2 class="gd-section-card__title"><?php esc_html_e( 'Recent Messages', 'go-deliver' ); ?></h2>
+					<?php if ( ! empty( $conversations ) ) : ?>
+					<a class="gd-section-card__header-link gd-dashboard-switch-panel" data-panel="messages"><?php esc_html_e( 'View all', 'go-deliver' ); ?></a>
+					<?php endif; ?>
+				</div>
+				<div class="gd-section-card__body" style="padding:0;">
+				<?php if ( empty( $conversations ) ) : ?>
+					<p class="gd-text-muted" style="padding:16px;font-size:14px;"><?php esc_html_e( 'No messages yet.', 'go-deliver' ); ?></p>
+				<?php else : ?>
+					<?php
+					$recent_convos = array_slice( $conversations, 0, 3 );
+					foreach ( $recent_convos as $convo ) :
+						$convo_job_id      = (int) $convo->job_id;
+						$convo_unread      = (int) $convo->unread_count;
+						$convo_last_at     = $convo->last_message_at;
+						$convo_job_title   = esc_html( Go_Deliver_Jobs::get_display_title( $convo_job_id ) ) ?: esc_html__( 'Moving Job', 'go-deliver' );
+
+						// Determine the other party.
+						$convo_customer_id = (int) get_post_meta( $convo_job_id, 'gd_customer_id', true );
+						if ( $convo_customer_id === $user_id ) {
+							// Customer: find the mover.
+							$acc_qid       = (int) get_post_meta( $convo_job_id, 'gd_accepted_quote_id', true );
+							$convo_mover_id = $acc_qid ? (int) get_post_meta( $acc_qid, 'gd_mover_id', true ) : 0;
+							if ( ! $convo_mover_id ) {
+								// Fall back to first quote mover.
+								$first_q = new WP_Query( array(
+									'post_type'      => 'gd_quote',
+									'post_status'    => 'publish',
+									'posts_per_page' => 1,
+									'orderby'        => 'date',
+									'order'          => 'ASC',
+									'no_found_rows'  => true,
+									'fields'         => 'ids',
+									'meta_query'     => array(
+										array( 'key' => 'gd_job_id', 'value' => $convo_job_id, 'type' => 'NUMERIC' ),
+									),
+								) );
+								$convo_mover_id = ! empty( $first_q->posts ) ? (int) get_post_meta( $first_q->posts[0], 'gd_mover_id', true ) : 0;
+								wp_reset_postdata();
+							}
+							$other_user    = $convo_mover_id ? get_userdata( $convo_mover_id ) : null;
+							$other_name    = $convo_mover_id ? ( get_user_meta( $convo_mover_id, 'gd_company_name', true ) ?: ( $other_user ? $other_user->display_name : '' ) ) : $convo_job_title;
+						} else {
+							$other_user = get_userdata( $convo_customer_id );
+							$other_name = $other_user ? $other_user->display_name : $convo_job_title;
+						}
+
+						// Last message snippet.
+						global $wpdb;
+						$last_msg_row = $wpdb->get_row( $wpdb->prepare(
+							"SELECT message, sender_id FROM `{$wpdb->prefix}gd_messages`
+							 WHERE job_id = %d AND (sender_id = %d OR receiver_id = %d)
+							 ORDER BY created_at DESC LIMIT 1",
+							$convo_job_id, $user_id, $user_id
+						) );
+						$last_snippet = $last_msg_row ? esc_html( wp_trim_words( $last_msg_row->message, 8, '…' ) ) : '';
+
+						// Time ago.
+						$convo_time_label = '';
+						if ( $convo_last_at ) {
+							$diff = current_time( 'timestamp' ) - strtotime( $convo_last_at );
+							if ( $diff < 3600 ) {
+								$convo_time_label = sprintf( _n( '%dm ago', '%dm ago', (int) round( $diff / 60 ), 'go-deliver' ), max( 1, (int) round( $diff / 60 ) ) );
+							} elseif ( $diff < 86400 ) {
+								$convo_time_label = sprintf( _n( '%dh ago', '%dh ago', (int) round( $diff / 3600 ), 'go-deliver' ), (int) round( $diff / 3600 ) );
+							} else {
+								$convo_time_label = sprintf( _n( '%dd ago', '%dd ago', (int) round( $diff / 86400 ), 'go-deliver' ), (int) round( $diff / 86400 ) );
+							}
+						}
+
+						// Initials for avatar.
+						$other_initials = strtoupper( substr( $other_name, 0, 2 ) );
+					?>
+					<a class="gd-recent-msg-item gd-dashboard-open-convo" data-job-id="<?php echo esc_attr( $convo_job_id ); ?>" data-other-name="<?php echo esc_attr( $other_name ); ?>" href="#" role="button">
+						<div class="gd-recent-msg-item__avatar"><?php echo esc_html( $other_initials ); ?></div>
+						<div class="gd-recent-msg-item__body">
+							<div class="gd-recent-msg-item__name"><?php echo esc_html( $other_name ); ?></div>
+							<?php if ( $last_snippet ) : ?>
+							<div class="gd-recent-msg-item__snippet"><?php echo $last_snippet; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+							<?php endif; ?>
+						</div>
+						<div class="gd-recent-msg-item__meta">
+							<?php if ( $convo_time_label ) : ?>
+							<span class="gd-recent-msg-item__time"><?php echo esc_html( $convo_time_label ); ?></span>
+							<?php endif; ?>
+							<?php if ( $convo_unread > 0 ) : ?>
+							<span class="gd-recent-msg-item__unread-dot" title="<?php echo esc_attr( $convo_unread ); ?> unread"></span>
+							<?php endif; ?>
+						</div>
+					</a>
+					<?php endforeach; ?>
+				<?php endif; ?>
+				</div>
+			</div><!-- /.gd-recent-messages-card -->
+
+			<!-- Need help? -->
+			<div class="gd-section-card gd-need-help-card">
+				<div class="gd-section-card__body">
+					<h3 class="gd-need-help-card__title"><?php esc_html_e( 'Need help?', 'go-deliver' ); ?></h3>
+					<p class="gd-need-help-card__text"><?php esc_html_e( 'Visit our Help Centre or contact our support team.', 'go-deliver' ); ?></p>
+					<?php if ( $help_centre_url ) : ?>
+					<a href="<?php echo esc_url( $help_centre_url ); ?>" target="_blank" rel="noopener noreferrer" class="gd-btn gd-btn--outline gd-btn--sm gd-btn--block" style="margin-bottom:10px;">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+						<?php esc_html_e( 'Visit Help Centre', 'go-deliver' ); ?>
+					</a>
+					<?php endif; ?>
+					<a href="mailto:<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" class="gd-need-help-card__contact-link">
+						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+						<?php esc_html_e( 'Contact Support', 'go-deliver' ); ?>
+					</a>
+				</div>
+			</div><!-- /.gd-need-help-card -->
+
+		</div><!-- /.gd-overview-right -->
+
+	</div><!-- /.gd-overview-columns -->
+
+</div><!-- /#gd-panel-dashboard -->
+
+<!-- ========================================================
+     Panel: My Jobs
+     ======================================================== -->
+<div class="gd-panel" id="gd-panel-jobs" style="display:none;">
 
 	<!-- Dashboard Header -->
 	<div class="gd-dashboard-header">
 		<h1 class="gd-dashboard-header__title">
-			<?php
-			printf(
-				/* translators: %s: user first name */
-				esc_html__( 'Welcome back, %s!', 'go-deliver' ),
-				esc_html( $current_user->first_name ?: $current_user->display_name )
-			);
-			?>
+			<?php esc_html_e( 'My Jobs', 'go-deliver' ); ?>
 		</h1>
 		<p class="gd-dashboard-header__subtitle">
 			<?php esc_html_e( 'Manage your moving jobs and view quotes from movers.', 'go-deliver' ); ?>
 		</p>
 	</div>
 
-	<!-- Stats Bar -->
+	<!-- Stats Bar (legacy, kept for jobs panel) -->
 	<div class="gd-stats-bar">
 		<div class="gd-stat-card">
 			<div class="gd-stat-card__value"><?php echo esc_html( $total_jobs ); ?></div>
@@ -136,8 +518,8 @@ foreach ( $jobs as $job ) {
 			<div class="gd-stat-card__label"><?php esc_html_e( 'Active Jobs', 'go-deliver' ); ?></div>
 		</div>
 		<div class="gd-stat-card">
-			<div class="gd-stat-card__value"><?php echo esc_html( $pending_jobs ); ?></div>
-			<div class="gd-stat-card__label"><?php esc_html_e( 'Awaiting Action', 'go-deliver' ); ?></div>
+			<div class="gd-stat-card__value"><?php echo esc_html( $total_quotes ); ?></div>
+			<div class="gd-stat-card__label"><?php esc_html_e( 'Total Quotes', 'go-deliver' ); ?></div>
 		</div>
 	</div>
 
@@ -197,9 +579,7 @@ foreach ( $jobs as $job ) {
 			}
 		}
 
-		$hj_msg_url = ( $messaging_page_id && $hj_mover_id )
-			? esc_url( add_query_arg( 'with', $hj_mover_id, get_permalink( $messaging_page_id ) ) )
-			: '';
+		$hj_msg_job_id = $hj_id;
 	?>
 	<h2 class="gd-current-job-hero__section-heading"><?php esc_html_e( 'Your Current Job', 'go-deliver' ); ?></h2>
 	<div class="gd-current-job-hero">
@@ -256,7 +636,7 @@ foreach ( $jobs as $job ) {
 				<div class="gd-current-job-hero__mover-row">
 					<div class="gd-current-job-hero__mover-info">
 						<?php if ( $hj_company ) : ?>
-							<strong class="gd-current-job-hero__mover-name"><?php echo $hj_company; ?></strong>
+							<strong class="gd-current-job-hero__mover-name"><?php echo $hj_company; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
 						<?php endif; ?>
 						<?php if ( $hj_rating > 0 ) : ?>
 							<div class="gd-rating-display">
@@ -274,11 +654,9 @@ foreach ( $jobs as $job ) {
 							</div>
 						<?php endif; ?>
 					</div>
-					<?php if ( $hj_msg_url ) : ?>
-						<a href="<?php echo $hj_msg_url; ?>" class="gd-btn gd-btn--dark gd-btn--sm">
-							<?php esc_html_e( 'View Mover', 'go-deliver' ); ?>
-						</a>
-					<?php endif; ?>
+					<button type="button" class="gd-btn gd-btn--dark gd-btn--sm gd-dashboard-open-convo" data-job-id="<?php echo esc_attr( $hj_msg_job_id ); ?>" data-other-name="<?php echo esc_attr( $hj_company ); ?>">
+						<?php esc_html_e( 'Message Mover', 'go-deliver' ); ?>
+					</button>
 				</div><!-- /.gd-current-job-hero__mover-row -->
 				<?php endif; ?>
 
@@ -576,6 +954,117 @@ foreach ( $jobs as $job ) {
 	<div id="gd-job-detail-container" style="margin-top:20px;"></div>
 
 </div><!-- /#gd-panel-jobs -->
+
+<!-- ========================================================
+     Panel: Messages (inline – conversations + chat)
+     ======================================================== -->
+<div class="gd-panel" id="gd-panel-messages" style="display:none;">
+
+	<!-- Conversations list -->
+	<div id="gd-dashboard-conversations">
+		<div class="gd-dashboard-header">
+			<h1 class="gd-dashboard-header__title"><?php esc_html_e( 'Messages', 'go-deliver' ); ?></h1>
+			<p class="gd-dashboard-header__subtitle"><?php esc_html_e( 'Your conversations with movers.', 'go-deliver' ); ?></p>
+		</div>
+
+		<?php if ( empty( $conversations ) ) : ?>
+			<div class="gd-empty-state">
+				<div class="gd-empty-state__icon">💬</div>
+				<p class="gd-empty-state__text"><?php esc_html_e( 'No conversations yet. Messages appear here after you receive a quote on a job.', 'go-deliver' ); ?></p>
+			</div>
+		<?php else : ?>
+		<div class="gd-conversations-list">
+		<?php foreach ( $conversations as $convo ) :
+			$convo_job_id      = (int) $convo->job_id;
+			$convo_unread      = (int) $convo->unread_count;
+			$convo_last_at     = $convo->last_message_at;
+			$convo_job_title   = esc_html( Go_Deliver_Jobs::get_display_title( $convo_job_id ) ) ?: esc_html__( 'Moving Job', 'go-deliver' );
+
+			// Determine the other party name.
+			$convo_customer_id = (int) get_post_meta( $convo_job_id, 'gd_customer_id', true );
+			if ( $convo_customer_id === $user_id ) {
+				$acc_qid        = (int) get_post_meta( $convo_job_id, 'gd_accepted_quote_id', true );
+				$convo_mover_id = $acc_qid ? (int) get_post_meta( $acc_qid, 'gd_mover_id', true ) : 0;
+				if ( ! $convo_mover_id ) {
+					$first_q = new WP_Query( array(
+						'post_type'      => 'gd_quote',
+						'post_status'    => 'publish',
+						'posts_per_page' => 1,
+						'orderby'        => 'date',
+						'order'          => 'ASC',
+						'no_found_rows'  => true,
+						'fields'         => 'ids',
+						'meta_query'     => array(
+							array( 'key' => 'gd_job_id', 'value' => $convo_job_id, 'type' => 'NUMERIC' ),
+						),
+					) );
+					$convo_mover_id = ! empty( $first_q->posts ) ? (int) get_post_meta( $first_q->posts[0], 'gd_mover_id', true ) : 0;
+					wp_reset_postdata();
+				}
+				$other_user_msg  = $convo_mover_id ? get_userdata( $convo_mover_id ) : null;
+				$other_name_msg  = $convo_mover_id ? ( get_user_meta( $convo_mover_id, 'gd_company_name', true ) ?: ( $other_user_msg ? $other_user_msg->display_name : '' ) ) : $convo_job_title;
+			} else {
+				$other_user_msg = get_userdata( $convo_customer_id );
+				$other_name_msg = $other_user_msg ? $other_user_msg->display_name : $convo_job_title;
+			}
+
+			// Last snippet.
+			global $wpdb;
+			$last_msg_row2   = $wpdb->get_row( $wpdb->prepare(
+				"SELECT message FROM `{$wpdb->prefix}gd_messages`
+				 WHERE job_id = %d AND (sender_id = %d OR receiver_id = %d)
+				 ORDER BY created_at DESC LIMIT 1",
+				$convo_job_id, $user_id, $user_id
+			) );
+			$last_snippet2 = $last_msg_row2 ? esc_html( wp_trim_words( $last_msg_row2->message, 12, '…' ) ) : '';
+
+			// Time label.
+			$convo_time_lbl = '';
+			if ( $convo_last_at ) {
+				$diff2 = current_time( 'timestamp' ) - strtotime( $convo_last_at );
+				if ( $diff2 < 3600 ) {
+					$convo_time_lbl = sprintf( '%dm ago', max( 1, (int) round( $diff2 / 60 ) ) );
+				} elseif ( $diff2 < 86400 ) {
+					$convo_time_lbl = sprintf( '%dh ago', (int) round( $diff2 / 3600 ) );
+				} else {
+					$convo_time_lbl = sprintf( '%dd ago', (int) round( $diff2 / 86400 ) );
+				}
+			}
+			$convo_initials2 = strtoupper( substr( $other_name_msg, 0, 2 ) );
+		?>
+		<a class="gd-convo-item gd-dashboard-open-convo<?php echo $convo_unread > 0 ? ' gd-convo-item--unread' : ''; ?>"
+		   data-job-id="<?php echo esc_attr( $convo_job_id ); ?>"
+		   data-other-name="<?php echo esc_attr( $other_name_msg ); ?>"
+		   href="#" role="button">
+			<div class="gd-convo-item__avatar"><?php echo esc_html( $convo_initials2 ); ?></div>
+			<div class="gd-convo-item__body">
+				<div class="gd-convo-item__name"><?php echo esc_html( $other_name_msg ); ?></div>
+				<div class="gd-convo-item__job"><?php echo $convo_job_title; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+				<?php if ( $last_snippet2 ) : ?>
+				<div class="gd-convo-item__snippet"><?php echo $last_snippet2; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
+				<?php endif; ?>
+			</div>
+			<div class="gd-convo-item__meta">
+				<?php if ( $convo_time_lbl ) : ?>
+				<span class="gd-convo-item__time"><?php echo esc_html( $convo_time_lbl ); ?></span>
+				<?php endif; ?>
+				<?php if ( $convo_unread > 0 ) : ?>
+				<span class="gd-badge gd-badge--unread gd-convo-item__unread-badge"><?php echo esc_html( $convo_unread ); ?></span>
+				<?php endif; ?>
+			</div>
+		</a>
+		<?php endforeach; ?>
+		</div><!-- /.gd-conversations-list -->
+		<?php endif; ?>
+	</div><!-- /#gd-dashboard-conversations -->
+
+	<!-- Inline messaging panel (populated by JS when a conversation is selected) -->
+	<div id="gd-dashboard-messaging-wrap"
+	     style="display:none;"
+	     data-nonce="<?php echo esc_attr( $messaging_nonce ); ?>">
+	</div><!-- /#gd-dashboard-messaging-wrap -->
+
+</div><!-- /#gd-panel-messages -->
 
 <!-- ========================================================
      Panel: My Profile

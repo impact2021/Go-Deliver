@@ -381,4 +381,18 @@ delete_user_meta( get_current_user_id(), 'gd_msg_notified_' . $job_id );
 
 wp_send_json_success( $messages );
 }
+
+/**
+ * AJAX: retrieve all conversation threads for the current user.
+ */
+public function ajax_get_conversations() {
+check_ajax_referer( 'gd_messaging', 'nonce' );
+
+if ( ! is_user_logged_in() ) {
+wp_send_json_error( array( 'message' => __( 'Please log in to view messages.', 'go-deliver' ) ), 403 );
+}
+
+$conversations = Go_Deliver_DB::get_conversations_for_user( get_current_user_id() );
+wp_send_json_success( $conversations );
+}
 }
