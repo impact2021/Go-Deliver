@@ -133,13 +133,16 @@ return $user_id;
 }
 
 /**
- * Email the site admin when a new mover registers.
+ * Email the site admin(s) when a new mover registers.
+ *
+ * Recipients are taken from the `gd_notify_admins_new_mover` option (an array
+ * of user IDs set on the Emails admin page).  If the option is empty, the
+ * notification falls back to the WordPress site admin email.
  *
  * @param int $user_id New mover's user ID.
  */
 private function notify_admin_new_mover( $user_id ) {
-$admin_email = get_option( 'admin_email' );
-$mover       = get_userdata( $user_id );
+$mover = get_userdata( $user_id );
 if ( ! $mover ) {
 return;
 }
@@ -158,7 +161,24 @@ $mover->user_email,
 admin_url( 'admin.php?page=go-deliver-movers' )
 );
 
-wp_mail( $admin_email, $subject, $message );
+// Build the recipient list from the Emails admin page settings.
+$configured = (array) get_option( 'gd_notify_admins_new_mover', array() );
+if ( ! empty( $configured ) ) {
+	$recipient_emails = array();
+	foreach ( $configured as $uid ) {
+		$admin_user = get_userdata( (int) $uid );
+		if ( $admin_user && $admin_user->user_email ) {
+			$recipient_emails[] = $admin_user->user_email;
+		}
+	}
+} else {
+	// Fallback: use the WordPress site admin email.
+	$recipient_emails = array( get_option( 'admin_email' ) );
+}
+
+foreach ( $recipient_emails as $email ) {
+wp_mail( $email, $subject, $message );
+}
 }
 
 /**

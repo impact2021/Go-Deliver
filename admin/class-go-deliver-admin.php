@@ -611,6 +611,16 @@ class Go_Deliver_Admin {
 	}
 
 	/**
+	 * Render the emails page.
+	 */
+	public function render_emails_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
+		}
+		require GD_PLUGIN_DIR . 'admin/partials/emails.php';
+	}
+
+	/**
 	 * Render the docs page.
 	 */
 	public function render_docs_page() {
