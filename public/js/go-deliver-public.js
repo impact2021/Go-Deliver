@@ -1843,6 +1843,9 @@
 		var $form = $( '#gd-mover-registration-form' );
 		if ( ! $form.length ) { return; }
 
+		// The progress bar lives outside <form> in the wrapper div.
+		var $wrap = $form.closest( '#gd-mover-registration-form-wrap' );
+
 		var currentStep = 1;
 		var totalSteps  = $form.find( '.gd-reg-section' ).length;
 
@@ -1850,15 +1853,15 @@
 			$form.find( '.gd-reg-section' ).hide().removeClass( 'gd-reg-section--active' );
 			$form.find( '.gd-reg-section[data-step="' + step + '"]' ).show().addClass( 'gd-reg-section--active' );
 
-			// Update progress bar.
-			$form.find( '.gd-progress-step' ).each( function () {
+			// Update progress bar (lives in the wrapper, not inside <form>).
+			$wrap.find( '.gd-progress-step' ).each( function () {
 				var s = parseInt( $( this ).data( 'step' ), 10 );
 				$( this ).removeClass( 'gd-progress-step--active gd-progress-step--done' );
 				if ( s === step )    { $( this ).addClass( 'gd-progress-step--active' ); }
 				else if ( s < step ) { $( this ).addClass( 'gd-progress-step--done' ); }
 			} );
 
-			$form.find( '.gd-progress-connector' ).each( function ( idx ) {
+			$wrap.find( '.gd-progress-connector' ).each( function ( idx ) {
 				$( this ).toggleClass( 'gd-progress-connector--done', idx < step - 1 );
 			} );
 
