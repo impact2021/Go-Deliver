@@ -241,6 +241,14 @@
 	margin-bottom: 2px;
 }
 
+/* Flush variant used inside bordered panels (e.g. messaging panel notices). */
+.gd-alert--panel {
+	margin: 0;
+	border-radius: 0;
+	border-left-width: 0;
+	border-top: 1px solid rgba(0, 0, 0, .06);
+}
+
 /* -----------------------------------------------------------------------------
    Status Badges
    ----------------------------------------------------------------------------- */

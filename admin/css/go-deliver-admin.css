@@ -1125,3 +1125,138 @@
 		flex-direction: column;
 	}
 }
+
+/* ==========================================================================
+   Email preview page
+   ========================================================================== */
+
+.gd-email-grid {
+display: grid;
+grid-template-columns: 1fr;
+gap: 20px;
+margin-top: 4px;
+}
+
+.gd-email-card {
+background: #fff;
+border: 1px solid #c3c4c7;
+border-radius: 4px;
+overflow: hidden;
+}
+
+.gd-email-card__header {
+padding: 14px 18px;
+border-bottom: 1px solid #e0e0e0;
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 12px;
+}
+
+.gd-email-card__title {
+font-size: 14px;
+font-weight: 600;
+color: #1e293b;
+margin: 0 0 4px;
+}
+
+.gd-email-card__trigger {
+font-size: 12px;
+color: #64748b;
+margin: 0;
+}
+
+.gd-email-card__badge {
+display: inline-block;
+background: #eff6ff;
+color: #2563eb;
+font-size: 11px;
+font-weight: 600;
+padding: 3px 10px;
+border-radius: 20px;
+white-space: nowrap;
+flex-shrink: 0;
+}
+
+.gd-email-card__badge--mover {
+background: #f0fdf4;
+color: #16a34a;
+}
+
+.gd-email-card__badge--admin {
+background: #fef9c3;
+color: #854d0e;
+}
+
+.gd-email-preview {
+border-top: 1px solid #e0e0e0;
+}
+
+.gd-email-preview__iframe {
+width: 100%;
+height: 420px;
+border: none;
+display: block;
+}
+
+.gd-email-text-preview {
+margin: 0;
+padding: 20px 22px;
+font-family: "Courier New", Courier, monospace;
+font-size: 13px;
+line-height: 1.7;
+color: #374151;
+background: #f9fafb;
+white-space: pre-wrap;
+word-break: break-word;
+}
+
+/* Recipients section -------------------------------------------------------- */
+
+.gd-recipients-section {
+background: #f9fafb;
+border-top: 2px solid #e0e0e0;
+padding: 16px 18px 20px;
+}
+
+.gd-recipients-section__title {
+margin: 0 0 6px;
+font-size: 13px;
+font-weight: 600;
+color: #374151;
+}
+
+.gd-recipients-list {
+list-style: none;
+margin: 10px 0 0;
+padding: 0;
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+
+.gd-recipients-list__label {
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 13px;
+cursor: pointer;
+line-height: 1.4;
+}
+
+.gd-recipients-list__label input[type="checkbox"] {
+flex-shrink: 0;
+width: 16px;
+height: 16px;
+cursor: pointer;
+}
+
+.gd-recipients-list__name {
+font-weight: 600;
+color: #1e293b;
+}
+
+.gd-recipients-list__email {
+color: #64748b;
+font-size: 12px;
+}

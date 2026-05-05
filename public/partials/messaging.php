@@ -127,6 +127,7 @@ if ( $is_customer ) {
 }
 
 $messaging_nonce = wp_create_nonce( 'gd_messaging' );
+$quote_accepted  = (bool) get_post_meta( $job_id, 'gd_accepted_quote_id', true );
 ?>
 <div class="gd-wrap">
 
@@ -148,6 +149,7 @@ $messaging_nonce = wp_create_nonce( 'gd_messaging' );
 		id="gd-messaging-panel"
 		data-job-id="<?php echo esc_attr( $job_id ); ?>"
 		data-nonce="<?php echo esc_attr( $messaging_nonce ); ?>"
+		data-quote-accepted="<?php echo $quote_accepted ? '1' : '0'; ?>"
 	>
 		<!-- Header -->
 		<div class="gd-messaging-panel__header">
@@ -170,6 +172,25 @@ $messaging_nonce = wp_create_nonce( 'gd_messaging' );
 				</div>
 			</div>
 		</div>
+
+		<!-- Contact-details policy notice -->
+		<?php if ( $quote_accepted ) : ?>
+			<div class="gd-alert gd-alert--success gd-alert--panel">
+				<span class="gd-alert__icon">✅</span>
+				<div class="gd-alert__body">
+					<div class="gd-alert__title"><?php esc_html_e( 'Quote accepted', 'go-deliver' ); ?></div>
+					<?php esc_html_e( 'You can now share contact details with each other.', 'go-deliver' ); ?>
+				</div>
+			</div>
+		<?php else : ?>
+			<div class="gd-alert gd-alert--warning gd-alert--panel">
+				<span class="gd-alert__icon">⚠️</span>
+				<div class="gd-alert__body">
+					<div class="gd-alert__title"><?php esc_html_e( 'Contact details are not permitted yet', 'go-deliver' ); ?></div>
+					<?php esc_html_e( 'Phone numbers, email addresses, and links cannot be shared until a quote has been accepted. Please keep all communication on-platform.', 'go-deliver' ); ?>
+				</div>
+			</div>
+		<?php endif; ?>
 
 		<!-- Message list -->
 		<div class="gd-message-list" id="gd-message-list">

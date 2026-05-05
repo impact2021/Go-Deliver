@@ -95,6 +95,15 @@ class Go_Deliver_Admin {
 
 		add_submenu_page(
 			'go-deliver',
+			__( 'Emails', 'go-deliver' ),
+			__( 'Emails', 'go-deliver' ),
+			'manage_options',
+			'go-deliver-emails',
+			array( $this, 'render_emails_page' )
+		);
+
+		add_submenu_page(
+			'go-deliver',
 			__( 'Docs', 'go-deliver' ),
 			__( 'Docs', 'go-deliver' ),
 			'manage_options',
@@ -599,6 +608,16 @@ class Go_Deliver_Admin {
 			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
 		}
 		require GD_PLUGIN_DIR . 'admin/partials/shortcodes.php';
+	}
+
+	/**
+	 * Render the emails page.
+	 */
+	public function render_emails_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions.', 'go-deliver' ) );
+		}
+		require GD_PLUGIN_DIR . 'admin/partials/emails.php';
 	}
 
 	/**
