@@ -95,6 +95,15 @@ class Go_Deliver_Admin {
 
 		add_submenu_page(
 			'go-deliver',
+			__( 'Emails', 'go-deliver' ),
+			__( 'Emails', 'go-deliver' ),
+			'manage_options',
+			'go-deliver-emails',
+			array( $this, 'render_emails_page' )
+		);
+
+		add_submenu_page(
+			'go-deliver',
 			__( 'Docs', 'go-deliver' ),
 			__( 'Docs', 'go-deliver' ),
 			'manage_options',

@@ -175,7 +175,7 @@ $quote_accepted  = (bool) get_post_meta( $job_id, 'gd_accepted_quote_id', true )
 
 		<!-- Contact-details policy notice -->
 		<?php if ( $quote_accepted ) : ?>
-			<div class="gd-alert gd-alert--success" style="margin:0 0 0;border-radius:0;border-left-width:0;border-top:1px solid rgba(0,0,0,.06);">
+			<div class="gd-alert gd-alert--success gd-alert--panel">
 				<span class="gd-alert__icon">✅</span>
 				<div class="gd-alert__body">
 					<div class="gd-alert__title"><?php esc_html_e( 'Quote accepted', 'go-deliver' ); ?></div>
@@ -183,7 +183,7 @@ $quote_accepted  = (bool) get_post_meta( $job_id, 'gd_accepted_quote_id', true )
 				</div>
 			</div>
 		<?php else : ?>
-			<div class="gd-alert gd-alert--warning" style="margin:0 0 0;border-radius:0;border-left-width:0;border-top:1px solid rgba(0,0,0,.06);">
+			<div class="gd-alert gd-alert--warning gd-alert--panel">
 				<span class="gd-alert__icon">⚠️</span>
 				<div class="gd-alert__body">
 					<div class="gd-alert__title"><?php esc_html_e( 'Contact details are not permitted yet', 'go-deliver' ); ?></div>
