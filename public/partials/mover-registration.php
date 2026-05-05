@@ -235,6 +235,10 @@ if ( is_user_logged_in() ) {
 					<div class="gd-field-group">
 						<label><?php esc_html_e( 'Job Types You Accept', 'go-deliver' ); ?> <span class="gd-required">*</span></label>
 						<div class="gd-checkbox-group">
+							<label class="gd-checkbox-label gd-checkbox-label--select-all">
+								<input type="checkbox" id="gd-reg-select-all-jobs">
+								<?php esc_html_e( 'Select all', 'go-deliver' ); ?>
+							</label>
 							<?php
 							$job_type_options = array(
 								'trademe_pickup' => __( 'TradeMe Purchase Pickup', 'go-deliver' ),
@@ -286,7 +290,11 @@ if ( is_user_logged_in() ) {
 								accept="image/*,.pdf"
 								required
 							>
-							<div class="gd-upload-area__icon">🪪</div>
+							<div class="gd-upload-area__icon">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40" aria-hidden="true">
+								<path fill-rule="evenodd" d="M4.5 3.75a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V6.75a3 3 0 0 0-3-3h-15Zm4.125 3a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Zm-3.873 8.703a4.126 4.126 0 0 1 7.746 0 .75.75 0 0 1-.272.83A5.597 5.597 0 0 1 8.625 17.5a5.597 5.597 0 0 1-3.255-1.017.75.75 0 0 1-.272-.83ZM15 8.25a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H15ZM14.25 12a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H15a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5H18a.75.75 0 0 0 0-1.5h-3Z" clip-rule="evenodd"/>
+							</svg>
+						</div>
 							<p class="gd-upload-area__text">
 								<?php esc_html_e( 'Drag here or ', 'go-deliver' ); ?>
 								<strong><?php esc_html_e( 'click to upload', 'go-deliver' ); ?></strong>
@@ -310,7 +318,13 @@ if ( is_user_logged_in() ) {
 								accept="image/*,.pdf"
 								required
 							>
-							<div class="gd-upload-area__icon">🚛</div>
+							<div class="gd-upload-area__icon">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40" aria-hidden="true">
+								<path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V13.5h12V6.375c0-1.036-.84-1.875-1.875-1.875h-8.25ZM13.5 15h-12v2.625c0 1.035.84 1.875 1.875 1.875h.375a3 3 0 1 1 6 0h3a.75.75 0 0 0 .75-.75V15Z"/>
+								<path d="M8.25 19.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0ZM15.75 6.75a.75.75 0 0 0-.75.75v11.25c0 .087.015.17.042.248a3 3 0 0 1 5.958.464c.853-.175 1.522-.935 1.464-1.883a18.659 18.659 0 0 0-3.732-10.104 1.837 1.837 0 0 0-1.47-.725H15.75Z"/>
+								<path d="M19.5 19.5a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0Z"/>
+							</svg>
+						</div>
 							<p class="gd-upload-area__text">
 								<?php esc_html_e( 'Drag here or ', 'go-deliver' ); ?>
 								<strong><?php esc_html_e( 'click to upload', 'go-deliver' ); ?></strong>
@@ -334,7 +348,11 @@ if ( is_user_logged_in() ) {
 								accept="image/*,.pdf"
 								required
 							>
-							<div class="gd-upload-area__icon">📋</div>
+							<div class="gd-upload-area__icon">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40" aria-hidden="true">
+								<path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 0 0-1.032 0 11.209 11.209 0 0 1-7.877 3.08.75.75 0 0 0-.722.515A12.74 12.74 0 0 0 2.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 0 0 .374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 0 0-.722-.516l-.143.001c-2.996 0-5.717-1.17-7.705-3.079Z" clip-rule="evenodd"/>
+							</svg>
+						</div>
 							<p class="gd-upload-area__text">
 								<?php esc_html_e( 'Drag here or ', 'go-deliver' ); ?>
 								<strong><?php esc_html_e( 'click to upload', 'go-deliver' ); ?></strong>

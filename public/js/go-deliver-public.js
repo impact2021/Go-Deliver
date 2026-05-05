@@ -1372,9 +1372,16 @@
 			var $form = $( this );
 			var $btn  = $form.find( '#gd-add-sub-user-btn' );
 			var $msg  = $form.find( '#gd-add-sub-user-msg' );
+			var $pw   = $form.find( '[name="password"]' );
+
+			$msg.hide().removeClass( 'gd-alert--error gd-alert--success' );
+
+			if ( $pw.val().length < 8 ) {
+				$msg.addClass( 'gd-alert--error' ).text( 'Password must be at least 8 characters.' ).show();
+				return;
+			}
 
 			gdBtnLoading( $btn );
-			$msg.hide().removeClass( 'gd-alert--error gd-alert--success' );
 
 			$.ajax( {
 				url:    gdPublic.ajaxUrl,
@@ -1901,15 +1908,40 @@
 				}
 			} );
 
+			// File inputs are hidden via CSS so :visible skips them — check explicitly.
+			$section.find( 'input[type="file"][required]' ).each( function () {
+				var $f        = $( this );
+				var $area     = $f.closest( '.gd-upload-area' );
+				var label     = $f.closest( '.gd-doc-upload' ).find( '.gd-doc-upload__label' ).first().text().replace( /\*/g, '' ).trim();
+				var errorMsg  = ( label || 'This document' ) + ' is required.';
+				var $existing = $area.next( '.gd-field-error' );
+				if ( ! $f.val() ) {
+					$area.addClass( 'gd-field--error' );
+					if ( ! $existing.length ) {
+						$( '<span class="gd-field-error"></span>' ).text( errorMsg ).insertAfter( $area );
+					} else {
+						$existing.text( errorMsg );
+					}
+					valid = false;
+				} else {
+					$area.removeClass( 'gd-field--error' );
+					$existing.remove();
+				}
+			} );
+
 			// Ensure each address field was confirmed via autocomplete/geocoding.
 			if ( ! validateAddressFields( $section ) ) {
 				valid = false;
 			}
 
-			// Password confirmation.
+			// Password validation.
 			if ( step === 1 ) {
 				var $pw   = $section.find( '[name="password"]' );
 				var $cpw  = $section.find( '[name="confirm_password"]' );
+				if ( $pw.length && $pw.val().length < 8 ) {
+					gdFieldError( $pw, 'Password must be at least 8 characters.' );
+					valid = false;
+				}
 				if ( $pw.length && $cpw.length && $pw.val() !== $cpw.val() ) {
 					gdFieldError( $cpw, 'Passwords do not match.' );
 					valid = false;
@@ -1974,6 +2006,17 @@
 					gdToast( 'Network error. Please try again.', 'error' );
 				},
 			} );
+		} );
+
+		// "Select all" for job types.
+		$form.on( 'change', '#gd-reg-select-all-jobs', function () {
+			var checked = $( this ).is( ':checked' );
+			$form.find( 'input[name="job_types[]"]' ).prop( 'checked', checked );
+		} );
+		$form.on( 'change', 'input[name="job_types[]"]', function () {
+			var total   = $form.find( 'input[name="job_types[]"]' ).length;
+			var checked = $form.find( 'input[name="job_types[]"]:checked' ).length;
+			$form.find( '#gd-reg-select-all-jobs' ).prop( 'checked', checked === total ).prop( 'indeterminate', checked > 0 && checked < total );
 		} );
 
 		gdInitLocationFields( $form );

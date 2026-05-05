@@ -1507,7 +1507,8 @@ $su_name = trim( $su_user->first_name . ' ' . $su_user->last_name ) ?: $su_user-
 <label class="gd-job-detail__field-label" for="gd-su-password">
 <?php esc_html_e( 'Password', 'go-deliver' ); ?> <span class="gd-required">*</span>
 </label>
-<input type="password" id="gd-su-password" name="password" class="gd-input" required autocomplete="new-password">
+<input type="password" id="gd-su-password" name="password" class="gd-input" required autocomplete="new-password" minlength="8">
+<span class="gd-field-hint"><?php esc_html_e( 'Minimum 8 characters.', 'go-deliver' ); ?></span>
 </div>
 </div>
 

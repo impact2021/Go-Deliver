@@ -80,6 +80,10 @@ if ( empty( $username ) || empty( $email ) || empty( $password ) ) {
 return new WP_Error( 'missing_fields', __( 'Username, email, and password are required.', 'go-deliver' ) );
 }
 
+if ( strlen( $password ) < 8 ) {
+return new WP_Error( 'password_too_short', __( 'Password must be at least 8 characters.', 'go-deliver' ) );
+}
+
 if ( ! is_email( $email ) ) {
 return new WP_Error( 'invalid_email', __( 'Invalid email address.', 'go-deliver' ) );
 }

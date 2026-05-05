@@ -1516,6 +1516,10 @@
 	background: var(--gd-primary-light);
 }
 
+.gd-upload-area.gd-field--error {
+	border-color: var(--gd-error, #dc2626);
+}
+
 .gd-upload-area input[type="file"] {
 	display: none;
 }
