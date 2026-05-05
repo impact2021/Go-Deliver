@@ -129,7 +129,7 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 <?php esc_html_e( 'Profile', 'go-deliver' ); ?>
 </a>
 
-<a class="gd-sidebar-nav__item" <?php if ( $help_centre_url ) : ?>href="<?php echo esc_url( $help_centre_url ); ?>" target="_blank" rel="noopener noreferrer"<?php else : ?>data-panel="profile" role="button" tabindex="0"<?php endif; ?>>
+<a class="gd-sidebar-nav__item" <?php if ( $help_centre_url ) : ?>href="<?php echo esc_url( $help_centre_url ); ?>" target="_blank" rel="noopener noreferrer"<?php else : ?>role="button" tabindex="0" style="opacity:.6;cursor:default;"<?php endif; ?>>
 <span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
 <?php esc_html_e( 'Help Centre', 'go-deliver' ); ?>
 </a>
@@ -636,7 +636,7 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 				<div class="gd-current-job-hero__mover-row">
 					<div class="gd-current-job-hero__mover-info">
 						<?php if ( $hj_company ) : ?>
-							<strong class="gd-current-job-hero__mover-name"><?php echo $hj_company; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
+							<strong class="gd-current-job-hero__mover-name"><?php echo esc_html( $hj_company ); ?></strong>
 						<?php endif; ?>
 						<?php if ( $hj_rating > 0 ) : ?>
 							<div class="gd-rating-display">
