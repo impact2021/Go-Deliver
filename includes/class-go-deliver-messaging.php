@@ -97,6 +97,39 @@ return $has_quote;
 // =========================================================================
 
 /**
+ * Determine whether the accepted quote exists for a job.
+ *
+ * @param int $job_id Job post ID.
+ * @return bool True if a quote has been accepted.
+ */
+public function is_quote_accepted( $job_id ) {
+return (bool) get_post_meta( (int) $job_id, 'gd_accepted_quote_id', true );
+}
+
+/**
+ * Return true if the message text contains contact details
+ * (phone numbers, email addresses, or URLs).
+ *
+ * Uses the same patterns as contact_filter() so the two methods
+ * stay in sync.
+ *
+ * @param string $message Message text.
+ * @return bool
+ */
+public function has_contact_details( $message ) {
+if ( preg_match( '/(?:\+?\d[\d\s\-().]{7,}\d)/', $message ) ) {
+return true;
+}
+if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $message ) ) {
+return true;
+}
+if ( preg_match( '/(https?:\/\/|www\.)[^\s]+/', $message ) ) {
+return true;
+}
+return false;
+}
+
+/**
  * Send a message for a job.
  *
  * @param int    $job_id    Job post ID.
@@ -112,8 +145,22 @@ if ( ! $this->can_message( $job_id, $sender_id ) ) {
 return new WP_Error( 'permission_denied', __( 'You are not allowed to message on this job.', 'go-deliver' ) );
 }
 
-$message = sanitize_textarea_field( wp_unslash( $message ) );
+$message        = sanitize_textarea_field( wp_unslash( $message ) );
+$quote_accepted = $this->is_quote_accepted( $job_id );
+
+// Before acceptance: block messages that contain contact details.
+if ( ! $quote_accepted && $this->has_contact_details( $message ) ) {
+return new WP_Error(
+'contact_details_blocked',
+__( 'Contact details cannot be shared before a quote has been accepted. Please remove any phone numbers, email addresses, or links.', 'go-deliver' )
+);
+}
+
+// Before acceptance: apply the contact filter as a safety net for any
+// patterns not caught above. After acceptance, contact details are allowed.
+if ( ! $quote_accepted ) {
 $message = $this->contact_filter( $message );
+}
 
 if ( empty( $message ) ) {
 return new WP_Error( 'empty_message', __( 'Message cannot be empty.', 'go-deliver' ) );

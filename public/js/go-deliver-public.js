@@ -1567,6 +1567,22 @@
 	var gdMessagingPollTimer = null;
 	var gdLastMessageId      = 0;
 
+	/**
+	 * Return true if the text contains contact details
+	 * (phone numbers, email addresses, or URLs).
+	 *
+	 * Mirrors the patterns used by the PHP contact_filter() method.
+	 *
+	 * @param {string} text
+	 * @return {boolean}
+	 */
+	function gdHasContactDetails( text ) {
+		if ( /(?:\+?\d[\d\s\-().]{7,}\d)/.test( text ) ) { return true; }
+		if ( /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test( text ) ) { return true; }
+		if ( /(https?:\/\/|www\.)[^\s]+/.test( text ) ) { return true; }
+		return false;
+	}
+
 	function gdInitMessaging() {
 		var $panel = $( '#gd-messaging-panel' );
 		if ( ! $panel.length ) { return; }
@@ -1651,11 +1667,18 @@
 	 * @param {jQuery} $panel
 	 */
 	function gdSendMessage( jobId, $panel ) {
-		var $input   = $panel.find( '#gd-message-input' );
-		var $btn     = $panel.find( '#gd-send-message-btn' );
-		var message  = $.trim( $input.val() );
+		var $input        = $panel.find( '#gd-message-input' );
+		var $btn          = $panel.find( '#gd-send-message-btn' );
+		var message       = $.trim( $input.val() );
+		var quoteAccepted = parseInt( $panel.data( 'quote-accepted' ), 10 ) === 1;
 
 		if ( ! message ) { return; }
+
+		// Client-side guard: block contact details before a quote is accepted.
+		if ( ! quoteAccepted && gdHasContactDetails( message ) ) {
+			gdToast( 'Contact details cannot be shared until a quote has been accepted. Please remove any phone numbers, email addresses, or links.', 'error' );
+			return;
+		}
 
 		gdBtnLoading( $btn );
 
