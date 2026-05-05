@@ -1,7 +1,7 @@
 /* global gdPublic */
 /**
  * Go Deliver – Public-Facing JavaScript
- * Version: 1.2.14
+ * Version: 1.2.18
  */
 ( function ( $ ) {
 	'use strict';
@@ -200,6 +200,32 @@
 	}
 
 	// =========================================================================
+	// Address-field validation (shared by job form and mover registration)
+	// =========================================================================
+
+	/**
+	 * Validate that every address field in the given section has a geocoded result.
+	 * Returns false and shows an inline error if the user typed text but did not
+	 * select a suggestion from autocomplete (or geocoding did not complete).
+	 *
+	 * @param {jQuery} $section
+	 * @return {boolean}
+	 */
+	function validateAddressFields( $section ) {
+		var valid = true;
+		$section.find( '.gd-location-field' ).each( function () {
+			var $wrap    = $( this );
+			var $suburb  = $wrap.find( '.gd-suburb-input' );
+			var $address = $wrap.find( '.gd-address-input' );
+			if ( $suburb.is( ':visible' ) && $.trim( $suburb.val() ) && ! $.trim( $address.val() ) ) {
+				gdFieldError( $suburb, 'Please select a valid address from the suggestions.' );
+				valid = false;
+			}
+		} );
+		return valid;
+	}
+
+	// =========================================================================
 	// Multi-step Job Form Wizard
 	// =========================================================================
 
@@ -259,28 +285,6 @@
 			if ( step === totalSteps ) {
 				gdPopulateReview( $form );
 			}
-		}
-
-		/**
-		 * Validate that every address field in the given section has a geocoded result.
-		 * Returns false and shows an inline error if the user typed text but did not
-		 * select a suggestion from autocomplete (or geocoding did not complete).
-		 *
-		 * @param {jQuery} $section
-		 * @return {boolean}
-		 */
-		function validateAddressFields( $section ) {
-			var valid = true;
-			$section.find( '.gd-location-field' ).each( function () {
-				var $wrap    = $( this );
-				var $suburb  = $wrap.find( '.gd-suburb-input' );
-				var $address = $wrap.find( '.gd-address-input' );
-				if ( $suburb.is( ':visible' ) && $.trim( $suburb.val() ) && ! $.trim( $address.val() ) ) {
-					gdFieldError( $suburb, 'Please select a valid address from the suggestions.' );
-					valid = false;
-				}
-			} );
-			return valid;
 		}
 
 		/**
