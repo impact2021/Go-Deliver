@@ -645,15 +645,144 @@
 		var $dashboard = $( '#gd-customer-dashboard' );
 		if ( ! $dashboard.length ) { return; }
 
-		// Sidebar panel switching.
-		$dashboard.on( 'click keypress', '.gd-sidebar-nav__item[data-panel]', function ( e ) {
-			if ( e.type === 'keypress' && e.which !== 13 ) { return; }
-			var panelId = $( this ).data( 'panel' );
+		/**
+		 * Activate a dashboard panel by ID.
+		 *
+		 * @param {string} panelId
+		 */
+		function gdActivateCustomerPanel( panelId ) {
 			$dashboard.find( '.gd-sidebar-nav__item' ).removeClass( 'gd-sidebar-nav__item--active' );
 			$dashboard.find( '.gd-sidebar-nav__item[data-panel="' + panelId + '"]' ).addClass( 'gd-sidebar-nav__item--active' );
 			$dashboard.find( '.gd-panel' ).hide().removeClass( 'gd-panel--active' );
 			$dashboard.find( '#gd-panel-' + panelId ).show().addClass( 'gd-panel--active' );
+		}
+
+		// Sidebar panel switching.
+		$dashboard.on( 'click keypress', '.gd-sidebar-nav__item[data-panel]', function ( e ) {
+			if ( e.type === 'keypress' && e.which !== 13 ) { return; }
+			gdActivateCustomerPanel( $( this ).data( 'panel' ) );
 		} );
+
+		// Overview stat-card links and "View all" links that switch panels.
+		$dashboard.on( 'click', '.gd-dashboard-switch-panel', function ( e ) {
+			e.preventDefault();
+			gdActivateCustomerPanel( $( this ).data( 'panel' ) );
+			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
+		} );
+
+		// Compact "View Job" button on overview → switch to jobs panel and show inline detail.
+		$dashboard.on( 'click', '.gd-compact-view-job-btn', function () {
+			var jobId = $( this ).data( 'job-id' );
+			gdActivateCustomerPanel( 'jobs' );
+			gdLoadJobDetail( jobId );
+			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
+		} );
+
+		// -----------------------------------------------------------------------
+		// Inline messaging: open a conversation from anywhere in the dashboard.
+		// -----------------------------------------------------------------------
+		$dashboard.on( 'click', '.gd-dashboard-open-convo', function ( e ) {
+			e.preventDefault();
+			var jobId     = $( this ).data( 'job-id' );
+			var otherName = $( this ).data( 'other-name' ) || 'Mover';
+			gdOpenInlineConversation( jobId, otherName );
+		} );
+
+		/**
+		 * Open the inline messaging view inside the Messages panel.
+		 *
+		 * @param {number} jobId
+		 * @param {string} otherName
+		 */
+		function gdOpenInlineConversation( jobId, otherName ) {
+			// Switch to messages panel.
+			gdActivateCustomerPanel( 'messages' );
+			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
+
+			var $convList = $dashboard.find( '#gd-dashboard-conversations' );
+			var $wrap     = $dashboard.find( '#gd-dashboard-messaging-wrap' );
+			var nonce     = $wrap.data( 'nonce' ) || gdPublic.nonce;
+
+			// Build messaging panel HTML.
+			$wrap.html(
+				'<div class="gd-inline-messaging-header">' +
+					'<button type="button" class="gd-inline-messaging-back-btn" id="gd-inline-back-btn">' +
+						'<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>' +
+						' Back' +
+					'</button>' +
+					'<span class="gd-inline-messaging-title">' + gdEscape( otherName ) + '</span>' +
+				'</div>' +
+				'<div id="gd-messaging-panel" class="gd-messaging-panel"' +
+					' data-job-id="' + parseInt( jobId, 10 ) + '"' +
+					' data-nonce="' + gdEscape( nonce ) + '"' +
+					' data-quote-accepted="0"' +
+					'>' +
+					'<div id="gd-message-list" class="gd-message-list">' +
+						'<p class="gd-message-list__empty">Loading…</p>' +
+					'</div>' +
+					'<div class="gd-messaging-panel__input">' +
+						'<textarea id="gd-message-input" class="gd-message-textarea" rows="1" placeholder="Type a message…"></textarea>' +
+						'<button type="button" id="gd-send-message-btn" class="gd-btn gd-btn--primary gd-btn--sm">Send</button>' +
+					'</div>' +
+				'</div>'
+			);
+
+			// Show the messaging wrap, hide conversations list.
+			$convList.hide();
+			$wrap.show();
+
+			// Stop any existing polling.
+			if ( gdMessagingPollTimer ) {
+				clearInterval( gdMessagingPollTimer );
+				gdMessagingPollTimer = null;
+			}
+			gdLastMessageId = 0;
+
+			// Check if quote is accepted for this job.
+			$.getJSON( gdPublic.ajaxUrl, {
+				action:  'gd_get_job_detail',
+				job_id:  jobId,
+				nonce:   gdPublic.nonce,
+			}, function ( response ) {
+				if ( response.success && response.data ) {
+					var quoteAccepted = response.data.quote_accepted ? 1 : 0;
+					$wrap.find( '#gd-messaging-panel' ).attr( 'data-quote-accepted', quoteAccepted );
+				}
+			} );
+
+			var $panel = $wrap.find( '#gd-messaging-panel' );
+
+			// Initial load.
+			gdLoadMessages( jobId, $panel );
+
+			// Poll every 30 seconds.
+			gdMessagingPollTimer = setInterval( function () {
+				gdLoadMessages( jobId, $panel );
+			}, 30000 );
+
+			// Send on button click.
+			$wrap.on( 'click', '#gd-send-message-btn', function () {
+				gdSendMessage( jobId, $panel );
+			} );
+
+			// Send on Ctrl+Enter / Cmd+Enter.
+			$wrap.on( 'keydown', '#gd-message-input', function ( ev ) {
+				if ( ( ev.ctrlKey || ev.metaKey ) && ev.key === 'Enter' ) {
+					ev.preventDefault();
+					gdSendMessage( jobId, $panel );
+				}
+			} );
+
+			// Back button.
+			$wrap.on( 'click', '#gd-inline-back-btn', function () {
+				if ( gdMessagingPollTimer ) {
+					clearInterval( gdMessagingPollTimer );
+					gdMessagingPollTimer = null;
+				}
+				$wrap.hide().empty();
+				$convList.show();
+			} );
+		}
 
 		// Customer profile save.
 		$dashboard.on( 'submit', '#gd-customer-profile-form', function ( e ) {

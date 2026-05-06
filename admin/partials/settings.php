@@ -41,6 +41,7 @@ if ( isset( $_POST['gd_settings_nonce'] ) ) {
 			update_option( 'gd_mover_reg_redirect_page_id', absint( $_POST['gd_mover_reg_redirect_page_id'] ?? 0 ) );
 			update_option( 'gd_mover_terms_page_id', absint( $_POST['gd_mover_terms_page_id'] ?? 0 ) );
 			update_option( 'gd_customer_terms_page_id', absint( $_POST['gd_customer_terms_page_id'] ?? 0 ) );
+			update_option( 'gd_help_centre_url', esc_url_raw( wp_unslash( $_POST['gd_help_centre_url'] ?? '' ) ) );
 			update_option( 'gd_debug_panel', isset( $_POST['gd_debug_panel'] ) ? 1 : 0 );
 		} elseif ( 'stripe' === $tab ) {
 			update_option( 'gd_stripe_publishable_key', sanitize_text_field( wp_unslash( $_POST['gd_stripe_publishable_key'] ?? '' ) ) );
@@ -82,6 +83,7 @@ $job_redirect_page_id       = absint( get_option( 'gd_job_redirect_page_id', 0 )
 $mover_reg_redirect_page_id = absint( get_option( 'gd_mover_reg_redirect_page_id', 0 ) );
 $mover_terms_page_id        = absint( get_option( 'gd_mover_terms_page_id', 0 ) );
 $customer_terms_page_id     = absint( get_option( 'gd_customer_terms_page_id', 0 ) );
+$help_centre_url         = get_option( 'gd_help_centre_url', '' );
 $debug_panel_enabled        = (bool) get_option( 'gd_debug_panel', 1 );
 $stripe_pub         = get_option( 'gd_stripe_publishable_key', '' );
 $stripe_sec_masked  = get_option( 'gd_stripe_secret_key', '' ) ? '••••••••••••••••' : '';
@@ -370,6 +372,13 @@ $job_card_accent    = get_option( 'gd_job_card_accent', '#C9A227' );
 						);
 						?>
 						<p class="description"><?php esc_html_e( 'Page containing the Terms &amp; Conditions for customers. Linked from the job submission form.', 'go-deliver' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Help Centre URL', 'go-deliver' ); ?></th>
+					<td>
+						<input type="url" id="gd_help_centre_url" name="gd_help_centre_url" class="regular-text" value="<?php echo esc_url( $help_centre_url ); ?>">
+						<p class="description"><?php esc_html_e( 'URL of the Help Centre / helpdesk. Shown in the customer dashboard sidebar and overview. Leave blank to hide.', 'go-deliver' ); ?></p>
 					</td>
 				</tr>
 				<tr>
