@@ -27,7 +27,8 @@ $user_id      = get_current_user_id();
 // Page links.
 $job_form_page_id = (int) get_option( 'gd_job_form_page_id', 0 );
 $job_form_url     = $job_form_page_id ? get_permalink( $job_form_page_id ) : '';
-$help_centre_url  = get_option( 'gd_help_centre_url', '' );
+$help_centre_page_id = absint( get_option( 'gd_help_centre_page_id', 0 ) );
+$help_centre_url     = $help_centre_page_id ? get_permalink( $help_centre_page_id ) : '';
 
 // Fetch customer's jobs.
 $jobs_query = new WP_Query( array(
@@ -129,7 +130,7 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 <?php esc_html_e( 'Profile', 'go-deliver' ); ?>
 </a>
 
-<a class="gd-sidebar-nav__item" <?php if ( $help_centre_url ) : ?>href="<?php echo esc_url( $help_centre_url ); ?>" target="_blank" rel="noopener noreferrer"<?php else : ?>role="button" tabindex="0" style="opacity:.6;cursor:default;"<?php endif; ?>>
+<a class="gd-sidebar-nav__item" <?php if ( $help_centre_url ) : ?>href="<?php echo esc_url( $help_centre_url ); ?>"<?php else : ?>role="button" tabindex="0" style="opacity:.6;cursor:default;"<?php endif; ?>>
 <span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
 <?php esc_html_e( 'Help Centre', 'go-deliver' ); ?>
 </a>
@@ -474,7 +475,7 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 					<h3 class="gd-need-help-card__title"><?php esc_html_e( 'Need help?', 'go-deliver' ); ?></h3>
 					<p class="gd-need-help-card__text"><?php esc_html_e( 'Visit our Help Centre or contact our support team.', 'go-deliver' ); ?></p>
 					<?php if ( $help_centre_url ) : ?>
-					<a href="<?php echo esc_url( $help_centre_url ); ?>" target="_blank" rel="noopener noreferrer" class="gd-btn gd-btn--outline gd-btn--sm gd-btn--block" style="margin-bottom:10px;">
+					<a href="<?php echo esc_url( $help_centre_url ); ?>" class="gd-btn gd-btn--outline gd-btn--sm gd-btn--block" style="margin-bottom:10px;">
 						<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
 						<?php esc_html_e( 'Visit Help Centre', 'go-deliver' ); ?>
 					</a>
@@ -727,12 +728,62 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 			$accepted_mover_id  = $accepted_quote_id ? (int) get_post_meta( $accepted_quote_id, 'gd_mover_id', true ) : 0;
 			$accepted_mover     = $accepted_mover_id ? get_userdata( $accepted_mover_id ) : null;
 			$review_submitted   = (bool) get_post_meta( $job_id, 'gd_review_submitted', true );
+
+			// Assign solid SVG icon and colour class based on job type.
+			$job_type_raw = get_post_meta( $job_id, 'gd_job_type', true );
+			switch ( $job_type_raw ) {
+				case 'move':
+					$job_icon_color = 'gd-job-card__icon--orange';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>';
+					break;
+				case 'furniture':
+					$job_icon_color = 'gd-job-card__icon--orange';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 9V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v2c-1.1 0-2 .9-2 2v5h1.33L3 18h1l.67-2h14.67l.66 2h1l-.33-2H22v-5c0-1.1-.9-2-2-2zm-10 0V7h8v5h-8V9zm-6 0h4v2H5V9zm-2 5v-2c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v2H3z"/></svg>';
+					break;
+				case 'car':
+					$job_icon_color = 'gd-job-card__icon--green';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99z"/></svg>';
+					break;
+				case 'motorcycle':
+					$job_icon_color = 'gd-job-card__icon--green';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 7c0-1.1-.9-2-2-2h-3v2h3v2.65L13.52 14H10V9H6C3.79 9 2 10.79 2 13s1.79 4 4 4c1.86 0 3.41-1.28 3.86-3h4.14L14 17.35V19h2v-2.35L19.5 12H21V7h-2zM6 15c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm11 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>';
+					break;
+				case 'vehicle':
+				case 'other_vehicle':
+					$job_icon_color = 'gd-job-card__icon--green';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13.5-9l1.96 2.5H17V9h2.5zM18 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>';
+					break;
+				case 'boat':
+					$job_icon_color = 'gd-job-card__icon--blue';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3L6 11h12zM4 12h16l-1.5 7h-13z"/></svg>';
+					break;
+				case 'piano':
+					$job_icon_color = 'gd-job-card__icon--purple';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>';
+					break;
+				case 'pet':
+					$job_icon_color = 'gd-job-card__icon--purple';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.5 11c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm3-4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm5 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm3 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM12 13c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>';
+					break;
+				case 'junk':
+					$job_icon_color = 'gd-job-card__icon--red';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+					break;
+				case 'trademe_pickup':
+					$job_icon_color = 'gd-job-card__icon--blue';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58s1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41s-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>';
+					break;
+				default: // item, item_packed, other
+					$job_icon_color = 'gd-job-card__icon--blue';
+					$job_icon_svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 3H3v6h18V3zm-2 4H5V5h14v2zM3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-8H3v8zm2-6h14v4H5v-4z"/></svg>';
+					break;
+			}
 		?>
 			<div class="gd-job-card gd-job-card--has-strip">
 				<div class="gd-job-card__status-strip gd-job-card__status-strip--<?php echo esc_attr( $status ); ?>"></div>
 
 				<div class="gd-job-card__header">
-					<div class="gd-job-card__icon">🚚</div>
+					<div class="gd-job-card__icon <?php echo esc_attr( $job_icon_color ); ?>"><?php echo $job_icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 					<div class="gd-job-card__title">
 						<h3 class="gd-job-card__type"><?php echo $display_title ?: esc_html__( 'Moving Job', 'go-deliver' ); ?></h3>
 						<p class="gd-job-card__meta">
