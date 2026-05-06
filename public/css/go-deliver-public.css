@@ -51,6 +51,7 @@
 	color: var(--gd-text);
 	padding: 24px 16px;
 	box-sizing: border-box;
+	overflow-x: clip;
 }
 
 .gd-wrap *,
@@ -3034,11 +3035,13 @@
 	}
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1040px) {
 	.gd-overview-columns {
 		grid-template-columns: 1fr;
 	}
+}
 
+@media (max-width: 900px) {
 	.gd-welcome-hero__illustration {
 		display: none;
 	}
