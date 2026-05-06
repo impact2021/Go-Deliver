@@ -1,6 +1,6 @@
 /* =============================================================================
    Go Deliver – Public-Facing Stylesheet
-   Version: 1.2.5
+   Version: 1.2.26
    ============================================================================= */
 
 /* -----------------------------------------------------------------------------
@@ -51,7 +51,8 @@
 	color: var(--gd-text);
 	padding: 24px 16px;
 	box-sizing: border-box;
-	overflow-x: clip;
+	width: 100%;
+	max-width: 100%;
 }
 
 .gd-wrap *,
@@ -2336,6 +2337,44 @@
 /* -----------------------------------------------------------------------------
    Mobile / Responsive
    ----------------------------------------------------------------------------- */
+/* Collapse the sidebar layout earlier (900 px) so the main content area
+   has enough room at mid-range viewport widths (769 – 900 px).
+   Below this point the sidebar turns into a horizontal tab bar, freeing
+   the full width for the content panels. */
+@media (max-width: 900px) {
+	.gd-wrap {
+		padding: 16px 12px;
+	}
+
+	.gd-dashboard {
+		grid-template-columns: 1fr;
+	}
+
+	.gd-dashboard__sidebar {
+		position: static;
+	}
+
+	.gd-sidebar-nav {
+		display: flex;
+		overflow-x: auto;
+		border-radius: 0;
+		border-left: none;
+		border-right: none;
+	}
+
+	.gd-sidebar-nav__item {
+		white-space: nowrap;
+		flex-shrink: 0;
+		border-left: none;
+		border-bottom: 3px solid transparent;
+	}
+
+	.gd-sidebar-nav__item--active {
+		border-bottom-color: var(--gd-primary);
+		border-left-color: transparent;
+	}
+}
+
 @media (max-width: 768px) {
 	.gd-wrap {
 		padding: 16px 12px;
