@@ -110,30 +110,35 @@ class Go_Deliver_Debug {
 		?>
 		<!-- GD Debug Panel -->
 		<style id="gd-debug-style">
-		#gd-debug-toggle{position:fixed;bottom:16px;right:16px;z-index:99999;background:#1d2327;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;line-height:1}
-		#gd-debug-panel{position:fixed;bottom:70px;right:16px;z-index:99998;width:540px;max-width:calc(100vw - 32px);max-height:70vh;background:#1d2327;color:#c3c4c7;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;font-family:monospace;font-size:12px;overflow:hidden}
+		#gd-debug-toggle{position:fixed;bottom:16px;right:16px;z-index:99999;background:#1d2327;color:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:22px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;line-height:1;touch-action:manipulation}
+		#gd-debug-panel{position:fixed;bottom:78px;right:8px;z-index:99998;width:540px;max-width:calc(100vw - 16px);max-height:72vh;background:#1d2327;color:#c3c4c7;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.5);display:flex;flex-direction:column;font-family:monospace;font-size:12px;overflow:hidden}
 		#gd-debug-panel.gd-debug--hidden{display:none}
-		.gd-debug-header{display:flex;align-items:center;padding:8px 12px;background:#101517;gap:8px;flex-shrink:0}
-		.gd-debug-header span{font-weight:700;font-size:13px;color:#fff;flex:1}
-		.gd-debug-tabs{display:flex;gap:2px;background:#101517;padding:0 8px;flex-shrink:0}
-		.gd-debug-tab{padding:6px 12px;cursor:pointer;border-bottom:2px solid transparent;color:#8c8f94;font-size:11px;font-family:monospace;background:none;border-top:none;border-left:none;border-right:none}
+		.gd-debug-header{display:flex;align-items:center;padding:8px 12px;background:#101517;gap:6px;flex-shrink:0;flex-wrap:wrap}
+		.gd-debug-header span{font-weight:700;font-size:13px;color:#fff;flex:1;min-width:0}
+		.gd-debug-tabs{display:flex;gap:0;background:#101517;padding:0 4px;flex-shrink:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+		.gd-debug-tab{padding:8px 10px;cursor:pointer;border-bottom:2px solid transparent;color:#8c8f94;font-size:11px;font-family:monospace;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 		.gd-debug-tab.is-active{color:#72aee6;border-bottom-color:#72aee6}
-		.gd-debug-body{flex:1;overflow-y:auto;padding:8px}
+		.gd-debug-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px;-webkit-overflow-scrolling:touch}
 		.gd-debug-pane{display:none}.gd-debug-pane.is-active{display:block}
 		.gd-debug-table{width:100%;border-collapse:collapse}
-		.gd-debug-table th,.gd-debug-table td{text-align:left;padding:3px 6px;border-bottom:1px solid #2c3338;vertical-align:top;word-break:break-all}
-		.gd-debug-table th{color:#72aee6;width:38%;font-weight:normal}
+		.gd-debug-table th,.gd-debug-table td{text-align:left;padding:4px 6px;border-bottom:1px solid #2c3338;vertical-align:top;word-break:break-all;font-size:12px}
+		.gd-debug-table th{color:#72aee6;width:40%;font-weight:normal}
 		.gd-ajax-row{cursor:pointer;border-bottom:1px solid #2c3338}
 		.gd-ajax-row:hover{background:#23282d}
 		.gd-ajax-row td{padding:4px 6px}
 		.gd-ajax-status--ok{color:#68de7c}.gd-ajax-status--err{color:#f86368}.gd-ajax-detail{display:none;background:#101517;padding:6px;border-radius:4px;white-space:pre-wrap;font-size:11px;color:#c3c4c7;max-height:200px;overflow-y:auto}
 		.gd-debug-empty{color:#8c8f94;padding:8px;font-style:italic}
-		.gd-debug-clear{background:none;border:1px solid #3c434a;color:#8c8f94;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:10px;font-family:monospace}
+		.gd-debug-clear{background:none;border:1px solid #3c434a;color:#8c8f94;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-family:monospace;touch-action:manipulation}
 		.gd-debug-clear:hover{color:#fff;border-color:#8c8f94}
-		.gd-debug-refresh{background:none;border:1px solid #3c434a;color:#8c8f94;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:10px;font-family:monospace}
+		.gd-debug-refresh{background:none;border:1px solid #3c434a;color:#8c8f94;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-family:monospace;touch-action:manipulation}
 		.gd-debug-refresh:hover{color:#fff;border-color:#8c8f94}
+		.gd-debug-copy{background:none;border:1px solid #3c434a;color:#8c8f94;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-family:monospace;touch-action:manipulation}
+		.gd-debug-copy:hover{color:#fff;border-color:#8c8f94}
 		.gd-badge{display:inline-block;min-width:16px;height:16px;line-height:16px;border-radius:8px;text-align:center;font-size:10px;padding:0 4px;background:#f86368;color:#fff;margin-left:4px}
 		.gd-badge--hidden{display:none}
+		.gd-mobile-warn{color:#f0c33c;font-weight:bold}
+		.gd-mobile-ok{color:#68de7c}
+		.gd-mobile-section{color:#72aee6;font-size:11px;margin:8px 0 2px;font-weight:bold}
 		</style>
 
 		<button id="gd-debug-toggle" title="<?php esc_attr_e( 'GD Debug', 'go-deliver' ); ?>">🐛</button>
@@ -143,6 +148,7 @@ class Go_Deliver_Debug {
 				<span>🐛 <?php esc_html_e( 'Go Deliver Debug', 'go-deliver' ); ?></span>
 				<button class="gd-debug-clear" id="gd-debug-clear-ajax"><?php esc_html_e( 'Clear', 'go-deliver' ); ?></button>
 				<button class="gd-debug-refresh" id="gd-debug-refresh-info"><?php esc_html_e( 'Refresh', 'go-deliver' ); ?></button>
+				<button class="gd-debug-copy" id="gd-debug-copy-mobile" title="<?php esc_attr_e( 'Copy mobile info to clipboard', 'go-deliver' ); ?>">📋</button>
 			</div>
 			<div class="gd-debug-tabs">
 				<button class="gd-debug-tab is-active" data-pane="ajax">
@@ -151,8 +157,11 @@ class Go_Deliver_Debug {
 				<button class="gd-debug-tab" data-pane="errors">
 					<?php esc_html_e( 'JS Errors', 'go-deliver' ); ?><span class="gd-badge gd-badge--hidden" id="gd-debug-err-badge">0</span>
 				</button>
+				<button class="gd-debug-tab" data-pane="mobile">
+					<?php esc_html_e( '📱 Mobile', 'go-deliver' ); ?>
+				</button>
 				<button class="gd-debug-tab" data-pane="info">
-					<?php esc_html_e( 'Server Info', 'go-deliver' ); ?>
+					<?php esc_html_e( 'Server', 'go-deliver' ); ?>
 				</button>
 			</div>
 			<div class="gd-debug-body">
@@ -161,6 +170,9 @@ class Go_Deliver_Debug {
 				</div>
 				<div class="gd-debug-pane" id="gd-debug-pane-errors">
 					<p class="gd-debug-empty"><?php esc_html_e( 'No JS errors captured.', 'go-deliver' ); ?></p>
+				</div>
+				<div class="gd-debug-pane" id="gd-debug-pane-mobile">
+					<p class="gd-debug-empty"><?php esc_html_e( 'Loading mobile info…', 'go-deliver' ); ?></p>
 				</div>
 				<div class="gd-debug-pane" id="gd-debug-pane-info">
 					<p class="gd-debug-empty"><?php esc_html_e( 'Loading…', 'go-deliver' ); ?></p>
@@ -180,11 +192,12 @@ class Go_Deliver_Debug {
 			var errorCount  = 0;
 			var panelOpen   = false;
 
-			var toggle   = document.getElementById( 'gd-debug-toggle' );
-			var panel    = document.getElementById( 'gd-debug-panel' );
-			var paneAjax = document.getElementById( 'gd-debug-pane-ajax' );
-			var paneErr  = document.getElementById( 'gd-debug-pane-errors' );
-			var paneInfo = document.getElementById( 'gd-debug-pane-info' );
+			var toggle    = document.getElementById( 'gd-debug-toggle' );
+			var panel     = document.getElementById( 'gd-debug-panel' );
+			var paneAjax  = document.getElementById( 'gd-debug-pane-ajax' );
+			var paneErr   = document.getElementById( 'gd-debug-pane-errors' );
+			var paneMob   = document.getElementById( 'gd-debug-pane-mobile' );
+			var paneInfo  = document.getElementById( 'gd-debug-pane-info' );
 			var badgeAjax = document.getElementById( 'gd-debug-ajax-badge' );
 			var badgeErr  = document.getElementById( 'gd-debug-err-badge' );
 
@@ -201,6 +214,7 @@ class Go_Deliver_Debug {
 					if ( paneInfo.querySelector( '.gd-debug-empty' ) ) {
 						fetchServerInfo();
 					}
+					renderMobileInfo();
 				}
 			} );
 
@@ -223,11 +237,14 @@ class Go_Deliver_Debug {
 						badgeErr.textContent = '0';
 						badgeErr.classList.add( 'gd-badge--hidden' );
 					}
+					if ( tab.dataset.pane === 'mobile' ) {
+						renderMobileInfo();
+					}
 				} );
 			} );
 
 			// ----------------------------------------------------------------
-			// Clear / Refresh buttons
+			// Clear / Refresh / Copy buttons
 			// ----------------------------------------------------------------
 			document.getElementById( 'gd-debug-clear-ajax' ).addEventListener( 'click', function () {
 				ajaxLog   = [];
@@ -240,7 +257,44 @@ class Go_Deliver_Debug {
 			document.getElementById( 'gd-debug-refresh-info' ).addEventListener( 'click', function () {
 				paneInfo.innerHTML = '<p class="gd-debug-empty">Loading\u2026</p>';
 				fetchServerInfo();
+				renderMobileInfo();
 			} );
+
+			document.getElementById( 'gd-debug-copy-mobile' ).addEventListener( 'click', function () {
+				var text = buildMobileText();
+				if ( navigator.clipboard && navigator.clipboard.writeText ) {
+					navigator.clipboard.writeText( text ).then( function () {
+						showCopyFeedback( '✅ Copied!' );
+					} ).catch( function () {
+						fallbackCopy( text );
+					} );
+				} else {
+					fallbackCopy( text );
+				}
+			} );
+
+			function showCopyFeedback( msg ) {
+				var btn = document.getElementById( 'gd-debug-copy-mobile' );
+				var orig = btn.textContent;
+				btn.textContent = msg;
+				setTimeout( function () { btn.textContent = orig; }, 2000 );
+			}
+
+			function fallbackCopy( text ) {
+				var ta = document.createElement( 'textarea' );
+				ta.value = text;
+				ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
+				document.body.appendChild( ta );
+				ta.focus();
+				ta.select();
+				try {
+					document.execCommand( 'copy' );
+					showCopyFeedback( '✅ Copied!' );
+				} catch ( e ) {
+					showCopyFeedback( '❌ Failed' );
+				}
+				document.body.removeChild( ta );
+			}
 
 			// ----------------------------------------------------------------
 			// AJAX interception (jQuery global events)
@@ -383,6 +437,230 @@ class Go_Deliver_Debug {
 				html += '</tbody></table>';
 				paneErr.innerHTML = html;
 			}
+
+			// ----------------------------------------------------------------
+			// Mobile info
+			// ----------------------------------------------------------------
+			var GD_MAX_OFFENDERS   = 10; // max overflow offenders to report
+			var GD_MAX_CLASSES     = 3;  // max CSS classes to include in offender label
+			var GD_OVERFLOW_THRESH = 2;  // px tolerance before flagging as overflow
+
+			var GD_BREAKPOINTS = [
+				{ label: 'max-width:480px',  query: '(max-width:480px)'  },
+				{ label: 'max-width:600px',  query: '(max-width:600px)'  },
+				{ label: 'max-width:640px',  query: '(max-width:640px)'  },
+				{ label: 'max-width:768px',  query: '(max-width:768px)'  },
+				{ label: 'max-width:900px',  query: '(max-width:900px)'  },
+				{ label: 'max-width:1040px', query: '(max-width:1040px)' },
+				{ label: 'max-width:1100px', query: '(max-width:1100px)' },
+				{ label: 'prefers dark',     query: '(prefers-color-scheme:dark)' },
+				{ label: 'pointer:coarse',   query: '(pointer:coarse)'   },
+				{ label: 'hover:none',       query: '(hover:none)'       },
+			];
+
+			var GD_INSPECT_SELECTORS = [
+				'body',
+				'.gd-wrap',
+				'.entry-content',
+				'.site-content',
+				'.content-area',
+				'#content',
+				'#page',
+				'.wp-site-blocks',
+				'main',
+				'#main',
+				'.site-main',
+				'.container',
+				'.gd-dashboard-layout',
+				'.gd-job-form',
+				'.gd-job-list',
+			];
+
+			function getMobileData() {
+				var vw = window.innerWidth;
+				var vh = window.innerHeight;
+				var sw = screen.width;
+				var sh = screen.height;
+				var dpr = window.devicePixelRatio || 1;
+				var ua = ( navigator && navigator.userAgent ) ? navigator.userAgent : '(unavailable)';
+				var orientation = ( screen.orientation && screen.orientation.type ) || ( vw > vh ? 'landscape' : 'portrait' );
+				var scrollW = document.documentElement.scrollWidth;
+				var hasHScroll = scrollW > vw;
+
+				// Viewport meta tag
+				var vmeta = document.querySelector( 'meta[name="viewport"]' );
+				var vmetaContent = vmeta ? vmeta.getAttribute( 'content' ) : '(none – THIS IS BAD)';
+
+				// Active breakpoints
+				var activeBP = [];
+				GD_BREAKPOINTS.forEach( function ( bp ) {
+					if ( window.matchMedia && window.matchMedia( bp.query ).matches ) {
+						activeBP.push( bp.label );
+					}
+				} );
+
+				// Element widths / overflow
+				var elemData = [];
+				GD_INSPECT_SELECTORS.forEach( function ( sel ) {
+					var el = document.querySelector( sel );
+					if ( ! el ) { return; }
+					var cs = window.getComputedStyle( el );
+					var bcrW = Math.round( el.getBoundingClientRect().width );
+					var scrollW2 = el.scrollWidth;
+					elemData.push( {
+						sel:        sel,
+						width:      bcrW,
+						scrollW:    scrollW2,
+						overflow:   cs.overflow + '/' + cs.overflowX + '/' + cs.overflowY,
+						maxWidth:   cs.maxWidth,
+						marginL:    cs.marginLeft,
+						marginR:    cs.marginRight,
+						paddingL:   cs.paddingLeft,
+						paddingR:   cs.paddingRight,
+						display:    cs.display,
+						overflows:  scrollW2 > bcrW + GD_OVERFLOW_THRESH,
+					} );
+				} );
+
+				// Find widest offenders that bleed past viewport
+				var offenders = [];
+				try {
+					var all = document.body.querySelectorAll( '*' );
+					for ( var i = 0; i < all.length; i++ ) {
+						var el2 = all[ i ];
+						var rect = el2.getBoundingClientRect();
+						if ( rect.right > vw + GD_OVERFLOW_THRESH ) {
+							var tag = el2.tagName.toLowerCase();
+							var id  = el2.id ? '#' + el2.id : '';
+							var cls = el2.className && typeof el2.className === 'string'
+								? '.' + el2.className.trim().split( /\s+/ ).slice( 0, GD_MAX_CLASSES ).join( '.' )
+								: '';
+							offenders.push( tag + id + cls + ' (right:' + Math.round( rect.right ) + 'px)' );
+							if ( offenders.length >= GD_MAX_OFFENDERS ) { break; }
+						}
+					}
+				} catch ( _ ) {}
+
+				return {
+					vw: vw, vh: vh, sw: sw, sh: sh, dpr: dpr,
+					orientation: orientation, ua: ua,
+					vmetaContent: vmetaContent,
+					scrollW: scrollW, hasHScroll: hasHScroll,
+					activeBP: activeBP, elemData: elemData, offenders: offenders,
+				};
+			}
+
+			function renderMobileInfo() {
+				var d = getMobileData();
+				var html = '';
+
+				// ── Viewport & Screen ─────────────────────────────────────
+				html += '<p class="gd-mobile-section">Viewport &amp; Screen</p>';
+				html += '<table class="gd-debug-table"><tbody>';
+				html += row( 'Viewport', d.vw + ' × ' + d.vh + 'px' );
+				html += row( 'Screen',   d.sw + ' × ' + d.sh + 'px' );
+				html += row( 'DPR',      d.dpr + 'x' );
+				html += row( 'Orientation', d.orientation );
+				html += row( 'Viewport meta', d.vmetaContent );
+				html += row(
+					'H-scroll',
+					d.hasHScroll
+						? '<span class="gd-mobile-warn">⚠ YES – doc is ' + d.scrollW + 'px wide (viewport ' + d.vw + 'px)</span>'
+						: '<span class="gd-mobile-ok">✓ none</span>'
+				);
+				html += '</tbody></table>';
+
+				// ── Active breakpoints ────────────────────────────────────
+				html += '<p class="gd-mobile-section">Active CSS Breakpoints</p>';
+				html += '<table class="gd-debug-table"><tbody>';
+				if ( d.activeBP.length ) {
+					d.activeBP.forEach( function ( bp ) {
+						html += '<tr><td class="gd-mobile-ok">✓</td><td>' + esc( bp ) + '</td></tr>';
+					} );
+				} else {
+					html += '<tr><td colspan="2" class="gd-debug-empty">none matched</td></tr>';
+				}
+				html += '</tbody></table>';
+
+				// ── Element widths ────────────────────────────────────────
+				html += '<p class="gd-mobile-section">Key Element Widths</p>';
+				html += '<table class="gd-debug-table"><thead><tr>'
+					+ '<th>Selector</th><th>W</th><th>scrollW</th><th>overflow</th>'
+					+ '</tr></thead><tbody>';
+				if ( d.elemData.length ) {
+					d.elemData.forEach( function ( e ) {
+						var cls = e.overflows ? ' class="gd-mobile-warn"' : '';
+						html += '<tr' + cls + '>'
+							+ '<td>' + esc( e.sel ) + '</td>'
+							+ '<td>' + e.width + '</td>'
+							+ '<td>' + ( e.overflows ? '<span class="gd-mobile-warn">' + e.scrollW + '⚠</span>' : e.scrollW ) + '</td>'
+							+ '<td>' + esc( e.overflow ) + '</td>'
+							+ '</tr>';
+					} );
+				} else {
+					html += '<tr><td colspan="4" class="gd-debug-empty">no matching elements</td></tr>';
+				}
+				html += '</tbody></table>';
+
+				// ── Overflow offenders ────────────────────────────────────
+				html += '<p class="gd-mobile-section">Overflow Offenders (right &gt; viewport)</p>';
+				html += '<table class="gd-debug-table"><tbody>';
+				if ( d.offenders.length ) {
+					d.offenders.forEach( function ( o ) {
+						html += '<tr><td class="gd-mobile-warn">' + esc( o ) + '</td></tr>';
+					} );
+				} else {
+					html += '<tr><td class="gd-mobile-ok">✓ None found</td></tr>';
+				}
+				html += '</tbody></table>';
+
+				// ── User agent ────────────────────────────────────────────
+				html += '<p class="gd-mobile-section">User Agent</p>';
+				html += '<p style="word-break:break-all;font-size:11px;padding:0 4px">' + esc( d.ua ) + '</p>';
+
+				paneMob.innerHTML = html;
+			}
+
+			function row( label, value ) {
+				return '<tr><th>' + esc( label ) + '</th><td>' + value + '</td></tr>';
+			}
+
+			function buildMobileText() {
+				var d = getMobileData();
+				var lines = [
+					'=== Go Deliver Mobile Debug ===',
+					'Viewport : ' + d.vw + ' x ' + d.vh,
+					'Screen   : ' + d.sw + ' x ' + d.sh,
+					'DPR      : ' + d.dpr,
+					'Orient   : ' + d.orientation,
+					'Meta vp  : ' + d.vmetaContent,
+					'H-scroll : ' + ( d.hasHScroll ? 'YES (docW=' + d.scrollW + ')' : 'none' ),
+					'',
+					'Active breakpoints: ' + ( d.activeBP.join( ', ' ) || 'none' ),
+					'',
+					'Element widths:',
+				];
+				d.elemData.forEach( function ( e ) {
+					lines.push( '  ' + e.sel + ' → w=' + e.width + ' scrollW=' + e.scrollW + ' overflow=' + e.overflow );
+				} );
+				lines.push( '' );
+				lines.push( 'Offenders:' );
+				if ( d.offenders.length ) {
+					d.offenders.forEach( function ( o ) { lines.push( '  ' + o ); } );
+				} else {
+					lines.push( '  none' );
+				}
+				lines.push( '' );
+				lines.push( 'UA: ' + d.ua );
+				return lines.join( '\n' );
+			}
+
+			// Re-render mobile pane on orientation / resize
+			window.addEventListener( 'resize', function () {
+				if ( panelOpen && paneMob.classList.contains( 'is-active' ) ) {
+					renderMobileInfo();
+				}
+			} );
 
 			// ----------------------------------------------------------------
 			// Server info
