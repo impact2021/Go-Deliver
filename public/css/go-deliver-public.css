@@ -4217,7 +4217,6 @@ opacity: 1; /* always visible on touch */
 		padding: 10px 8px;
 		border: 1px solid var(--gd-border);
 		border-radius: var(--gd-radius-sm);
-		border-right: none;
 	}
 
 	#gd-mover-dashboard .gd-table {
