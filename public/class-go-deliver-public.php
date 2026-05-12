@@ -17,6 +17,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Go_Deliver_Public {
 
 	/**
+	 * Output the viewport meta tag so responsive CSS media queries fire on
+	 * real mobile devices.  If the active theme already emits a viewport tag
+	 * this runs before it (priority 1) and browsers silently ignore the second
+	 * duplicate, so there is no downside to always outputting it here.
+	 *
+	 * @since 1.2.33
+	 */
+	public function add_viewport_meta() {
+		// Static, hard-coded string – no user input, no escaping needed.
+		echo '<meta name="viewport" content="width=device-width, initial-scale=1">' . "\n";
+	}
+
+	/**
 	 * Enqueue public-facing scripts and styles.
 	 */
 	public function enqueue_scripts() {
