@@ -83,7 +83,14 @@ class Go_Deliver {
 	public function define_public_hooks() {
 		$public = new Go_Deliver_Public();
 
-		add_action( 'wp_enqueue_scripts', array( $public, 'enqueue_scripts' ) );
+		// Priority 1: output viewport meta tag before anything else in <head>.
+		// Without this, mobile browsers use a ~980 px virtual viewport and
+		// max-width media queries never fire on real devices.
+		add_action( 'wp_head', array( $public, 'add_viewport_meta' ), 1 );
+
+		// Priority 100: enqueue our CSS *after* the theme and other plugins so
+		// our responsive rules win the cascade on same-specificity selectors.
+		add_action( 'wp_enqueue_scripts', array( $public, 'enqueue_scripts' ), 100 );
 
 		// Shortcodes.
 		add_shortcode( 'gd_job_form', array( $public, 'render_job_form' ) );
