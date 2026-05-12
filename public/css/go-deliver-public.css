@@ -2352,6 +2352,7 @@
 
 	.gd-dashboard__sidebar {
 		position: static;
+		min-width: 0;
 	}
 
 	.gd-sidebar-nav {
@@ -2386,6 +2387,7 @@
 
 	.gd-dashboard__sidebar {
 		position: static;
+		min-width: 0;
 	}
 
 	.gd-sidebar-nav {
