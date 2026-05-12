@@ -4170,3 +4170,88 @@ height: 76px;
 opacity: 1; /* always visible on touch */
 }
 }
+
+/* =============================================================================
+   Dashboard mobile polish (customer + mover)
+   ============================================================================= */
+@media (max-width: 768px) {
+	#gd-customer-dashboard .gd-convo-item,
+	#gd-customer-dashboard .gd-recent-msg-item {
+		align-items: flex-start;
+	}
+
+	#gd-customer-dashboard .gd-convo-item__meta,
+	#gd-customer-dashboard .gd-recent-msg-item__meta {
+		align-items: flex-start;
+		margin-left: 0;
+	}
+
+	#gd-customer-dashboard .gd-current-job-hero__top,
+	#gd-customer-dashboard .gd-current-job-hero__mover-row,
+	#gd-customer-dashboard .gd-job-card__header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	#gd-customer-dashboard .gd-current-job-hero__price-group,
+	#gd-customer-dashboard .gd-job-card__header > .gd-badge {
+		align-self: flex-start;
+	}
+
+	#gd-customer-dashboard .gd-job-card__actions .gd-btn,
+	#gd-customer-dashboard .gd-current-job-hero__mover-row .gd-btn {
+		width: 100%;
+		justify-content: center;
+	}
+}
+
+@media (max-width: 640px) {
+	#gd-mover-dashboard .gd-tabs,
+	#gd-mover-dashboard .gd-sub-tabs {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	#gd-mover-dashboard .gd-tab,
+	#gd-mover-dashboard .gd-sub-tab {
+		flex-shrink: 0;
+	}
+
+	#gd-mover-dashboard .gd-profile-card,
+	#gd-mover-dashboard .gd-section-card__body,
+	#gd-mover-dashboard .gd-sub-panel {
+		padding-left: 14px;
+		padding-right: 14px;
+	}
+
+	#gd-mover-dashboard .gd-profile-card__top,
+	#gd-mover-dashboard .gd-profile-card__top-left,
+	#gd-mover-dashboard .gd-about-block,
+	#gd-mover-dashboard .gd-mover-card__header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	#gd-mover-dashboard .gd-profile-card__top .gd-btn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	#gd-mover-dashboard .gd-mover-card__header > div[style*="text-align:right"] {
+		width: 100%;
+		text-align: left !important;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+	}
+
+	#gd-mover-dashboard .gd-mover-card__actions .gd-btn {
+		width: 100%;
+		justify-content: center;
+	}
+
+	#gd-mover-dashboard .gd-wallet-section {
+		padding: 18px;
+	}
+}
