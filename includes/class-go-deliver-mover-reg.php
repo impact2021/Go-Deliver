@@ -126,8 +126,9 @@ Go_Deliver_DB::save_document( $user_id, sanitize_text_field( $doc['type'] ), $fi
 }
 }
 
-// Notify admin.
-$this->notify_admin_new_mover( $user_id );
+	// Notify admin and send a welcome email to the new mover.
+	$this->notify_admin_new_mover( $user_id );
+	$this->notify_mover_welcome_email( $user_id );
 
 return $user_id;
 }
@@ -141,7 +142,7 @@ return $user_id;
  *
  * @param int $user_id New mover's user ID.
  */
-private function notify_admin_new_mover( $user_id ) {
+	private function notify_admin_new_mover( $user_id ) {
 $mover = get_userdata( $user_id );
 if ( ! $mover ) {
 return;
@@ -176,10 +177,61 @@ if ( ! empty( $configured ) ) {
 	$recipient_emails = array( get_option( 'admin_email' ) );
 }
 
-foreach ( $recipient_emails as $email ) {
-wp_mail( $email, $subject, $message );
-}
-}
+	foreach ( $recipient_emails as $email ) {
+	wp_mail( $email, $subject, $message );
+	}
+	}
+
+	/**
+	 * Send a welcome email to the newly registered mover.
+	 *
+	 * @param int $user_id New mover user ID.
+	 */
+	private function notify_mover_welcome_email( $user_id ) {
+		$mover = get_userdata( (int) $user_id );
+		if ( ! $mover || ! $mover->user_email ) {
+			return;
+		}
+
+		$site_name         = get_bloginfo( 'name' );
+		$mover_first_name  = $mover->first_name ?: $mover->display_name;
+		$mover_dashboard_id = (int) get_option( 'gd_mover_dashboard_page_id', 0 );
+		$dashboard_url      = $mover_dashboard_id ? get_permalink( $mover_dashboard_id ) : home_url();
+		$login_url          = wp_login_url( $dashboard_url );
+
+		$subject = sprintf(
+			/* translators: %s: site name */
+			__( 'Welcome to %s', 'go-deliver' ),
+			$site_name
+		);
+
+		$template_path = GD_PLUGIN_DIR . 'templates/emails/mover-welcome.php';
+		if ( ! file_exists( $template_path ) ) {
+			return;
+		}
+
+		$from_name    = get_option( 'gd_email_from_name', $site_name );
+		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+		$headers      = array(
+			'Content-Type: text/html; charset=UTF-8',
+			sprintf( 'From: %s <%s>', $from_name, $from_address ),
+		);
+
+		$vars = array(
+			'mover_first_name' => $mover_first_name,
+			'login_url'        => $login_url,
+			'site_name'        => $site_name,
+			'site_url'         => home_url(),
+		);
+
+		ob_start();
+		// phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- intentional for template rendering, keys are caller-controlled.
+		extract( $vars, EXTR_SKIP );
+		include $template_path;
+		$html = ob_get_clean();
+
+		wp_mail( $mover->user_email, wp_strip_all_tags( $subject ), $html, $headers );
+	}
 
 /**
  * Approve a mover account.

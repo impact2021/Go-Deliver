@@ -164,6 +164,17 @@ $gd_customer_emails = array(
 
 $gd_mover_emails = array(
 	array(
+		'title'   => __( 'Welcome to GoDeliver', 'go-deliver' ),
+		'trigger' => __( 'Sent to new movers immediately after they complete registration.', 'go-deliver' ),
+		'file'    => 'mover-welcome.php',
+		'vars'    => array(
+			'mover_first_name' => 'Mike',
+			'login_url'        => wp_login_url(),
+			'site_name'        => $gd_site_name,
+			'site_url'         => $gd_site_url,
+		),
+	),
+	array(
 		'title'   => __( 'New Job Available', 'go-deliver' ),
 		'trigger' => __( 'Sent to movers in the matching service area when a new job is posted.', 'go-deliver' ),
 		'file'    => 'new-job-notification.php',
