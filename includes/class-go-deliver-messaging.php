@@ -120,10 +120,22 @@ public function has_contact_details( $message ) {
 if ( preg_match( '/(?:\+?\d[\d\s\-().]{7,}\d)/', $message ) ) {
 return true;
 }
+if ( preg_match( '/(?:\+?\s*\d(?:[\s\-().]*\d){6,})/', $message ) ) {
+return true;
+}
+if ( preg_match( '/\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b(?:[\s,.\-]+\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b){6,}/i', $message ) ) {
+return true;
+}
 if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $message ) ) {
 return true;
 }
+if ( preg_match( '/\b[a-z0-9._%+\-]+(?:\s*[\(\[\{]?\s*at\s*[\)\]\}]?\s*|\s+at\s+)[a-z0-9\-]+(?:\s*(?:\.|[\(\[\{]?\s*dot\s*[\)\]\}]?)\s*[a-z0-9\-]+)+\b/i', $message ) ) {
+return true;
+}
 if ( preg_match( '/(https?:\/\/|www\.)[^\s]+/', $message ) ) {
+return true;
+}
+if ( preg_match( '/\b(?:[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b/i', $message ) ) {
 return true;
 }
 return false;
@@ -279,6 +291,20 @@ $message = preg_replace(
 $message
 );
 
+// Remove spaced-out digit numbers, e.g. 0 2 1 4 5 6 7 8.
+$message = preg_replace(
+'/(?:\+?\s*\d(?:[\s\-().]*\d){6,})/',
+'[phone removed]',
+$message
+);
+
+// Remove phone numbers written as words, e.g. one two three...
+$message = preg_replace(
+'/\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b(?:[\s,.\-]+\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b){6,}/i',
+'[phone removed]',
+$message
+);
+
 // Remove email addresses.
 $message = preg_replace(
 '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/',
@@ -286,9 +312,23 @@ $message = preg_replace(
 $message
 );
 
+// Remove obfuscated email addresses, e.g. name(at)domain(dot)com.
+$message = preg_replace(
+'/\b[a-z0-9._%+\-]+(?:\s*[\(\[\{]?\s*at\s*[\)\]\}]?\s*|\s+at\s+)[a-z0-9\-]+(?:\s*(?:\.|[\(\[\{]?\s*dot\s*[\)\]\}]?)\s*[a-z0-9\-]+)+\b/i',
+'[email removed]',
+$message
+);
+
 // Remove URLs (http, https, www).
 $message = preg_replace(
 '/(https?:\/\/|www\.)[^\s]+/',
+'[link removed]',
+$message
+);
+
+// Remove bare domain names, e.g. example.co.nz.
+$message = preg_replace(
+'/\b(?:[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b/i',
 '[link removed]',
 $message
 );

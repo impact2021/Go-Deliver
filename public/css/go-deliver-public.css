@@ -4182,6 +4182,7 @@ opacity: 1; /* always visible on touch */
 		overflow-x: hidden;
 	}
 
+	#gd-customer-dashboard .gd-sidebar-nav,
 	#gd-mover-dashboard .gd-sidebar-nav {
 		display: grid;
 		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
@@ -4191,6 +4192,7 @@ opacity: 1; /* always visible on touch */
 		border-right: 1px solid var(--gd-border);
 	}
 
+	#gd-customer-dashboard .gd-sidebar-nav__item,
 	#gd-mover-dashboard .gd-sidebar-nav__item {
 		min-width: 0;
 		padding: 12px 10px;
@@ -4202,6 +4204,7 @@ opacity: 1; /* always visible on touch */
 		line-height: 1.35;
 	}
 
+	#gd-customer-dashboard .gd-sidebar-nav__item .gd-badge,
 	#gd-mover-dashboard .gd-sidebar-nav__item .gd-badge {
 		margin-left: 0 !important;
 	}
@@ -4288,6 +4291,7 @@ opacity: 1; /* always visible on touch */
 }
 
 @media (max-width: 640px) {
+	#gd-customer-dashboard .gd-sidebar-nav,
 	#gd-mover-dashboard .gd-sidebar-nav {
 		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
 	}
