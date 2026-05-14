@@ -548,6 +548,8 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 		$hj_amount       = $hj_acc_qid ? (float) get_post_meta( $hj_acc_qid, 'gd_amount', true ) : 0.0;
 		$hj_mover        = $hj_mover_id ? get_userdata( $hj_mover_id ) : null;
 		$hj_company      = $hj_mover_id ? ( esc_html( get_user_meta( $hj_mover_id, 'gd_company_name', true ) ) ?: esc_html( $hj_mover ? $hj_mover->display_name : '' ) ) : '';
+		$hj_mover_phone  = $hj_mover_id ? esc_html( get_user_meta( $hj_mover_id, 'gd_phone', true ) ) : '';
+		$hj_mover_email  = $hj_mover ? esc_html( $hj_mover->user_email ) : '';
 		$hj_rating       = $hj_mover_id ? (float) get_user_meta( $hj_mover_id, 'gd_average_rating', true ) : 0.0;
 		$hj_review_count = $hj_mover_id ? (int) get_user_meta( $hj_mover_id, 'gd_review_count', true ) : 0;
 
@@ -659,6 +661,16 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 						<?php esc_html_e( 'Message Mover', 'go-deliver' ); ?>
 					</button>
 				</div><!-- /.gd-current-job-hero__mover-row -->
+				<?php if ( $hj_mover_phone || $hj_mover_email ) : ?>
+				<div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap;font-size:13px;">
+					<?php if ( $hj_mover_phone ) : ?>
+						<span><?php esc_html_e( 'Phone:', 'go-deliver' ); ?> <a href="tel:<?php echo esc_attr( $hj_mover_phone ); ?>"><?php echo $hj_mover_phone; ?></a></span>
+					<?php endif; ?>
+					<?php if ( $hj_mover_email ) : ?>
+						<span><?php esc_html_e( 'Email:', 'go-deliver' ); ?> <a href="mailto:<?php echo esc_attr( $hj_mover_email ); ?>"><?php echo $hj_mover_email; ?></a></span>
+					<?php endif; ?>
+				</div>
+				<?php endif; ?>
 				<?php endif; ?>
 
 			</div><!-- /.gd-current-job-hero__info -->
@@ -898,8 +910,10 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 						$q_mover_id  = (int) get_post_meta( $q_id, 'gd_mover_id', true );
 						$q_mover     = get_userdata( $q_mover_id );
 						$q_mover_name = $q_mover ? esc_html( $q_mover->first_name ) : esc_html__( 'Mover', 'go-deliver' );
-						$q_rating    = (float) get_user_meta( $q_mover_id, 'gd_average_rating', true );
 						$is_accepted = ( 'accepted' === $q_status );
+						$q_mover_phone = $is_accepted ? esc_html( get_user_meta( $q_mover_id, 'gd_phone', true ) ) : '';
+						$q_mover_email = ( $is_accepted && $q_mover ) ? esc_html( $q_mover->user_email ) : '';
+						$q_rating    = (float) get_user_meta( $q_mover_id, 'gd_average_rating', true );
 					?>
 						<div class="gd-quote-card <?php echo $is_accepted ? 'gd-quote-card--accepted' : ''; ?>">
 							<div class="gd-quote-card__header">
@@ -934,6 +948,16 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 
 							<?php if ( $q_message ) : ?>
 								<div class="gd-quote-card__message"><?php echo $q_message; ?></div>
+							<?php endif; ?>
+							<?php if ( $is_accepted && ( $q_mover_phone || $q_mover_email ) ) : ?>
+								<div class="gd-quote-card__message">
+									<?php if ( $q_mover_phone ) : ?>
+										<div><?php esc_html_e( 'Phone:', 'go-deliver' ); ?> <a href="tel:<?php echo esc_attr( $q_mover_phone ); ?>"><?php echo $q_mover_phone; ?></a></div>
+									<?php endif; ?>
+									<?php if ( $q_mover_email ) : ?>
+										<div><?php esc_html_e( 'Email:', 'go-deliver' ); ?> <a href="mailto:<?php echo esc_attr( $q_mover_email ); ?>"><?php echo $q_mover_email; ?></a></div>
+									<?php endif; ?>
+								</div>
 							<?php endif; ?>
 
 							<?php if ( 'pending' === $q_status && in_array( $status, array( 'open', 'locked' ), true ) ) : ?>
@@ -1260,4 +1284,3 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 		</div>
 	</div>
 </div><!-- /#gd-repost-job-modal -->
-

@@ -795,6 +795,7 @@ $cust_obj   = $cust_id ? get_userdata( $cust_id ) : null;
 $raw_name   = $cust_obj ? ( trim( $cust_obj->first_name . ' ' . $cust_obj->last_name ) ?: $cust_obj->display_name ) : '';
 $cust_name  = esc_html( $raw_name );
 $cust_phone = $cust_id ? esc_html( get_user_meta( $cust_id, 'gd_phone', true ) ) : '';
+$cust_email = $cust_obj ? esc_html( $cust_obj->user_email ) : '';
 
 $msg_url = $q_job_id ? esc_url( add_query_arg( 'job_id', $q_job_id, $messaging_base_url ) ) : '';
 ?>
@@ -842,6 +843,14 @@ $<?php echo esc_html( number_format( $q_amount, 0 ) ); ?>
 <div class="gd-mover-card__info-label"><?php esc_html_e( 'Phone', 'go-deliver' ); ?></div>
 <div class="gd-mover-card__info-value">
 <a href="tel:<?php echo esc_attr( $cust_phone ); ?>"><?php echo $cust_phone; ?></a>
+</div>
+</div>
+<?php endif; ?>
+<?php if ( $cust_email ) : ?>
+<div class="gd-mover-card__info-item">
+<div class="gd-mover-card__info-label"><?php esc_html_e( 'Email', 'go-deliver' ); ?></div>
+<div class="gd-mover-card__info-value">
+<a href="mailto:<?php echo esc_attr( $cust_email ); ?>"><?php echo $cust_email; ?></a>
 </div>
 </div>
 <?php endif; ?>

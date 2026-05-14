@@ -589,6 +589,67 @@ class Go_Deliver_Notifications {
 		);
 	}
 
+	/**
+	 * Email the customer when they accept a mover's quote.
+	 *
+	 * Includes the mover's contact details so both parties can coordinate.
+	 *
+	 * @param int $quote_id gd_quote post ID.
+	 */
+	public function notify_customer_quote_accepted( $quote_id ) {
+		$job_id       = (int) get_post_meta( (int) $quote_id, 'gd_job_id', true );
+		$customer_id  = (int) get_post_meta( $job_id, 'gd_customer_id', true );
+		$customer     = get_userdata( $customer_id );
+		if ( ! $customer || ! $customer->user_email ) {
+			return;
+		}
+
+		$mover_id      = (int) get_post_meta( (int) $quote_id, 'gd_mover_id', true );
+		$mover         = get_userdata( $mover_id );
+		$quote_amount  = (float) get_post_meta( (int) $quote_id, 'gd_amount', true );
+		$job_type      = Go_Deliver_Jobs::get_display_title( $job_id );
+		$pickup_suburb = get_post_meta( $job_id, 'gd_pickup_suburb', true );
+		$date_requested = get_post_meta( $job_id, 'gd_date_requested', true );
+		$site_name     = get_bloginfo( 'name' );
+
+		$mover_name = '';
+		if ( $mover ) {
+			$company_name = get_user_meta( $mover_id, 'gd_company_name', true );
+			$person_name  = trim( $mover->first_name . ' ' . $mover->last_name );
+			$mover_name   = $company_name ?: ( $person_name ?: $mover->display_name );
+		}
+		$mover_phone = $mover ? get_user_meta( $mover_id, 'gd_phone', true ) : '';
+		$mover_email = $mover ? $mover->user_email : '';
+
+		$dashboard_page_id = (int) get_option( 'gd_customer_dashboard_page_id', 0 );
+		$dashboard_url     = $dashboard_page_id ? get_permalink( $dashboard_page_id ) : home_url();
+
+		$subject = sprintf(
+			/* translators: %s: site name */
+			__( 'Your Mover is Confirmed – %s', 'go-deliver' ),
+			$site_name
+		);
+
+		$this->send_html_email(
+			$customer->user_email,
+			$subject,
+			GD_PLUGIN_DIR . 'templates/emails/job-assigned.php',
+			array(
+				'customer_first_name' => $customer->first_name ?: $customer->display_name,
+				'job_type'            => $job_type,
+				'pickup_suburb'       => $pickup_suburb,
+				'date_requested'      => $date_requested,
+				'mover_name'          => $mover_name,
+				'mover_phone'         => $mover_phone,
+				'mover_email'         => $mover_email,
+				'quote_amount'        => $quote_amount,
+				'dashboard_url'       => $dashboard_url,
+				'site_name'           => $site_name,
+				'site_url'            => home_url(),
+			)
+		);
+	}
+
 	// -------------------------------------------------------------------------
 	// Private helpers.
 	// -------------------------------------------------------------------------

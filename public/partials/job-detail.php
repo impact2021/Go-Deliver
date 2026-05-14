@@ -330,6 +330,8 @@ $helpers_labels = array(
 				$q_mover_name = $q_mover ? esc_html( $q_mover->first_name ) : esc_html__( 'Mover', 'go-deliver' );
 				$q_rating     = (float) get_user_meta( $q_mover_id, 'gd_average_rating', true );
 				$is_accepted  = ( 'accepted' === $q_status );
+				$q_mover_phone = ( $is_accepted && $is_job_owner ) ? esc_html( get_user_meta( $q_mover_id, 'gd_phone', true ) ) : '';
+				$q_mover_email = ( $is_accepted && $is_job_owner && $q_mover ) ? esc_html( $q_mover->user_email ) : '';
 			?>
 				<div class="gd-quote-card <?php echo $is_accepted ? 'gd-quote-card--accepted' : ''; ?>">
 					<div class="gd-quote-card__header">
@@ -361,6 +363,16 @@ $helpers_labels = array(
 
 					<?php if ( $q_message ) : ?>
 						<div class="gd-quote-card__message"><?php echo $q_message; ?></div>
+					<?php endif; ?>
+					<?php if ( $is_accepted && ( $q_mover_phone || $q_mover_email ) ) : ?>
+						<div class="gd-quote-card__message">
+							<?php if ( $q_mover_phone ) : ?>
+								<div><?php esc_html_e( 'Phone:', 'go-deliver' ); ?> <a href="tel:<?php echo esc_attr( $q_mover_phone ); ?>"><?php echo $q_mover_phone; ?></a></div>
+							<?php endif; ?>
+							<?php if ( $q_mover_email ) : ?>
+								<div><?php esc_html_e( 'Email:', 'go-deliver' ); ?> <a href="mailto:<?php echo esc_attr( $q_mover_email ); ?>"><?php echo $q_mover_email; ?></a></div>
+							<?php endif; ?>
+						</div>
 					<?php endif; ?>
 
 					<?php if ( 'pending' === $q_status && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
