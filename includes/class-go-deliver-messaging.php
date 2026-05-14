@@ -116,18 +116,24 @@ return (bool) get_post_meta( (int) $job_id, 'gd_accepted_quote_id', true );
  * @param string $message Message text.
  * @return bool
  */
-public function has_contact_details( $message ) {
-if ( preg_match( '/(?:\+?\d[\d\s\-().]{7,}\d)/', $message ) ) {
-return true;
-}
-if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $message ) ) {
-return true;
-}
-if ( preg_match( '/(https?:\/\/|www\.)[^\s]+/', $message ) ) {
-return true;
-}
-return false;
-}
+	public function has_contact_details( $message ) {
+		if ( preg_match( '/(?:\+?\d[\d\s\-().]{7,}\d)/', $message ) ) {
+			return true;
+		}
+		if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $message ) ) {
+			return true;
+		}
+		if ( preg_match( '/\b[a-z0-9._%+\-]+(?:\s*[\(\[\{]?\s*at\s*[\)\]\}]?\s*|\s+at\s+)[a-z0-9\-]+(?:\s*(?:\.|[\(\[\{]?\s*dot\s*[\)\]\}]?)\s*[a-z0-9\-]+)+\b/i', $message ) ) {
+			return true;
+		}
+		if ( preg_match( '/(https?:\/\/|www\.)[^\s]+/', $message ) ) {
+			return true;
+		}
+		if ( preg_match( '/\b(?:[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b/i', $message ) ) {
+			return true;
+		}
+		return false;
+	}
 
 /**
  * Send a message for a job.
@@ -271,30 +277,44 @@ return $customer_id;
  * @param string $message Raw message.
  * @return string Filtered message.
  */
-public function contact_filter( $message ) {
-// Remove phone numbers (various formats including New Zealand).
-$message = preg_replace(
-'/(?:\+?\d[\d\s\-().]{7,}\d)/',
+	public function contact_filter( $message ) {
+		// Remove phone numbers (various formats including New Zealand).
+		$message = preg_replace(
+			'/(?:\+?\d[\d\s\-().]{7,}\d)/',
 '[phone removed]',
 $message
 );
 
-// Remove email addresses.
-$message = preg_replace(
-'/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/',
-'[email removed]',
-$message
-);
+		// Remove email addresses.
+		$message = preg_replace(
+			'/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/',
+			'[email removed]',
+			$message
+		);
 
-// Remove URLs (http, https, www).
-$message = preg_replace(
-'/(https?:\/\/|www\.)[^\s]+/',
-'[link removed]',
-$message
-);
+		// Remove obfuscated email addresses, e.g. name(at)domain(dot)com.
+		$message = preg_replace(
+			'/\b[a-z0-9._%+\-]+(?:\s*[\(\[\{]?\s*at\s*[\)\]\}]?\s*|\s+at\s+)[a-z0-9\-]+(?:\s*(?:\.|[\(\[\{]?\s*dot\s*[\)\]\}]?)\s*[a-z0-9\-]+)+\b/i',
+			'[email removed]',
+			$message
+		);
 
-return $message;
-}
+		// Remove URLs (http, https, www).
+		$message = preg_replace(
+			'/(https?:\/\/|www\.)[^\s]+/',
+			'[link removed]',
+			$message
+		);
+
+		// Remove bare domain names, e.g. example.co.nz.
+		$message = preg_replace(
+			'/\b(?:[a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,}\b/i',
+			'[link removed]',
+			$message
+		);
+
+		return $message;
+	}
 
 /**
  * Get all messages for a job (permission-checked).
