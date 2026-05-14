@@ -120,6 +120,12 @@ public function has_contact_details( $message ) {
 if ( preg_match( '/(?:\+?\d[\d\s\-().]{7,}\d)/', $message ) ) {
 return true;
 }
+if ( preg_match( '/(?:\+?\s*\d(?:[\s\-().]*\d){6,})/', $message ) ) {
+return true;
+}
+if ( preg_match( '/\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b(?:[\s,.\-]+\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b){6,}/i', $message ) ) {
+return true;
+}
 if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $message ) ) {
 return true;
 }
@@ -281,6 +287,20 @@ public function contact_filter( $message ) {
 // Remove phone numbers (various formats including New Zealand).
 $message = preg_replace(
 '/(?:\+?\d[\d\s\-().]{7,}\d)/',
+'[phone removed]',
+$message
+);
+
+// Remove spaced-out digit numbers, e.g. 0 2 1 4 5 6 7 8.
+$message = preg_replace(
+'/(?:\+?\s*\d(?:[\s\-().]*\d){6,})/',
+'[phone removed]',
+$message
+);
+
+// Remove phone numbers written as words, e.g. one two three...
+$message = preg_replace(
+'/\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b(?:[\s,.\-]+\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b){6,}/i',
 '[phone removed]',
 $message
 );
