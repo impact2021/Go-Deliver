@@ -304,13 +304,16 @@ $jobs_handler = new Go_Deliver_Jobs();
 $jobs_handler->update_job_status( $job_id, 'accepted' );
 
 // Notify mover.
-$notifications = new Go_Deliver_Notifications();
-if ( method_exists( $notifications, 'notify_mover_quote_accepted' ) ) {
-$notifications->notify_mover_quote_accepted( $quote_id );
-}
+		$notifications = new Go_Deliver_Notifications();
+		if ( method_exists( $notifications, 'notify_mover_quote_accepted' ) ) {
+			$notifications->notify_mover_quote_accepted( $quote_id );
+		}
+		if ( method_exists( $notifications, 'notify_customer_quote_accepted' ) ) {
+			$notifications->notify_customer_quote_accepted( $quote_id );
+		}
 
-return true;
-}
+		return true;
+	}
 
 /**
  * Expire all pending quotes for a job except the accepted one.
