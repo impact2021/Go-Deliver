@@ -126,9 +126,6 @@ return true;
 if ( preg_match( '/\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b(?:[\s,.\-]+\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b){6,}/i', $message ) ) {
 return true;
 }
-	if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $message ) ) {
-		return true;
-	}
 	if ( false !== strpos( $message, '@' ) ) {
 		return true;
 	}

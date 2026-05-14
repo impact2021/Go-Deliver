@@ -1707,7 +1707,6 @@
 	 */
 	function gdHasContactDetails( text ) {
 		if ( /(?:\+?\d[\d\s\-().]{7,}\d)/.test( text ) ) { return true; }
-		if ( /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.test( text ) ) { return true; }
 		if ( text.indexOf( '@' ) !== -1 ) { return true; }
 		if ( /(https?:\/\/|www\.)[^\s]+/.test( text ) ) { return true; }
 		return false;
