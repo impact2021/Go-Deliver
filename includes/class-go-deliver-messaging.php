@@ -126,12 +126,15 @@ return true;
 if ( preg_match( '/\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b(?:[\s,.\-]+\b(?:zero|oh|one|two|three|four|five|six|seven|eight|nine)\b){6,}/i', $message ) ) {
 return true;
 }
-if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $message ) ) {
-return true;
-}
-if ( preg_match( '/\b[a-z0-9._%+\-]+(?:\s*[\(\[\{]?\s*at\s*[\)\]\}]?\s*|\s+at\s+)[a-z0-9\-]+(?:\s*(?:\.|[\(\[\{]?\s*dot\s*[\)\]\}]?)\s*[a-z0-9\-]+)+\b/i', $message ) ) {
-return true;
-}
+	if ( preg_match( '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $message ) ) {
+		return true;
+	}
+	if ( false !== strpos( $message, '@' ) ) {
+		return true;
+	}
+	if ( preg_match( '/\b[a-z0-9._%+\-]+(?:\s*[\(\[\{]?\s*at\s*[\)\]\}]?\s*|\s+at\s+)[a-z0-9\-]+(?:\s*(?:\.|[\(\[\{]?\s*dot\s*[\)\]\}]?)\s*[a-z0-9\-]+)+\b/i', $message ) ) {
+		return true;
+	}
 if ( preg_match( '/(https?:\/\/|www\.)[^\s]+/', $message ) ) {
 return true;
 }
@@ -161,12 +164,12 @@ $message        = sanitize_textarea_field( wp_unslash( $message ) );
 $quote_accepted = $this->is_quote_accepted( $job_id );
 
 // Before acceptance: block messages that contain contact details.
-if ( ! $quote_accepted && $this->has_contact_details( $message ) ) {
-return new WP_Error(
-'contact_details_blocked',
-__( 'Contact details cannot be shared before a quote has been accepted. Please remove any phone numbers, email addresses, or links.', 'go-deliver' )
-);
-}
+	if ( ! $quote_accepted && $this->has_contact_details( $message ) ) {
+		return new WP_Error(
+			'contact_details_blocked',
+			__( 'Contact details cannot be shared before a quote has been accepted. Please remove any phone numbers, email addresses, @ symbols, or links.', 'go-deliver' )
+		);
+	}
 
 // Before acceptance: apply the contact filter as a safety net for any
 // patterns not caught above. After acceptance, contact details are allowed.
@@ -312,12 +315,15 @@ $message = preg_replace(
 $message
 );
 
-// Remove obfuscated email addresses, e.g. name(at)domain(dot)com.
-$message = preg_replace(
-'/\b[a-z0-9._%+\-]+(?:\s*[\(\[\{]?\s*at\s*[\)\]\}]?\s*|\s+at\s+)[a-z0-9\-]+(?:\s*(?:\.|[\(\[\{]?\s*dot\s*[\)\]\}]?)\s*[a-z0-9\-]+)+\b/i',
-'[email removed]',
-$message
-);
+	// Remove obfuscated email addresses, e.g. name(at)domain(dot)com.
+	$message = preg_replace(
+		'/\b[a-z0-9._%+\-]+(?:\s*[\(\[\{]?\s*at\s*[\)\]\}]?\s*|\s+at\s+)[a-z0-9\-]+(?:\s*(?:\.|[\(\[\{]?\s*dot\s*[\)\]\}]?)\s*[a-z0-9\-]+)+\b/i',
+		'[email removed]',
+		$message
+	);
+
+	// Remove @ symbols before quote acceptance.
+	$message = str_replace( '@', '[email removed]', $message );
 
 // Remove URLs (http, https, www).
 $message = preg_replace(
