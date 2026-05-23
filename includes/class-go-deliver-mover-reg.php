@@ -233,6 +233,57 @@ if ( ! empty( $configured ) ) {
 		wp_mail( $mover->user_email, wp_strip_all_tags( $subject ), $html, $headers );
 	}
 
+	/**
+	 * Send an approval email to a mover after their account is approved.
+	 *
+	 * @param int $user_id Mover user ID.
+	 */
+	private function notify_mover_approved_email( $user_id ) {
+		$mover = get_userdata( (int) $user_id );
+		if ( ! $mover || ! $mover->user_email ) {
+			return;
+		}
+
+		$site_name          = get_bloginfo( 'name' );
+		$mover_first_name   = $mover->first_name ?: $mover->display_name;
+		$mover_dashboard_id = (int) get_option( 'gd_mover_dashboard_page_id', 0 );
+		$dashboard_url      = $mover_dashboard_id ? get_permalink( $mover_dashboard_id ) : home_url();
+		$login_url          = wp_login_url( $dashboard_url );
+		$template_path      = GD_PLUGIN_DIR . 'templates/emails/mover-approved.php';
+
+		if ( ! file_exists( $template_path ) ) {
+			return;
+		}
+
+		$subject = sprintf(
+			/* translators: %s: site name */
+			__( '[%s] Your Mover Account Has Been Approved', 'go-deliver' ),
+			$site_name
+		);
+
+		$from_name    = get_option( 'gd_email_from_name', $site_name );
+		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+		$headers      = array(
+			'Content-Type: text/html; charset=UTF-8',
+			sprintf( 'From: %s <%s>', $from_name, $from_address ),
+		);
+
+		$vars = array(
+			'mover_first_name' => $mover_first_name,
+			'login_url'        => $login_url,
+			'site_name'        => $site_name,
+			'site_url'         => home_url(),
+		);
+
+		ob_start();
+		// phpcs:ignore WordPress.PHP.DontExtract.extract_extract -- intentional for template rendering, keys are caller-controlled.
+		extract( $vars, EXTR_SKIP );
+		include $template_path;
+		$html = ob_get_clean();
+
+		wp_mail( $mover->user_email, wp_strip_all_tags( $subject ), $html, $headers );
+	}
+
 /**
  * Approve a mover account.
  *
@@ -246,17 +297,7 @@ return new WP_Error( 'permission_denied', __( 'Only administrators can approve m
 }
 
 update_user_meta( (int) $user_id, 'gd_mover_status', 'approved' );
-
-$mover = get_userdata( (int) $user_id );
-if ( $mover ) {
-$subject = sprintf(
-/* translators: %s: site name */
-__( '[%s] Your Mover Account Has Been Approved', 'go-deliver' ),
-get_bloginfo( 'name' )
-);
-$message = __( 'Congratulations! Your mover account has been approved. You can now log in and start quoting on jobs.', 'go-deliver' );
-wp_mail( $mover->user_email, $subject, $message );
-}
+$this->notify_mover_approved_email( (int) $user_id );
 
 return true;
 }

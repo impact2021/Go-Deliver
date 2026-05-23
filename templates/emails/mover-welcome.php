@@ -71,15 +71,6 @@ $login_url        = isset( $login_url ) ? $login_url : wp_login_url();
 		<p class="email-text"><?php esc_html_e( 'To begin quoting on jobs, you’ll need to top up your GoDeliver account balance. This allows you to access job opportunities and start submitting quotes.', 'go-deliver' ); ?></p>
 
 		<div class="email-divider"></div>
-		<p class="email-title"><?php esc_html_e( '💰 Top-Up & Bonus', 'go-deliver' ); ?></p>
-		<ul class="email-list">
-			<li><?php esc_html_e( 'Top up $50 → get $55', 'go-deliver' ); ?></li>
-			<li><?php esc_html_e( 'Top up $100 → get $110', 'go-deliver' ); ?></li>
-			<li><?php esc_html_e( 'Top up $200 → get $220', 'go-deliver' ); ?></li>
-		</ul>
-		<p class="email-text"><?php esc_html_e( '👉 That’s $10 extra for every $100 added.', 'go-deliver' ); ?></p>
-
-		<div class="email-divider"></div>
 		<p class="email-title"><?php esc_html_e( '📦 Quoting on Jobs', 'go-deliver' ); ?></p>
 		<ul class="email-list">
 			<li><?php esc_html_e( 'Browse available jobs in your dashboard.', 'go-deliver' ); ?></li>
