@@ -174,7 +174,7 @@ if ( ! empty( $configured ) ) {
 	}
 } else {
 	// Fallback: use the WordPress site admin email.
-	$recipient_emails = array( get_option( 'admin_email' ) );
+	$recipient_emails = array( gd_get_admin_email() );
 }
 
 	foreach ( $recipient_emails as $email ) {
@@ -211,7 +211,7 @@ if ( ! empty( $configured ) ) {
 		}
 
 		$from_name    = get_option( 'gd_email_from_name', $site_name );
-		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+		$from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
 		$headers      = array(
 			'Content-Type: text/html; charset=UTF-8',
 			sprintf( 'From: %s <%s>', $from_name, $from_address ),
@@ -262,7 +262,7 @@ if ( ! empty( $configured ) ) {
 		);
 
 		$from_name    = get_option( 'gd_email_from_name', $site_name );
-		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+		$from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
 		$headers      = array(
 			'Content-Type: text/html; charset=UTF-8',
 			sprintf( 'From: %s <%s>', $from_name, $from_address ),

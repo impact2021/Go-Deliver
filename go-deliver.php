@@ -11,7 +11,7 @@
  * Plugin Name:       Go Deliver
  * Plugin URI:        https://godeliver.com
  * Description:       A moving marketplace plugin connecting customers with professional movers.
- * Version:           1.2.46
+ * Version:           1.2.47
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Go Deliver
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Plugin constants.
 if ( ! defined( 'GD_VERSION' ) ) {
-	define( 'GD_VERSION', '1.2.46' );
+	define( 'GD_VERSION', '1.2.47' );
 }
 if ( ! defined( 'GD_PLUGIN_DIR' ) ) {
 	define( 'GD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -41,6 +41,24 @@ if ( ! defined( 'GD_PLUGIN_BASENAME' ) ) {
 }
 if ( ! defined( 'GD_JOB_CARD_PREVIEW_WORDS' ) ) {
 	define( 'GD_JOB_CARD_PREVIEW_WORDS', 50 );
+}
+
+if ( ! function_exists( 'gd_get_admin_email' ) ) {
+	/**
+	 * Get the plugin-level admin/support email address.
+	 *
+	 * Falls back to the WordPress site admin email when not configured.
+	 *
+	 * @return string
+	 */
+	function gd_get_admin_email() {
+		$email = sanitize_email( (string) get_option( 'gd_admin_email', '' ) );
+		if ( ! $email ) {
+			$email = sanitize_email( (string) get_option( 'admin_email' ) );
+		}
+
+		return $email;
+	}
 }
 
 // Include all class files from the includes/ directory.

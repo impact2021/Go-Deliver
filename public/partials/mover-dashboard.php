@@ -60,7 +60,7 @@ if ( 'rejected' === $mover_status ) :
 		<p class="gd-status-message__text">
 			<?php esc_html_e( 'Unfortunately, your mover application was not approved. If you believe this is an error or would like more information, please contact our support team.', 'go-deliver' ); ?>
 		</p>
-		<a href="mailto:<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" class="gd-btn gd-btn--outline" style="margin-top:16px;">
+		<a href="mailto:<?php echo esc_attr( gd_get_admin_email() ); ?>" class="gd-btn gd-btn--outline" style="margin-top:16px;">
 			<?php esc_html_e( 'Contact Support', 'go-deliver' ); ?>
 		</a>
 	</div>
@@ -76,7 +76,7 @@ if ( 'suspended' === $mover_status ) :
 		<p class="gd-status-message__text">
 			<?php esc_html_e( 'Your mover account has been suspended. Please contact support to resolve this issue.', 'go-deliver' ); ?>
 		</p>
-		<a href="mailto:<?php echo esc_attr( get_option( 'admin_email' ) ); ?>" class="gd-btn gd-btn--outline" style="margin-top:16px;">
+		<a href="mailto:<?php echo esc_attr( gd_get_admin_email() ); ?>" class="gd-btn gd-btn--outline" style="margin-top:16px;">
 			<?php esc_html_e( 'Contact Support', 'go-deliver' ); ?>
 		</a>
 	</div>
