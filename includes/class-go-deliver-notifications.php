@@ -759,7 +759,7 @@ class Go_Deliver_Notifications {
 		}
 
 		$from_name    = get_option( 'gd_email_from_name', get_bloginfo( 'name' ) );
-		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+		$from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
 
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
@@ -819,7 +819,7 @@ class Go_Deliver_Notifications {
 		);
 
 		$from_name    = get_option( 'gd_email_from_name', $site_name );
-		$from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+		$from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
 
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',

@@ -52,6 +52,7 @@ if ( isset( $_POST['gd_settings_nonce'] ) ) {
 				update_option( 'gd_stripe_webhook_secret', sanitize_text_field( wp_unslash( $_POST['gd_stripe_webhook_secret'] ) ) );
 			}
 		} elseif ( 'email' === $tab ) {
+			update_option( 'gd_admin_email', sanitize_email( wp_unslash( $_POST['gd_admin_email'] ?? '' ) ) );
 			update_option( 'gd_email_from_name', sanitize_text_field( wp_unslash( $_POST['gd_email_from_name'] ?? '' ) ) );
 			update_option( 'gd_email_from_address', sanitize_email( wp_unslash( $_POST['gd_email_from_address'] ?? '' ) ) );
 		} elseif ( 'appearance' === $tab ) {
@@ -89,8 +90,9 @@ $stripe_pub         = get_option( 'gd_stripe_publishable_key', '' );
 $stripe_sec_masked  = get_option( 'gd_stripe_secret_key', '' ) ? '••••••••••••••••' : '';
 $stripe_wh_masked   = get_option( 'gd_stripe_webhook_secret', '' ) ? '••••••••••••••••' : '';
 $webhook_url        = home_url( '/?gd_stripe_webhook=1' );
+$admin_email        = gd_get_admin_email();
 $email_from_name    = get_option( 'gd_email_from_name', get_bloginfo( 'name' ) );
-$email_from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
+$email_from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
 $job_card_bg        = get_option( 'gd_job_card_bg', '#2D1B0E' );
 $job_card_accent    = get_option( 'gd_job_card_accent', '#C9A227' );
 ?>
@@ -532,6 +534,21 @@ $job_card_accent    = get_option( 'gd_job_card_accent', '#C9A227' );
 
 			<table class="form-table" role="presentation">
 				<tbody>
+					<tr>
+						<th scope="row">
+							<label for="gd_admin_email"><?php esc_html_e( 'Admin / Support Email', 'go-deliver' ); ?></label>
+						</th>
+						<td>
+							<input
+								type="email"
+								id="gd_admin_email"
+								name="gd_admin_email"
+								class="regular-text"
+								value="<?php echo esc_attr( $admin_email ); ?>"
+							>
+							<p class="description"><?php esc_html_e( 'Used for mover application notifications and support contact links across the plugin.', 'go-deliver' ); ?></p>
+						</td>
+					</tr>
 					<tr>
 						<th scope="row">
 							<label for="gd_email_from_name"><?php esc_html_e( 'From Name', 'go-deliver' ); ?></label>

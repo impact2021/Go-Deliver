@@ -749,8 +749,22 @@ class Go_Deliver_Admin {
 
 		$reason     = sanitize_textarea_field( wp_unslash( $_POST['reason'] ?? '' ) );
 		$old_status = get_user_meta( $user_id, 'gd_mover_status', true ) ?: 'pending';
+		$admin_id   = get_current_user_id();
+		$mover_reg  = new Go_Deliver_Mover_Reg();
+		$result     = true;
 
-		update_user_meta( $user_id, 'gd_mover_status', $new_status );
+		if ( 'approved' === $new_status ) {
+			$result = $mover_reg->approve_mover( $user_id, $admin_id );
+		} elseif ( 'rejected' === $new_status ) {
+			$result = $mover_reg->reject_mover( $user_id, $admin_id, $reason );
+		} elseif ( 'suspended' === $new_status ) {
+			$result = $mover_reg->suspend_mover( $user_id, $admin_id );
+		}
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
+		}
 
 		// Append a log entry to user meta so status history is preserved.
 		$log = get_user_meta( $user_id, 'gd_mover_status_log', true );
@@ -761,7 +775,7 @@ class Go_Deliver_Admin {
 			'old_status' => $old_status,
 			'new_status' => $new_status,
 			'reason'     => $reason,
-			'admin_id'   => get_current_user_id(),
+			'admin_id'   => $admin_id,
 			'changed_at' => current_time( 'mysql' ),
 		);
 		update_user_meta( $user_id, 'gd_mover_status_log', $log );
@@ -916,4 +930,3 @@ class Go_Deliver_Admin {
 		wp_send_json_success( array( 'message' => __( 'Profile updated successfully.', 'go-deliver' ) ) );
 	}
 }
-
