@@ -88,7 +88,7 @@ $debug_panel_enabled        = (bool) get_option( 'gd_debug_panel', 1 );
 $stripe_pub         = get_option( 'gd_stripe_publishable_key', '' );
 $stripe_sec_masked  = get_option( 'gd_stripe_secret_key', '' ) ? '••••••••••••••••' : '';
 $stripe_wh_masked   = get_option( 'gd_stripe_webhook_secret', '' ) ? '••••••••••••••••' : '';
-$webhook_url        = home_url( '/wp-json/go-deliver/v1/stripe-webhook' );
+$webhook_url        = home_url( '/?gd_stripe_webhook=1' );
 $email_from_name    = get_option( 'gd_email_from_name', get_bloginfo( 'name' ) );
 $email_from_address = get_option( 'gd_email_from_address', get_option( 'admin_email' ) );
 $job_card_bg        = get_option( 'gd_job_card_bg', '#2D1B0E' );
