@@ -21,7 +21,7 @@ $site_url             = isset( $site_url )             ? $site_url             :
 <style>
 body{margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1e293b}
 .ew{max-width:580px;margin:32px auto;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.eh{background:#2563eb;padding:28px 32px;text-align:center}
+.eh{background:#067AE4;padding:28px 32px;text-align:center}
 .eh a{color:#fff;font-size:22px;font-weight:800;text-decoration:none}
 .eb{padding:32px}
 .eg{font-size:18px;font-weight:700;margin:0 0 12px}

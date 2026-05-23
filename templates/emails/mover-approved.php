@@ -29,7 +29,7 @@ $login_url        = isset( $login_url ) ? $login_url : wp_login_url();
 	<style>
 		body { margin:0; padding:0; background:#f8fafc; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:#1e293b; }
 		.email-wrapper { max-width:620px; margin:32px auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-		.email-header { background:#16a34a; padding:28px 32px; text-align:center; }
+		.email-header { background:#067AE4; padding:28px 32px; text-align:center; }
 		.email-header__logo { color:#fff; font-size:22px; font-weight:800; letter-spacing:-.5px; text-decoration:none; }
 		.email-body { padding:32px; }
 		.email-greeting { font-size:18px; font-weight:700; margin:0 0 14px; }
