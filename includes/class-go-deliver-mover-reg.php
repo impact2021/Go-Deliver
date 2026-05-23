@@ -201,7 +201,7 @@ if ( ! empty( $configured ) ) {
 
 		$subject = sprintf(
 			/* translators: %s: site name */
-			__( 'Welcome to %s', 'go-deliver' ),
+			__( '[%s] We Received Your Mover Application', 'go-deliver' ),
 			$site_name
 		);
 
