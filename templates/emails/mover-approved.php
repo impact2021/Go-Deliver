@@ -35,6 +35,7 @@ $login_url        = isset( $login_url ) ? $login_url : wp_login_url();
 		.email-greeting { font-size:18px; font-weight:700; margin:0 0 14px; }
 		.email-text { font-size:15px; line-height:1.65; color:#475569; margin:0 0 14px; }
 		.email-divider { border-top:1px solid #e2e8f0; margin:18px 0; }
+		.email-title { font-size:16px; font-weight:700; margin:0 0 10px; }
 		.email-list { margin:0 0 14px 18px; color:#475569; font-size:15px; line-height:1.65; }
 		.email-list li { margin:0 0 6px; }
 		.email-cta { text-align:center; margin:24px 0 16px; }
@@ -66,15 +67,44 @@ $login_url        = isset( $login_url ) ? $login_url : wp_login_url();
 		<p class="email-text"><?php esc_html_e( 'You can now log in and start quoting on available jobs.', 'go-deliver' ); ?></p>
 
 		<div class="email-divider"></div>
+		<p class="email-title"><?php esc_html_e( '🚀 Getting Started', 'go-deliver' ); ?></p>
+		<p class="email-text"><?php esc_html_e( 'To begin quoting on jobs, you’ll need to top up your GoDeliver account balance. This allows you to access job opportunities and start submitting quotes.', 'go-deliver' ); ?></p>
+
+		<div class="email-divider"></div>
+		<p class="email-title"><?php esc_html_e( '📦 Quoting on Jobs', 'go-deliver' ); ?></p>
 		<ul class="email-list">
-			<li><?php esc_html_e( 'Complete your profile details if needed.', 'go-deliver' ); ?></li>
-			<li><?php esc_html_e( 'Top up your wallet so you can submit quotes.', 'go-deliver' ); ?></li>
-			<li><?php esc_html_e( 'Check your dashboard regularly for new jobs.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( 'Browse available jobs in your dashboard.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( 'Submit quotes on jobs that suit you.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( 'Get notified when customers respond.', 'go-deliver' ); ?></li>
+		</ul>
+
+		<div class="email-divider"></div>
+		<p class="email-title"><?php esc_html_e( '🏆 When You Win a Job', 'go-deliver' ); ?></p>
+		<p class="email-text"><?php esc_html_e( 'When a customer accepts your quote: a 10% platform fee will be deducted from the total job value. This fee is for using the GoDeliver platform to secure the job.', 'go-deliver' ); ?></p>
+
+		<div class="email-divider"></div>
+		<p class="email-title"><?php esc_html_e( '⚡ Simple Summary', 'go-deliver' ); ?></p>
+		<ul class="email-list">
+			<li><?php esc_html_e( 'Top up your account.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( 'Quote on jobs.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( 'Win work.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( '10% fee applies only when you secure the job.', 'go-deliver' ); ?></li>
+		</ul>
+
+		<div class="email-divider"></div>
+		<p class="email-title"><?php esc_html_e( '💡 Tips to Get Started', 'go-deliver' ); ?></p>
+		<ul class="email-list">
+			<li><?php esc_html_e( 'Respond quickly to new jobs.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( 'Keep your pricing competitive.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( 'Add a short, professional message.', 'go-deliver' ); ?></li>
+			<li><?php esc_html_e( 'Keep your profile updated.', 'go-deliver' ); ?></li>
 		</ul>
 
 		<div class="email-cta">
 			<a href="<?php echo esc_url( $login_url ); ?>" class="email-cta__btn"><?php esc_html_e( 'Log In to Dashboard', 'go-deliver' ); ?></a>
 		</div>
+
+		<p class="email-text"><?php esc_html_e( 'From a single box to a full house move — there’s work waiting.', 'go-deliver' ); ?></p>
 	</div>
 
 	<div class="email-footer">

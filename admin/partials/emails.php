@@ -164,8 +164,8 @@ $gd_customer_emails = array(
 
 $gd_mover_emails = array(
 	array(
-		'title'   => __( 'Welcome to GoDeliver', 'go-deliver' ),
-		'trigger' => __( 'Sent to new movers immediately after they complete registration.', 'go-deliver' ),
+		'title'   => __( 'Mover Application Received', 'go-deliver' ),
+		'trigger' => __( 'Sent to new movers immediately after they complete registration to confirm their application is under review.', 'go-deliver' ),
 		'file'    => 'mover-welcome.php',
 		'vars'    => array(
 			'mover_first_name' => 'Mike',
