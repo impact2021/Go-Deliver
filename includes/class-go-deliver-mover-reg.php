@@ -136,9 +136,10 @@ return $user_id;
 /**
  * Email the site admin(s) when a new mover registers.
  *
- * Recipients are taken from the `gd_notify_admins_new_mover` option (an array
- * of user IDs set on the Emails admin page).  If the option is empty, the
- * notification falls back to the WordPress site admin email.
+ * Recipient is always the plugin Admin / Support Email from settings.
+ *
+ * This ensures plugin-generated admin notifications are sent to the
+ * specifically configured destination only.
  *
  * @param int $user_id New mover's user ID.
  */
@@ -162,24 +163,12 @@ $mover->user_email,
 admin_url( 'admin.php?page=go-deliver-movers' )
 );
 
-// Build the recipient list from the Emails admin page settings.
-$configured = (array) get_option( 'gd_notify_admins_new_mover', array() );
-if ( ! empty( $configured ) ) {
-	$recipient_emails = array();
-	foreach ( $configured as $uid ) {
-		$admin_user = get_userdata( (int) $uid );
-		if ( $admin_user && $admin_user->user_email ) {
-			$recipient_emails[] = $admin_user->user_email;
-		}
+	$recipient_email = gd_get_admin_email();
+	if ( ! is_email( $recipient_email ) ) {
+		return;
 	}
-} else {
-	// Fallback: use the WordPress site admin email.
-	$recipient_emails = array( gd_get_admin_email() );
-}
 
-	foreach ( $recipient_emails as $email ) {
-	wp_mail( $email, $subject, $message );
-	}
+	wp_mail( $recipient_email, $subject, $message );
 	}
 
 	/**
