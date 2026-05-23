@@ -763,6 +763,7 @@ class Go_Deliver_Admin {
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+			return;
 		}
 
 		// Append a log entry to user meta so status history is preserved.
