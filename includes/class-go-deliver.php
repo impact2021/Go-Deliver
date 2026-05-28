@@ -61,6 +61,9 @@ class Go_Deliver {
 		add_action( 'add_meta_boxes_gd_job', array( $admin, 'add_job_meta_boxes' ) );
 		add_action( 'save_post_gd_job', array( $admin, 'save_job_meta' ) );
 		add_action( 'admin_bar_menu', array( $admin, 'add_admin_bar_menu' ), 100 );
+		add_filter( 'manage_gd_job_posts_columns', array( $admin, 'job_list_columns' ) );
+		add_action( 'manage_gd_job_posts_custom_column', array( $admin, 'job_list_column_content' ), 10, 2 );
+		add_filter( 'the_title', array( $admin, 'filter_job_list_title' ), 10, 2 );
 
 		// Admin-only AJAX handlers.
 		$admin_ajax_actions = array(

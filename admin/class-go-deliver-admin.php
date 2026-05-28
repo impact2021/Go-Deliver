@@ -929,4 +929,101 @@ class Go_Deliver_Admin {
 
 		wp_send_json_success( array( 'message' => __( 'Profile updated successfully.', 'go-deliver' ) ) );
 	}
+
+	// -------------------------------------------------------------------------
+	// gd_job list-table columns.
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Replace the default gd_job list columns with meaningful ones.
+	 *
+	 * @param array $columns Default columns.
+	 * @return array
+	 */
+	public function job_list_columns( array $columns ): array {
+		return array(
+			'cb'             => $columns['cb'] ?? '<input type="checkbox">',
+			'title'          => __( 'Job', 'go-deliver' ),
+			'gd_status'      => __( 'Status', 'go-deliver' ),
+			'gd_customer'    => __( 'Customer', 'go-deliver' ),
+			'gd_pickup'      => __( 'From', 'go-deliver' ),
+			'gd_moving_date' => __( 'Moving Date', 'go-deliver' ),
+			'date'           => __( 'Posted', 'go-deliver' ),
+		);
+	}
+
+	/**
+	 * Render content for custom gd_job list columns.
+	 *
+	 * @param string $column  Column slug.
+	 * @param int    $post_id Post ID.
+	 */
+	public function job_list_column_content( string $column, int $post_id ): void {
+		switch ( $column ) {
+			case 'gd_status':
+				$status = get_post_meta( $post_id, 'gd_job_status', true );
+				if ( ! $status ) {
+					$status = 'open';
+				}
+				echo esc_html( ucfirst( $status ) );
+				break;
+
+			case 'gd_customer':
+				$customer_id = (int) get_post_meta( $post_id, 'gd_customer_id', true );
+				if ( ! $customer_id ) {
+					$customer_id = (int) get_post_field( 'post_author', $post_id );
+				}
+				$customer = get_userdata( $customer_id );
+				if ( $customer ) {
+					echo '<a href="' . esc_url( get_edit_user_link( $customer_id ) ) . '">'
+						. esc_html( $customer->display_name )
+						. '</a>';
+				} else {
+					esc_html_e( '(deleted)', 'go-deliver' );
+				}
+				break;
+
+			case 'gd_pickup':
+				$suburb = get_post_meta( $post_id, 'gd_pickup_suburb', true );
+				if ( $suburb ) {
+					echo esc_html( $suburb );
+				} else {
+					echo '<span class="description">&mdash;</span>';
+				}
+				break;
+
+			case 'gd_moving_date':
+				$date = get_post_meta( $post_id, 'gd_date_requested', true );
+				if ( $date ) {
+					echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $date ) ) );
+				} else {
+					echo '<span class="description">&mdash;</span>';
+				}
+				break;
+		}
+	}
+
+	/**
+	 * Replace the UUID post title with the human-readable display title for
+	 * gd_job posts on admin screens.
+	 *
+	 * @param string $title   Post title.
+	 * @param int    $post_id Post ID.
+	 * @return string
+	 */
+	public function filter_job_list_title( string $title, int $post_id ): string {
+		if ( ! is_admin() || 'gd_job' !== get_post_type( $post_id ) ) {
+			return $title;
+		}
+		$display = Go_Deliver_Jobs::get_display_title( $post_id );
+		if ( '' !== $display ) {
+			return sprintf(
+				/* translators: 1: human-readable job title, 2: numeric post ID */
+				__( '%1$s (#%2$d)', 'go-deliver' ),
+				$display,
+				$post_id
+			);
+		}
+		return $title;
+	}
 }
