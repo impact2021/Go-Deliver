@@ -423,7 +423,7 @@ $data = array(
 'first_name'  => sanitize_text_field( wp_unslash( $_POST['first_name'] ?? '' ) ),
 'last_name'   => sanitize_text_field( wp_unslash( $_POST['last_name'] ?? '' ) ),
 'phone'       => sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) ),
-'base_suburb' => sanitize_text_field( wp_unslash( $_POST['base_suburb'] ?? '' ) ),
+'base_suburb' => sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['base_suburb'] ?? '' ) ) ),
 'base_lat'    => isset( $_POST['base_lat'] ) ? (float) $_POST['base_lat'] : 0.0,
 'base_lng'    => isset( $_POST['base_lng'] ) ? (float) $_POST['base_lng'] : 0.0,
 'radius'      => isset( $_POST['radius'] ) ? absint( $_POST['radius'] ) : 0,
@@ -522,7 +522,7 @@ wp_send_json_error( array( 'message' => $result->get_error_message() ) );
 
 // User meta.
 $phone    = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
-$suburb   = sanitize_text_field( wp_unslash( $_POST['base_suburb'] ?? '' ) );
+$suburb   = sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['base_suburb'] ?? '' ) ) );
 $base_lat = isset( $_POST['base_lat'] ) && '' !== $_POST['base_lat'] ? (float) $_POST['base_lat'] : null;
 $base_lng = isset( $_POST['base_lng'] ) && '' !== $_POST['base_lng'] ? (float) $_POST['base_lng'] : null;
 $radius   = isset( $_POST['radius'] ) && '' !== $_POST['radius'] ? absint( $_POST['radius'] ) : null;

@@ -190,10 +190,10 @@ class Go_Deliver_Admin {
 		// ── Pickup location ───────────────────────────────────────────────────
 		$pickup_location = array(
 			'suburb'  => isset( $_POST['gd_pickup_suburb'] )
-				? sanitize_text_field( wp_unslash( $_POST['gd_pickup_suburb'] ) )
+				? sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['gd_pickup_suburb'] ) ) )
 				: '',
 			'address' => isset( $_POST['gd_pickup_address'] )
-				? sanitize_text_field( wp_unslash( $_POST['gd_pickup_address'] ) )
+				? sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['gd_pickup_address'] ) ) )
 				: '',
 			'lat'     => isset( $_POST['gd_pickup_lat'] )
 				? (float) wp_unslash( $_POST['gd_pickup_lat'] )
@@ -222,10 +222,10 @@ class Go_Deliver_Admin {
 		// ── Dropoff location ──────────────────────────────────────────────────
 		$dropoff_location = array(
 			'suburb'  => isset( $_POST['gd_dropoff_suburb'] )
-				? sanitize_text_field( wp_unslash( $_POST['gd_dropoff_suburb'] ) )
+				? sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['gd_dropoff_suburb'] ) ) )
 				: '',
 			'address' => isset( $_POST['gd_dropoff_address'] )
-				? sanitize_text_field( wp_unslash( $_POST['gd_dropoff_address'] ) )
+				? sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['gd_dropoff_address'] ) ) )
 				: '',
 			'lat'     => isset( $_POST['gd_dropoff_lat'] )
 				? (float) wp_unslash( $_POST['gd_dropoff_lat'] )

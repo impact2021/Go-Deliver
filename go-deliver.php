@@ -11,7 +11,7 @@
  * Plugin Name:       Go Deliver
  * Plugin URI:        https://godeliver.com
  * Description:       A moving marketplace plugin connecting customers with professional movers.
- * Version:           1.2.51
+ * Version:           1.2.52
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Go Deliver
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Plugin constants.
 if ( ! defined( 'GD_VERSION' ) ) {
-	define( 'GD_VERSION', '1.2.51' );
+	define( 'GD_VERSION', '1.2.52' );
 }
 if ( ! defined( 'GD_PLUGIN_DIR' ) ) {
 	define( 'GD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -58,6 +58,43 @@ if ( ! function_exists( 'gd_get_admin_email' ) ) {
 		}
 
 		return $email;
+	}
+}
+
+if ( ! function_exists( 'gd_normalize_unicode_escapes' ) ) {
+	/**
+	 * Normalize JSON-style unicode escapes and common de-slashed macron escapes.
+	 *
+	 * @param string $value Raw input value.
+	 * @return string
+	 */
+	function gd_normalize_unicode_escapes( $value ) {
+		$value = (string) $value;
+
+		if ( '' === $value ) {
+			return $value;
+		}
+
+		// Decode escaped unicode sequences such as "\u0101".
+		$value = preg_replace_callback(
+			'/\\\\u([0-9a-fA-F]{4})/',
+			static function ( $matches ) {
+				return html_entity_decode( '&#x' . $matches[1] . ';', ENT_QUOTES, 'UTF-8' );
+			},
+			$value
+		);
+
+		// Recover common Māori macrons when a backslash has been stripped (e.g. "Tu0101wharanui").
+		// Hex set: ā/Ā (0101/0100), ē/Ē (0113/0112), ī/Ī (012B/012A), ō/Ō (014D/014C), ū/Ū (016B/016A).
+		$value = preg_replace_callback(
+			'/(?<![0-9a-fA-F])u(0101|0113|012[bB]|014[dD]|016[bB]|0100|0112|012A|014C|016A)(?![0-9a-fA-F])/',
+			static function ( $matches ) {
+				return html_entity_decode( '&#x' . $matches[1] . ';', ENT_QUOTES, 'UTF-8' );
+			},
+			$value
+		);
+
+		return $value;
 	}
 }
 
