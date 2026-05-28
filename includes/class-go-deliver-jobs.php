@@ -275,8 +275,8 @@ private function sanitize_location( $location ) {
 return array(
 'lat'     => isset( $location['lat'] )     ? (float) $location['lat']                       : 0.0,
 'lng'     => isset( $location['lng'] )     ? (float) $location['lng']                       : 0.0,
-'address' => isset( $location['address'] ) ? sanitize_text_field( $location['address'] )    : '',
-'suburb'  => isset( $location['suburb'] )  ? sanitize_text_field( $location['suburb'] )     : '',
+'address' => isset( $location['address'] ) ? sanitize_text_field( gd_normalize_unicode_escapes( $location['address'] ) ) : '',
+'suburb'  => isset( $location['suburb'] )  ? sanitize_text_field( gd_normalize_unicode_escapes( $location['suburb'] ) )  : '',
 );
 }
 
@@ -1127,15 +1127,15 @@ wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' )
 $pickup_location = array(
 'lat'     => isset( $_POST['pickup_lat'] )     ? (float) $_POST['pickup_lat']                          : 0.0,
 'lng'     => isset( $_POST['pickup_lng'] )     ? (float) $_POST['pickup_lng']                          : 0.0,
-'address' => isset( $_POST['pickup_address'] ) ? sanitize_text_field( wp_unslash( $_POST['pickup_address'] ) ) : '',
-'suburb'  => isset( $_POST['pickup_suburb'] )  ? sanitize_text_field( wp_unslash( $_POST['pickup_suburb'] ) )  : '',
+'address' => isset( $_POST['pickup_address'] ) ? sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['pickup_address'] ) ) ) : '',
+'suburb'  => isset( $_POST['pickup_suburb'] )  ? sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['pickup_suburb'] ) ) )  : '',
 );
 
 $dropoff_location = array(
 'lat'     => isset( $_POST['dropoff_lat'] )     ? (float) $_POST['dropoff_lat']                           : 0.0,
 'lng'     => isset( $_POST['dropoff_lng'] )     ? (float) $_POST['dropoff_lng']                           : 0.0,
-'address' => isset( $_POST['dropoff_address'] ) ? sanitize_text_field( wp_unslash( $_POST['dropoff_address'] ) ) : '',
-'suburb'  => isset( $_POST['dropoff_suburb'] )  ? sanitize_text_field( wp_unslash( $_POST['dropoff_suburb'] ) )  : '',
+'address' => isset( $_POST['dropoff_address'] ) ? sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['dropoff_address'] ) ) ) : '',
+'suburb'  => isset( $_POST['dropoff_suburb'] )  ? sanitize_text_field( gd_normalize_unicode_escapes( wp_unslash( $_POST['dropoff_suburb'] ) ) )  : '',
 );
 
 $form_data = array();
