@@ -85,6 +85,7 @@ if ( ! function_exists( 'gd_normalize_unicode_escapes' ) ) {
 		);
 
 		// Recover common Māori macrons when a backslash has been stripped (e.g. "Tu0101wharanui").
+		// Hex set: ā/Ā (0101/0100), ē/Ē (0113/0112), ī/Ī (012B/012A), ō/Ō (014D/014C), ū/Ū (016B/016A).
 		$value = preg_replace_callback(
 			'/(?<![0-9a-fA-F])u(0101|0113|012[bB]|014[dD]|016[bB]|0100|0112|012A|014C|016A)(?![0-9a-fA-F])/',
 			static function ( $matches ) {
