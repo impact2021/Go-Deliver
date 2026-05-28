@@ -11,7 +11,7 @@
  * Plugin Name:       Go Deliver
  * Plugin URI:        https://godeliver.com
  * Description:       A moving marketplace plugin connecting customers with professional movers.
- * Version:           1.2.54
+ * Version:           2.0.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * Author:            Go Deliver
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Plugin constants.
 if ( ! defined( 'GD_VERSION' ) ) {
-	define( 'GD_VERSION', '1.2.54' );
+	define( 'GD_VERSION', '2.0.0' );
 }
 if ( ! defined( 'GD_PLUGIN_DIR' ) ) {
 	define( 'GD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -97,6 +97,126 @@ if ( ! function_exists( 'gd_normalize_unicode_escapes' ) ) {
 		return $value;
 	}
 }
+
+if ( ! function_exists( 'gd_heal_location_meta' ) ) {
+	/**
+	 * One-time database heal: fix any address/suburb meta that still contains
+	 * broken Unicode escapes (e.g. "Tu0101wharanui") from before v2.0.
+	 *
+	 * Runs on admin_init, gated by a weekly transient so it only queries the DB
+	 * once rather than on every admin page load.
+	 */
+	function gd_heal_location_meta() {
+		if ( get_transient( 'gd_location_healed_v2' ) ) {
+			return;
+		}
+
+		global $wpdb;
+
+		// Fix flat address / suburb meta.
+		$flat_keys = array( 'gd_pickup_address', 'gd_dropoff_address', 'gd_pickup_suburb', 'gd_dropoff_suburb' );
+		foreach ( $flat_keys as $meta_key ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s",
+					$meta_key
+				)
+			);
+			foreach ( $rows as $row ) {
+				$fixed = gd_normalize_unicode_escapes( $row->meta_value );
+				if ( $fixed !== $row->meta_value ) {
+					update_post_meta( (int) $row->post_id, $meta_key, $fixed );
+				}
+			}
+		}
+
+		// Fix JSON location blobs (gd_pickup_location / gd_dropoff_location).
+		$json_keys = array( 'gd_pickup_location', 'gd_dropoff_location' );
+		foreach ( $json_keys as $meta_key ) {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT post_id, meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s",
+					$meta_key
+				)
+			);
+			foreach ( $rows as $row ) {
+				$data = json_decode( $row->meta_value, true );
+				if ( ! is_array( $data ) ) {
+					continue;
+				}
+
+				$changed = false;
+				foreach ( array( 'address', 'suburb' ) as $field ) {
+					if ( isset( $data[ $field ] ) ) {
+						$fixed = gd_normalize_unicode_escapes( $data[ $field ] );
+						if ( $fixed !== $data[ $field ] ) {
+							$data[ $field ] = $fixed;
+							$changed        = true;
+						}
+					}
+				}
+
+				if ( $changed ) {
+					update_post_meta(
+						(int) $row->post_id,
+						$meta_key,
+						wp_json_encode( $data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES )
+					);
+					// Also sync the corresponding flat meta keys.
+					$prefix = ( 'gd_pickup_location' === $meta_key ) ? 'gd_pickup' : 'gd_dropoff';
+					if ( isset( $data['address'] ) ) {
+						update_post_meta( (int) $row->post_id, $prefix . '_address', $data['address'] );
+					}
+					if ( isset( $data['suburb'] ) ) {
+						update_post_meta( (int) $row->post_id, $prefix . '_suburb', $data['suburb'] );
+					}
+				}
+			}
+		}
+
+		set_transient( 'gd_location_healed_v2', true, WEEK_IN_SECONDS );
+	}
+}
+add_action( 'admin_init', 'gd_heal_location_meta' );
+
+/**
+ * Metadata filter: transparently normalise any broken macron escapes in
+ * address/suburb meta values the instant they are read from the database.
+ * This is belt-and-suspenders — the heal function above fixes stored data,
+ * but this filter ensures any remaining stragglers are corrected at read time.
+ */
+add_filter(
+	'get_post_metadata',
+	static function ( $value, $object_id, $meta_key, $single ) {
+		static $normalizing = false;
+
+		if ( $normalizing ) {
+			return $value; // Prevent recursion.
+		}
+
+		$address_keys = array( 'gd_pickup_address', 'gd_dropoff_address', 'gd_pickup_suburb', 'gd_dropoff_suburb' );
+		if ( ! in_array( $meta_key, $address_keys, true ) ) {
+			return $value; // Not an address field — let WordPress handle it.
+		}
+
+		// Let WordPress fetch the raw value, then normalise it.
+		$normalizing = true;
+		$raw         = get_post_meta( $object_id, $meta_key, $single );
+		$normalizing = false;
+
+		if ( null === $raw || false === $raw || '' === $raw ) {
+			return $raw; // Nothing to normalise.
+		}
+
+		if ( is_array( $raw ) ) {
+			return array_map( 'gd_normalize_unicode_escapes', $raw );
+		}
+
+		return gd_normalize_unicode_escapes( $raw );
+	},
+	10,
+	4
+);
 
 // Include all class files from the includes/ directory.
 require_once GD_PLUGIN_DIR . 'includes/class-go-deliver-activator.php';
