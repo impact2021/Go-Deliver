@@ -683,9 +683,10 @@
 		// -----------------------------------------------------------------------
 		$dashboard.on( 'click', '.gd-dashboard-open-convo', function ( e ) {
 			e.preventDefault();
-			var jobId     = $( this ).data( 'job-id' );
-			var otherName = $( this ).data( 'other-name' ) || 'Mover';
-			gdOpenInlineConversation( jobId, otherName );
+			var jobId         = $( this ).data( 'job-id' );
+			var otherName     = $( this ).data( 'other-name' ) || 'Mover';
+			var participantId = parseInt( $( this ).data( 'participant-id' ), 10 ) || 0;
+			gdOpenInlineConversation( jobId, otherName, participantId );
 		} );
 
 		/**
@@ -694,7 +695,7 @@
 		 * @param {number} jobId
 		 * @param {string} otherName
 		 */
-		function gdOpenInlineConversation( jobId, otherName ) {
+		function gdOpenInlineConversation( jobId, otherName, participantId ) {
 			// Switch to messages panel.
 			gdActivateCustomerPanel( 'messages' );
 			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
@@ -714,6 +715,7 @@
 				'</div>' +
 				'<div id="gd-messaging-panel" class="gd-messaging-panel"' +
 					' data-job-id="' + parseInt( jobId, 10 ) + '"' +
+					' data-participant-id="' + parseInt( participantId || 0, 10 ) + '"' +
 					' data-nonce="' + gdEscape( nonce ) + '"' +
 					' data-quote-accepted="0"' +
 					'>' +
@@ -1748,9 +1750,10 @@
 	 * @param {jQuery} $panel
 	 */
 	function gdLoadMessages( jobId, $panel ) {
+		var participantId = parseInt( $panel.data( 'participant-id' ), 10 ) || 0;
 		gdAjax(
 			'gd_get_messages',
-			{ job_id: jobId, nonce: $panel.data( 'nonce' ) || gdPublic.nonce },
+			{ job_id: jobId, participant_id: participantId, nonce: $panel.data( 'nonce' ) || gdPublic.nonce },
 			function ( messages ) {
 				var $list = $panel.find( '#gd-message-list' );
 				if ( ! Array.isArray( messages ) || ! messages.length ) {
@@ -1799,6 +1802,7 @@
 		var $input        = $panel.find( '#gd-message-input' );
 		var $btn          = $panel.find( '#gd-send-message-btn' );
 		var message       = $.trim( $input.val() );
+		var participantId = parseInt( $panel.data( 'participant-id' ), 10 ) || 0;
 		var quoteAccepted = parseInt( $panel.data( 'quote-accepted' ), 10 ) === 1;
 
 		if ( ! message ) { return; }
@@ -1814,9 +1818,10 @@
 		gdAjax(
 			'gd_send_message',
 			{
-				job_id:  jobId,
-				message: message,
-				nonce:   $panel.data( 'nonce' ) || gdPublic.nonce,
+				job_id:         jobId,
+				participant_id: participantId,
+				message:        message,
+				nonce:          $panel.data( 'nonce' ) || gdPublic.nonce,
 			},
 			function () {
 				gdBtnReset( $btn );

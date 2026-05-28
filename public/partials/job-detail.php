@@ -398,10 +398,11 @@ $helpers_labels = array(
 			<?php include __DIR__ . '/quote-form.php'; ?>
 		<?php endif; ?>
 
-		<!-- Messaging Section (for non-open jobs with participants) -->
-		<?php if ( $is_logged_in && 'open' !== $job_status ) :
+		<!-- Messaging Section -->
+		<?php if ( $is_logged_in ) :
 			$messaging = new Go_Deliver_Messaging();
-			if ( $messaging->can_message( $job_id, $current_user_id ) ) :
+			$message_participant_id = $is_job_owner ? ( $accepted_mover_id ?? 0 ) : $job_customer_id;
+			if ( $messaging->can_message( $job_id, $current_user_id, $message_participant_id ) ) :
 				$messaging_page_id  = (int) get_option( 'gd_messaging_page_id', 0 );
 				$messaging_base_url = $messaging_page_id ? get_permalink( $messaging_page_id ) : home_url();
 		?>
@@ -409,10 +410,10 @@ $helpers_labels = array(
 				<div class="gd-job-detail__section-title"><?php esc_html_e( 'Messages', 'go-deliver' ); ?></div>
 				<p class="gd-text-sm" style="margin-bottom:10px;">
 					<a
-						href="<?php echo esc_url( add_query_arg( 'job_id', $job_id, $messaging_base_url ) ); ?>"
+						href="<?php echo esc_url( add_query_arg( array( 'job_id' => $job_id, 'participant_id' => (int) $message_participant_id ), $messaging_base_url ) ); ?>"
 						class="gd-btn gd-btn--outline gd-btn--sm"
 					>
-						💬 <?php esc_html_e( 'Open Messaging', 'go-deliver' ); ?>
+						💬 <?php echo esc_html( $is_mover && in_array( $job_status, array( 'open', 'locked' ), true ) ? __( 'Message Customer', 'go-deliver' ) : __( 'Open Messaging', 'go-deliver' ) ); ?>
 					</a>
 				</p>
 			</div>

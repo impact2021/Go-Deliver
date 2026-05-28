@@ -1463,6 +1463,9 @@ $status_labels = array(
 'locked' => __( 'Receiving Quotes', 'go-deliver' ),
 );
 
+$messaging_page_id  = (int) get_option( 'gd_messaging_page_id', 0 );
+$messaging_base_url = $messaging_page_id ? get_permalink( $messaging_page_id ) : home_url();
+
 $expiry_days = (int) get_option( 'gd_job_expiry_days', 14 );
 
 ob_start();
@@ -1546,6 +1549,12 @@ $<?php echo esc_html( number_format( $q_stats['min'], 0 ) ); ?>–$<?php echo es
 </div>
 </div>
 <div class="gd-job-card__cta">
+<a
+href="<?php echo esc_url( add_query_arg( array( 'job_id' => $job['id'], 'participant_id' => (int) ( $job['customer_id'] ?? 0 ) ), $messaging_base_url ) ); ?>"
+class="gd-btn gd-btn--outline"
+>
+<?php esc_html_e( 'Message Customer', 'go-deliver' ); ?>
+</a>
 <button
 type="button"
 class="gd-btn gd-btn--primary gd-quote-btn"

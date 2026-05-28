@@ -139,8 +139,32 @@ class Go_Deliver_DB {
 	 * @param int $user_id ID of the requesting user.
 	 * @return array Array of message row objects.
 	 */
-	public static function get_messages( $job_id, $user_id ) {
+	public static function get_messages( $job_id, $user_id, $other_user_id = 0 ) {
 		global $wpdb;
+
+		$job_id       = (int) $job_id;
+		$user_id      = (int) $user_id;
+		$other_user_id = (int) $other_user_id;
+
+		if ( $other_user_id > 0 ) {
+			return $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM `{$wpdb->prefix}gd_messages`
+					 WHERE job_id = %d
+					   AND (
+							( sender_id = %d AND receiver_id = %d )
+							OR
+							( sender_id = %d AND receiver_id = %d )
+					   )
+					 ORDER BY created_at ASC",
+					$job_id,
+					$user_id,
+					$other_user_id,
+					$other_user_id,
+					$user_id
+				)
+			);
+		}
 
 		return $wpdb->get_results(
 			$wpdb->prepare(
@@ -148,9 +172,9 @@ class Go_Deliver_DB {
 				 WHERE job_id = %d
 				   AND ( sender_id = %d OR receiver_id = %d )
 				 ORDER BY created_at ASC",
-				(int) $job_id,
-				(int) $user_id,
-				(int) $user_id
+				$job_id,
+				$user_id,
+				$user_id
 			)
 		);
 	}
@@ -166,19 +190,27 @@ class Go_Deliver_DB {
 	 * @param int $user_id ID of the user viewing the thread (the receiver).
 	 * @return int|false Number of rows updated, or false on failure.
 	 */
-	public static function mark_messages_read( $job_id, $user_id ) {
+	public static function mark_messages_read( $job_id, $user_id, $other_user_id = 0 ) {
 		global $wpdb;
+
+		$where = array(
+			'job_id'      => (int) $job_id,
+			'receiver_id' => (int) $user_id,
+			'is_read'     => 0,
+		);
+		$where_format = array( '%d', '%d', '%d' );
+
+		if ( (int) $other_user_id > 0 ) {
+			$where['sender_id'] = (int) $other_user_id;
+			$where_format[]     = '%d';
+		}
 
 		return $wpdb->update(
 			$wpdb->prefix . 'gd_messages',
 			array( 'is_read' => 1 ),
-			array(
-				'job_id'      => (int) $job_id,
-				'receiver_id' => (int) $user_id,
-				'is_read'     => 0,
-			),
+			$where,
 			array( '%d' ),
-			array( '%d', '%d', '%d' )
+			$where_format
 		);
 	}
 
@@ -218,12 +250,17 @@ class Go_Deliver_DB {
 			$wpdb->prepare(
 				"SELECT
 					m.job_id,
+					CASE
+						WHEN m.sender_id = %d THEN m.receiver_id
+						ELSE m.sender_id
+					END AS other_user_id,
 					SUM( CASE WHEN m.receiver_id = %d AND m.is_read = 0 THEN 1 ELSE 0 END ) AS unread_count,
 					MAX( m.created_at ) AS last_message_at
 				 FROM `{$wpdb->prefix}gd_messages` m
 				 WHERE m.sender_id = %d OR m.receiver_id = %d
-				 GROUP BY m.job_id
+				 GROUP BY m.job_id, other_user_id
 				 ORDER BY unread_count DESC, last_message_at DESC",
+				$user_id,
 				$user_id,
 				$user_id,
 				$user_id

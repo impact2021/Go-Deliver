@@ -797,7 +797,7 @@ $cust_name  = esc_html( $raw_name );
 $cust_phone = $cust_id ? esc_html( get_user_meta( $cust_id, 'gd_phone', true ) ) : '';
 $cust_email = $cust_obj ? esc_html( $cust_obj->user_email ) : '';
 
-$msg_url = $q_job_id ? esc_url( add_query_arg( 'job_id', $q_job_id, $messaging_base_url ) ) : '';
+$msg_url = $q_job_id ? esc_url( add_query_arg( array( 'job_id' => $q_job_id, 'participant_id' => $cust_id ), $messaging_base_url ) ) : '';
 ?>
 <div class="gd-mover-card">
 <div class="gd-mover-card__header">

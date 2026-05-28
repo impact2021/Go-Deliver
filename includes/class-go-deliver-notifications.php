@@ -209,7 +209,7 @@ class Go_Deliver_Notifications {
 		// Only send one email per unread conversation thread. If the receiver has
 		// already been notified since they last viewed the conversation, skip the
 		// email. The flag is cleared when the receiver fetches messages.
-		$notified_meta_key = 'gd_msg_notified_' . (int) $job_id;
+		$notified_meta_key = 'gd_msg_notified_' . (int) $job_id . '_' . (int) $sender_id;
 		if ( get_user_meta( (int) $receiver_id, $notified_meta_key, true ) ) {
 			return;
 		}
@@ -220,7 +220,13 @@ class Go_Deliver_Notifications {
 
 		$messaging_page_id = (int) get_option( 'gd_messaging_page_id', 0 );
 		$conversation_url  = $messaging_page_id
-			? add_query_arg( 'job_id', (int) $job_id, get_permalink( $messaging_page_id ) )
+			? add_query_arg(
+				array(
+					'job_id'         => (int) $job_id,
+					'participant_id' => (int) $sender_id,
+				),
+				get_permalink( $messaging_page_id )
+			)
 			: home_url();
 
 		$site_name = get_bloginfo( 'name' );
@@ -564,7 +570,13 @@ class Go_Deliver_Notifications {
 
 		$messaging_page_id = (int) get_option( 'gd_messaging_page_id', 0 );
 		$job_url           = $messaging_page_id
-			? add_query_arg( 'job_id', $job_id, get_permalink( $messaging_page_id ) )
+			? add_query_arg(
+				array(
+					'job_id'         => $job_id,
+					'participant_id' => $customer_id,
+				),
+				get_permalink( $messaging_page_id )
+			)
 			: home_url();
 
 		$this->send_html_email(
