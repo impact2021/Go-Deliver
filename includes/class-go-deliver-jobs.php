@@ -228,8 +228,8 @@ $photos[] = (int) $photo_id;
 
 update_post_meta( $post_id, 'gd_job_type',             $job_type );
 update_post_meta( $post_id, 'gd_listing_title',        sanitize_text_field( $data['listing_title'] ?? '' ) );
-update_post_meta( $post_id, 'gd_pickup_location',      wp_json_encode( $sanitized_pickup ) );
-update_post_meta( $post_id, 'gd_dropoff_location',     wp_json_encode( $sanitized_dropoff ) );
+update_post_meta( $post_id, 'gd_pickup_location',      wp_json_encode( $sanitized_pickup, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+update_post_meta( $post_id, 'gd_dropoff_location',     wp_json_encode( $sanitized_dropoff, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 update_post_meta( $post_id, 'gd_pickup_suburb',        $sanitized_pickup['suburb'] );
 update_post_meta( $post_id, 'gd_pickup_address',       $sanitized_pickup['address'] );
 update_post_meta( $post_id, 'gd_dropoff_suburb',       $sanitized_dropoff['suburb'] );

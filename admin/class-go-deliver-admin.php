@@ -215,7 +215,7 @@ class Go_Deliver_Admin {
 			}
 		}
 
-		update_post_meta( $post_id, 'gd_pickup_location', wp_json_encode( $pickup_location ) );
+		update_post_meta( $post_id, 'gd_pickup_location', wp_json_encode( $pickup_location, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 		// Keep the flat location keys used across dashboard and notification views.
 		update_post_meta( $post_id, 'gd_pickup_suburb', $pickup_location['suburb'] );
 		update_post_meta( $post_id, 'gd_pickup_address', $pickup_location['address'] );
@@ -250,7 +250,7 @@ class Go_Deliver_Admin {
 			}
 		}
 
-		update_post_meta( $post_id, 'gd_dropoff_location', wp_json_encode( $dropoff_location ) );
+		update_post_meta( $post_id, 'gd_dropoff_location', wp_json_encode( $dropoff_location, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 		update_post_meta( $post_id, 'gd_dropoff_suburb', $dropoff_location['suburb'] );
 		update_post_meta( $post_id, 'gd_dropoff_address', $dropoff_location['address'] );
 

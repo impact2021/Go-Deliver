@@ -117,7 +117,7 @@ $pickup['lng']   = $job_lng;
 $job['pickup_location'] = $pickup;
 // Persist so we don't re-geocode on every page load.
 if ( ! empty( $job['id'] ) ) {
-$updated = update_post_meta( (int) $job['id'], 'gd_pickup_location', wp_json_encode( $pickup ) );
+$updated = update_post_meta( (int) $job['id'], 'gd_pickup_location', wp_json_encode( $pickup, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
 if ( false === $updated ) {
 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 error_log( 'Go Deliver: failed to persist geocoded coordinates for job ' . (int) $job['id'] );
