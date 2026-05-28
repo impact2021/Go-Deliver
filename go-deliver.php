@@ -103,17 +103,19 @@ if ( ! function_exists( 'gd_heal_location_meta' ) ) {
 	 * One-time database heal: fix any address/suburb meta that still contains
 	 * broken Unicode escapes (e.g. "Tu0101wharanui") from before v2.0.
 	 *
-	 * Runs on admin_init, gated by a weekly transient so it only queries the DB
-	 * once rather than on every admin page load.
+	 * Runs once ever on admin_init, gated by a permanent option flag so it
+	 * never queries the DB again after the first successful run.
 	 */
 	function gd_heal_location_meta() {
-		if ( get_transient( 'gd_location_healed_v2' ) ) {
+		// Permanent flag — only run once ever (not just weekly).
+		if ( get_option( 'gd_location_healed_v2' ) ) {
 			return;
 		}
 
 		global $wpdb;
 
-		// Fix flat address / suburb meta.
+		// Fix flat address / suburb meta. The belt-and-suspenders metadata
+		// filter (below) handles any rows added after this migration runs.
 		$flat_keys = array( 'gd_pickup_address', 'gd_dropoff_address', 'gd_pickup_suburb', 'gd_dropoff_suburb' );
 		foreach ( $flat_keys as $meta_key ) {
 			$rows = $wpdb->get_results(
@@ -174,7 +176,7 @@ if ( ! function_exists( 'gd_heal_location_meta' ) ) {
 			}
 		}
 
-		set_transient( 'gd_location_healed_v2', true, WEEK_IN_SECONDS );
+		update_option( 'gd_location_healed_v2', true );
 	}
 }
 add_action( 'admin_init', 'gd_heal_location_meta' );
@@ -184,6 +186,9 @@ add_action( 'admin_init', 'gd_heal_location_meta' );
  * address/suburb meta values the instant they are read from the database.
  * This is belt-and-suspenders — the heal function above fixes stored data,
  * but this filter ensures any remaining stragglers are corrected at read time.
+ *
+ * The static flag prevents re-entrant calls within the same request; PHP
+ * processes are single-threaded per request so this is safe.
  */
 add_filter(
 	'get_post_metadata',
@@ -204,15 +209,16 @@ add_filter(
 		$raw         = get_post_meta( $object_id, $meta_key, $single );
 		$normalizing = false;
 
-		if ( null === $raw || false === $raw || '' === $raw ) {
-			return $raw; // Nothing to normalise.
+		// get_post_meta($id, $key, true) returns '' for missing keys; skip empty.
+		if ( '' === $raw ) {
+			return $raw;
 		}
 
 		if ( is_array( $raw ) ) {
 			return array_map( 'gd_normalize_unicode_escapes', $raw );
 		}
 
-		return gd_normalize_unicode_escapes( $raw );
+		return gd_normalize_unicode_escapes( (string) $raw );
 	},
 	10,
 	4
