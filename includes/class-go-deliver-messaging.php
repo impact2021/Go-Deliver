@@ -61,7 +61,8 @@ public function resolve_conversation_partner( $job_id, $user_id, $other_user_id 
 	$accepted_quote = (int) get_post_meta( $job_id, 'gd_accepted_quote_id', true );
 	$accepted_mover = $accepted_quote ? (int) get_post_meta( $accepted_quote, 'gd_mover_id', true ) : 0;
 
-	if ( ! $job_id || ! $user_id || ! $customer_id || ! get_post( $job_id ) ) {
+	$job_post = get_post( $job_id );
+	if ( ! $job_id || ! $user_id || ! $customer_id || ! $job_post || 'gd_job' !== $job_post->post_type ) {
 		return 0;
 	}
 
@@ -146,7 +147,12 @@ private function user_has_quote( $job_id, $mover_id ) {
  * @return bool
  */
 private function can_start_prequote_conversation( $job_id, $mover_id ) {
-	$roles = (array) get_userdata( (int) $mover_id )->roles;
+	$mover = get_userdata( (int) $mover_id );
+	if ( ! $mover ) {
+		return false;
+	}
+
+	$roles = (array) $mover->roles;
 
 	if ( ! in_array( 'gd_mover', $roles, true ) && ! in_array( 'gd_mover_sub', $roles, true ) ) {
 		return false;
