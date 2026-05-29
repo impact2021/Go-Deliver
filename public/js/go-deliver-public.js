@@ -2480,18 +2480,20 @@
 				return;
 			}
 			var $tooltip   = $( '#gd-tour-tooltip' );
-			var offset     = $target.offset();
-			var tHeight    = $target.outerHeight();
-			var tWidth     = $target.outerWidth();
+			var rect       = $target[0].getBoundingClientRect();
 			var ttWidth    = $tooltip.outerWidth();
+			var ttHeight   = $tooltip.outerHeight();
 			var winWidth   = $( window ).width();
+			var winHeight  = $( window ).height();
 
-			var top  = offset.top + tHeight + 12;
-			var left = offset.left + ( tWidth / 2 ) - ( ttWidth / 2 );
+			var top  = rect.bottom + 12;
+			var left = rect.left + ( rect.width / 2 ) - ( ttWidth / 2 );
 
 			// Keep within viewport.
 			if ( left < 10 ) { left = 10; }
 			if ( left + ttWidth > winWidth - 10 ) { left = winWidth - ttWidth - 10; }
+			if ( top + ttHeight > winHeight - 10 ) { top = rect.top - ttHeight - 12; }
+			if ( top < 10 ) { top = 10; }
 
 			$tooltip.css( { top: top, left: left } );
 		}
@@ -2594,7 +2596,12 @@
 		// Reposition on resize.
 		$( window ).on( 'resize.gdTour', function () {
 			if ( $( '#gd-tour-overlay' ).is( ':visible' ) ) {
-				positionTooltip( $( steps[ currentStep ].target ) );
+				var $target = $( steps[ currentStep ].target );
+				if ( $target && $target.length ) {
+					positionTooltip( $target );
+				} else {
+					centerTooltip();
+				}
 			}
 		} );
 
