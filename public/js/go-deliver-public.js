@@ -1277,7 +1277,9 @@
 		} );
 
 		// "View quotes" stat on job cards opens the job detail modal.
-		$dashboard.on( 'click', '.gd-job-card__stat--link', function () {
+		$dashboard.on( 'click keydown', '.gd-job-card__stat--link', function ( e ) {
+			if ( e.type === 'keydown' && e.which !== 13 && e.which !== 32 ) { return; }
+			if ( e.type === 'keydown' ) { e.preventDefault(); }
 			var jobId = $( this ).closest( '.gd-job-card' ).data( 'job-id' );
 			if ( jobId ) { gdOpenJobModal( jobId ); }
 		} );
