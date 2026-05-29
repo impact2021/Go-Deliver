@@ -1281,7 +1281,7 @@
 			if ( e.type === 'keydown' && e.which !== 13 && e.which !== 32 ) { return; }
 			if ( e.type === 'keydown' ) { e.preventDefault(); }
 			var jobId = $( this ).closest( '.gd-job-card' ).data( 'job-id' );
-			if ( jobId ) { gdOpenJobModal( jobId ); }
+			if ( jobId ) { gdOpenJobModal( jobId, { view: 'quotes' } ); }
 		} );
 
 		// Withdraw quote.
@@ -1663,16 +1663,23 @@
 	 *
 	 * @param {number} jobId
 	 */
-	function gdOpenJobModal( jobId ) {
+	function gdOpenJobModal( jobId, options ) {
 		var $overlay = $( '#gd-job-modal-overlay' );
 		var $body    = $overlay.find( '.gd-modal__body' );
+		var requestData;
+
+		options     = options || {};
+		requestData = { job_id: jobId };
+		if ( options.view ) {
+			requestData.view = options.view;
+		}
 
 		$body.html( '<div class="gd-inline-spinner"><div class="gd-loading-spinner" style="width:32px;height:32px;border-color:var(--gd-border);border-top-color:var(--gd-primary)"></div></div>' );
 		$overlay.addClass( 'gd-modal-overlay--open' );
 
 		gdAjax(
 			'gd_get_job_detail',
-			{ job_id: jobId },
+			requestData,
 			function ( data ) {
 				$body.html( data.html );
 				gdInitStarInput( $body );
