@@ -276,17 +276,17 @@ if ( is_user_logged_in() ) {
 						<?php esc_html_e( 'Please upload clear copies of the required documents. All documents are kept securely and reviewed by our team.', 'go-deliver' ); ?>
 					</p>
 
-					<!-- Driver's Licence -->
+					<!-- Driver's Licence – Front -->
 					<div class="gd-doc-upload">
 						<span class="gd-doc-upload__label">
-							<?php esc_html_e( "Driver's Licence", 'go-deliver' ); ?>
+							<?php esc_html_e( "Driver's Licence – Front", 'go-deliver' ); ?>
 							<span class="gd-required">*</span>
 						</span>
 						<div class="gd-upload-area">
 							<input
 								type="file"
-								name="drivers_licence"
-								id="gd-doc-licence"
+								name="drivers_licence_front"
+								id="gd-doc-licence-front"
 								accept="image/*,.pdf"
 								required
 							>
@@ -299,7 +299,35 @@ if ( is_user_logged_in() ) {
 								<?php esc_html_e( 'Drag here or ', 'go-deliver' ); ?>
 								<strong><?php esc_html_e( 'click to upload', 'go-deliver' ); ?></strong>
 							</p>
-							<p class="gd-upload-area__hint"><?php esc_html_e( 'JPG, PNG or PDF · Max 10 MB', 'go-deliver' ); ?></p>
+							<p class="gd-upload-area__hint"><?php esc_html_e( 'Front side of licence · JPG, PNG or PDF · Max 10 MB', 'go-deliver' ); ?></p>
+						</div>
+						<div class="gd-upload-preview"></div>
+					</div>
+
+					<!-- Driver's Licence – Back -->
+					<div class="gd-doc-upload">
+						<span class="gd-doc-upload__label">
+							<?php esc_html_e( "Driver's Licence – Back", 'go-deliver' ); ?>
+							<span class="gd-required">*</span>
+						</span>
+						<div class="gd-upload-area">
+							<input
+								type="file"
+								name="drivers_licence_back"
+								id="gd-doc-licence-back"
+								accept="image/*,.pdf"
+								required
+							>
+							<div class="gd-upload-area__icon">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40" aria-hidden="true">
+								<path fill-rule="evenodd" d="M4.5 3.75a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V6.75a3 3 0 0 0-3-3h-15Zm4.125 3a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Zm-3.873 8.703a4.126 4.126 0 0 1 7.746 0 .75.75 0 0 1-.272.83A5.597 5.597 0 0 1 8.625 17.5a5.597 5.597 0 0 1-3.255-1.017.75.75 0 0 1-.272-.83ZM15 8.25a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H15ZM14.25 12a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H15a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5H18a.75.75 0 0 0 0-1.5h-3Z" clip-rule="evenodd"/>
+							</svg>
+						</div>
+							<p class="gd-upload-area__text">
+								<?php esc_html_e( 'Drag here or ', 'go-deliver' ); ?>
+								<strong><?php esc_html_e( 'click to upload', 'go-deliver' ); ?></strong>
+							</p>
+							<p class="gd-upload-area__hint"><?php esc_html_e( 'Back side of licence · JPG, PNG or PDF · Max 10 MB', 'go-deliver' ); ?></p>
 						</div>
 						<div class="gd-upload-preview"></div>
 					</div>

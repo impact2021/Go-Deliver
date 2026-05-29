@@ -24,6 +24,7 @@ class Go_Deliver_Mover_Reg {
 public function register_hooks() {
 add_action( 'wp_ajax_gd_register_mover',        array( $this, 'ajax_register_mover' ) );
 add_action( 'wp_ajax_nopriv_gd_register_mover', array( $this, 'ajax_register_mover' ) );
+add_action( 'wp_ajax_gd_mover_dismiss_tour',    array( $this, 'ajax_dismiss_tour' ) );
 }
 
 // =========================================================================
@@ -438,7 +439,7 @@ $data['job_types'][] = sanitize_text_field( wp_unslash( $jt ) );
 }
 
 // Handle document uploads.
-$document_types = array( 'drivers_licence', 'police_check', 'insurance' );
+$document_types = array( 'drivers_licence_front', 'drivers_licence_back', 'police_check', 'insurance' );
 foreach ( $document_types as $doc_type ) {
 if ( isset( $_FILES[ $doc_type ] ) && ! empty( $_FILES[ $doc_type ]['name'] ) ) {
 $user_id      = 0; // Will be set after user creation; upload to tmp first.
@@ -739,5 +740,19 @@ public function ajax_delete_mover_photo() {
 	wp_delete_attachment( $attachment_id, true );
 
 	wp_send_json_success( array( 'count' => count( $photos ) ) );
+}
+
+/**
+ * AJAX: Mark the mover dashboard tour as completed/dismissed.
+ */
+public function ajax_dismiss_tour() {
+	check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+	if ( ! is_user_logged_in() ) {
+		wp_send_json_error( array( 'message' => __( 'Not logged in.', 'go-deliver' ) ), 401 );
+	}
+
+	update_user_meta( get_current_user_id(), 'gd_mover_tour_completed', 1 );
+	wp_send_json_success();
 }
 }
