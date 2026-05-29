@@ -195,13 +195,14 @@ $quote_accepted  = (bool) get_post_meta( $job_id, 'gd_accepted_quote_id', true )
 				</div>
 			</div>
 		<?php else : ?>
-			<div class="gd-alert gd-alert--warning gd-alert--panel">
+			<div class="gd-alert gd-alert--warning gd-alert--panel" id="gd-contact-policy-notice">
 				<span class="gd-alert__icon">⚠️</span>
 				<div class="gd-alert__body">
 					<div class="gd-alert__title"><?php esc_html_e( 'Contact details are not permitted yet', 'go-deliver' ); ?></div>
 					<strong><?php esc_html_e( "Contact numbers can't be shared until the job has been quoted and accepted.", 'go-deliver' ); ?></strong>
 					<div><?php esc_html_e( 'Phone numbers, email addresses, and links are blocked until then, so please keep all communication on-platform.', 'go-deliver' ); ?></div>
 				</div>
+				<button type="button" class="gd-alert__close" aria-label="<?php esc_attr_e( 'Dismiss', 'go-deliver' ); ?>">&#x2715;</button>
 			</div>
 		<?php endif; ?>
 

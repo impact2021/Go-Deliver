@@ -1758,6 +1758,18 @@
 		var jobId = $panel.data( 'job-id' );
 		if ( ! jobId ) { return; }
 
+		// Restore dismissed state of the contact-policy notice.
+		var warnKey = 'gd_cwarn_' + jobId;
+		if ( sessionStorage.getItem( warnKey ) ) {
+			$( '#gd-contact-policy-notice' ).hide();
+		}
+
+		// Dismiss button for the contact-policy notice.
+		$( '#gd-contact-policy-notice' ).on( 'click', '.gd-alert__close', function () {
+			$( '#gd-contact-policy-notice' ).slideUp( 200 );
+			try { sessionStorage.setItem( warnKey, '1' ); } catch ( e ) {}
+		} );
+
 		// Initial load.
 		gdLoadMessages( jobId, $panel );
 
