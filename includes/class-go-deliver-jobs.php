@@ -1659,6 +1659,7 @@ wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) 
 }
 
 ob_start();
+$gd_job_detail_context = 'modal';
 $template = GD_PLUGIN_DIR . 'public/partials/job-detail.php';
 if ( file_exists( $template ) ) {
 include $template;

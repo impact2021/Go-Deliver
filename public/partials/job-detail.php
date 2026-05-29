@@ -91,6 +91,8 @@ if ( $is_mover ) {
 }
 
 $can_view_market_quotes = $is_mover && $has_market_quotes;
+$is_modal_context       = isset( $gd_job_detail_context ) && 'modal' === $gd_job_detail_context;
+$show_pre_quote_details = ! ( $is_modal_context && $can_view_market_quotes );
 
 // Privacy filter: only reveal full address to:
 // - the customer who owns the job
@@ -139,186 +141,190 @@ $helpers_labels = array(
 ?>
 <div class="gd-job-detail">
 
-	<!-- Header -->
-	<div class="gd-job-detail__header">
-		<div>
-			<h2 style="margin:0 0 6px;font-size:20px;font-weight:700;">
-				<?php echo esc_html( Go_Deliver_Jobs::get_display_title( $job_id ) ); ?>
-				<span style="font-size:14px;color:var(--gd-text-muted);font-weight:400;">#<?php echo esc_html( $job_id ); ?></span>
-			</h2>
-			<p style="margin:0;color:var(--gd-text-muted);font-size:14px;">
-				<?php
-				printf(
-					/* translators: %s: formatted date */
-					esc_html__( 'Posted %s', 'go-deliver' ),
-					esc_html( get_the_date( 'd M Y', $job_id ) )
-				);
-				if ( in_array( $job_status, array( 'open', 'locked' ), true ) ) {
-					$expiry_days = (int) get_option( 'gd_job_expiry_days', 14 );
-					$expiry_ts   = strtotime( get_post_field( 'post_date', $job_id ) ) + $expiry_days * DAY_IN_SECONDS;
-					echo ' (';
+	<?php if ( $show_pre_quote_details ) : ?>
+		<!-- Header -->
+		<div class="gd-job-detail__header">
+			<div>
+				<h2 style="margin:0 0 6px;font-size:20px;font-weight:700;">
+					<?php echo esc_html( Go_Deliver_Jobs::get_display_title( $job_id ) ); ?>
+					<span style="font-size:14px;color:var(--gd-text-muted);font-weight:400;">#<?php echo esc_html( $job_id ); ?></span>
+				</h2>
+				<p style="margin:0;color:var(--gd-text-muted);font-size:14px;">
+					<?php
 					printf(
-						/* translators: %s: expiry date */
-						esc_html__( 'listing expires %s', 'go-deliver' ),
-						esc_html( date_i18n( 'd M Y', $expiry_ts ) )
+						/* translators: %s: formatted date */
+						esc_html__( 'Posted %s', 'go-deliver' ),
+						esc_html( get_the_date( 'd M Y', $job_id ) )
 					);
-					echo ')';
-				}
-				?>
-			</p>
+					if ( in_array( $job_status, array( 'open', 'locked' ), true ) ) {
+						$expiry_days = (int) get_option( 'gd_job_expiry_days', 14 );
+						$expiry_ts   = strtotime( get_post_field( 'post_date', $job_id ) ) + $expiry_days * DAY_IN_SECONDS;
+						echo ' (';
+						printf(
+							/* translators: %s: expiry date */
+							esc_html__( 'listing expires %s', 'go-deliver' ),
+							esc_html( date_i18n( 'd M Y', $expiry_ts ) )
+						);
+						echo ')';
+					}
+					?>
+				</p>
+			</div>
+			<span class="gd-badge gd-badge--<?php echo esc_attr( $job_status ); ?>" style="font-size:13px;">
+				<?php echo esc_html( isset( $job_status_labels[ $job_status ] ) ? $job_status_labels[ $job_status ] : ucfirst( $job_status ) ); ?>
+			</span>
 		</div>
-		<span class="gd-badge gd-badge--<?php echo esc_attr( $job_status ); ?>" style="font-size:13px;">
-			<?php echo esc_html( isset( $job_status_labels[ $job_status ] ) ? $job_status_labels[ $job_status ] : ucfirst( $job_status ) ); ?>
-		</span>
-	</div>
+	<?php endif; ?>
 
 	<div class="gd-job-detail__body">
 
-		<!-- Locations -->
-		<div class="gd-job-detail__section">
-			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Locations', 'go-deliver' ); ?></div>
-			<div class="gd-job-detail__grid">
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Pickup', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<?php echo $show_full_details ? $pickup_full : $pickup_suburb; ?>
+		<?php if ( $show_pre_quote_details ) : ?>
+			<!-- Locations -->
+			<div class="gd-job-detail__section">
+				<div class="gd-job-detail__section-title"><?php esc_html_e( 'Locations', 'go-deliver' ); ?></div>
+				<div class="gd-job-detail__grid">
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Pickup', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<?php echo $show_full_details ? $pickup_full : $pickup_suburb; ?>
+						</div>
+					</div>
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Dropoff', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<?php echo $show_full_details ? $dropoff_full : $dropoff_suburb; ?>
+						</div>
+					</div>
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Date Requested', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<?php echo $date_requested ?: '—'; ?>
+							<?php if ( $date_flexible ) : ?>
+								<span class="gd-badge gd-badge--info" style="margin-left:6px;font-size:11px;"><?php esc_html_e( 'Flexible', 'go-deliver' ); ?></span>
+							<?php endif; ?>
+						</div>
 					</div>
 				</div>
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Dropoff', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<?php echo $show_full_details ? $dropoff_full : $dropoff_suburb; ?>
+
+				<?php if ( $is_mover && ! $is_accepted_mover && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
+					<p class="gd-privacy-notice">
+						🔒 <?php esc_html_e( 'Full address details are revealed only after your quote is accepted.', 'go-deliver' ); ?>
+					</p>
+				<?php endif; ?>
+			</div>
+
+			<!-- Job Requirements -->
+			<div class="gd-job-detail__section">
+				<div class="gd-job-detail__section-title"><?php esc_html_e( 'Requirements', 'go-deliver' ); ?></div>
+				<div class="gd-job-detail__grid">
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Labour at Pickup', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<?php echo $labour_pickup ? esc_html__( 'Yes', 'go-deliver' ) : esc_html__( 'No', 'go-deliver' ); ?>
+						</div>
 					</div>
-				</div>
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Date Requested', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<?php echo $date_requested ?: '—'; ?>
-						<?php if ( $date_flexible ) : ?>
-							<span class="gd-badge gd-badge--info" style="margin-left:6px;font-size:11px;"><?php esc_html_e( 'Flexible', 'go-deliver' ); ?></span>
-						<?php endif; ?>
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Labour at Dropoff', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<?php echo $labour_dropoff ? esc_html__( 'Yes', 'go-deliver' ) : esc_html__( 'No', 'go-deliver' ); ?>
+						</div>
+					</div>
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Floors / Stairs at Delivery', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<?php echo esc_html( $floors_labels[ $dropoff_floors ] ?? $dropoff_floors ); ?>
+						</div>
+					</div>
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'People to Unload', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<?php echo esc_html( $helpers_labels[ $dropoff_helpers ] ?? $dropoff_helpers ); ?>
+						</div>
 					</div>
 				</div>
 			</div>
 
-			<?php if ( $is_mover && ! $is_accepted_mover && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
-				<p class="gd-privacy-notice">
-					🔒 <?php esc_html_e( 'Full address details are revealed only after your quote is accepted.', 'go-deliver' ); ?>
-				</p>
+			<!-- Inventory -->
+			<?php if ( $inventory ) : ?>
+			<div class="gd-job-detail__section">
+				<div class="gd-job-detail__section-title"><?php esc_html_e( 'Inventory', 'go-deliver' ); ?></div>
+				<p style="font-size:14px;white-space:pre-line;"><?php echo $inventory; ?></p>
+			</div>
 			<?php endif; ?>
-		</div>
 
-		<!-- Job Requirements -->
-		<div class="gd-job-detail__section">
-			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Requirements', 'go-deliver' ); ?></div>
-			<div class="gd-job-detail__grid">
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Labour at Pickup', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<?php echo $labour_pickup ? esc_html__( 'Yes', 'go-deliver' ) : esc_html__( 'No', 'go-deliver' ); ?>
-					</div>
-				</div>
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Labour at Dropoff', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<?php echo $labour_dropoff ? esc_html__( 'Yes', 'go-deliver' ) : esc_html__( 'No', 'go-deliver' ); ?>
-					</div>
-				</div>
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Floors / Stairs at Delivery', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<?php echo esc_html( $floors_labels[ $dropoff_floors ] ?? $dropoff_floors ); ?>
-					</div>
-				</div>
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'People to Unload', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<?php echo esc_html( $helpers_labels[ $dropoff_helpers ] ?? $dropoff_helpers ); ?>
-					</div>
+			<!-- Access Notes -->
+			<?php if ( $access_notes ) : ?>
+			<div class="gd-job-detail__section">
+				<div class="gd-job-detail__section-title"><?php esc_html_e( 'Access Notes', 'go-deliver' ); ?></div>
+				<p style="font-size:14px;"><?php echo $access_notes; ?></p>
+			</div>
+			<?php endif; ?>
+
+			<!-- Special Instructions -->
+			<?php if ( $special_instructions ) : ?>
+			<div class="gd-job-detail__section">
+				<div class="gd-job-detail__section-title"><?php esc_html_e( 'Special Instructions', 'go-deliver' ); ?></div>
+				<p style="font-size:14px;"><?php echo $special_instructions; ?></p>
+			</div>
+			<?php endif; ?>
+
+			<!-- Photos -->
+			<?php if ( ! empty( $photos ) ) : ?>
+			<div class="gd-job-detail__section">
+				<div class="gd-job-detail__section-title"><?php esc_html_e( 'Photos', 'go-deliver' ); ?></div>
+				<div class="gd-photo-gallery">
+					<?php foreach ( $photos as $photo_id ) :
+						$full_url  = wp_get_attachment_url( (int) $photo_id );
+						$thumb_src = wp_get_attachment_image_src( (int) $photo_id, 'thumbnail' );
+						if ( $full_url ) :
+							$thumb_url = $thumb_src ? $thumb_src[0] : $full_url;
+					?>
+						<div class="gd-photo-gallery__item">
+							<a href="<?php echo esc_url( $full_url ); ?>" class="gd-photo-gallery__link">
+								<img
+									src="<?php echo esc_url( $thumb_url ); ?>"
+									alt="<?php esc_attr_e( 'Job photo', 'go-deliver' ); ?>"
+									loading="lazy"
+								>
+							</a>
+						</div>
+					<?php endif; endforeach; ?>
 				</div>
 			</div>
-		</div>
+			<?php endif; ?>
 
-		<!-- Inventory -->
-		<?php if ( $inventory ) : ?>
-		<div class="gd-job-detail__section">
-			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Inventory', 'go-deliver' ); ?></div>
-			<p style="font-size:14px;white-space:pre-line;"><?php echo $inventory; ?></p>
-		</div>
-		<?php endif; ?>
-
-		<!-- Access Notes -->
-		<?php if ( $access_notes ) : ?>
-		<div class="gd-job-detail__section">
-			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Access Notes', 'go-deliver' ); ?></div>
-			<p style="font-size:14px;"><?php echo $access_notes; ?></p>
-		</div>
-		<?php endif; ?>
-
-		<!-- Special Instructions -->
-		<?php if ( $special_instructions ) : ?>
-		<div class="gd-job-detail__section">
-			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Special Instructions', 'go-deliver' ); ?></div>
-			<p style="font-size:14px;"><?php echo $special_instructions; ?></p>
-		</div>
-		<?php endif; ?>
-
-		<!-- Photos -->
-		<?php if ( ! empty( $photos ) ) : ?>
-		<div class="gd-job-detail__section">
-			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Photos', 'go-deliver' ); ?></div>
-			<div class="gd-photo-gallery">
-				<?php foreach ( $photos as $photo_id ) :
-					$full_url  = wp_get_attachment_url( (int) $photo_id );
-					$thumb_src = wp_get_attachment_image_src( (int) $photo_id, 'thumbnail' );
-					if ( $full_url ) :
-						$thumb_url = $thumb_src ? $thumb_src[0] : $full_url;
-				?>
-					<div class="gd-photo-gallery__item">
-						<a href="<?php echo esc_url( $full_url ); ?>" class="gd-photo-gallery__link">
-							<img
-								src="<?php echo esc_url( $thumb_url ); ?>"
-								alt="<?php esc_attr_e( 'Job photo', 'go-deliver' ); ?>"
-								loading="lazy"
-							>
-						</a>
+			<!-- Customer Details (shown after acceptance) -->
+			<?php if ( $show_full_details && $customer_data ) : ?>
+			<div class="gd-job-detail__section">
+				<div class="gd-job-detail__section-title"><?php esc_html_e( 'Customer Contact', 'go-deliver' ); ?></div>
+				<div class="gd-job-detail__grid">
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Name', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value"><?php echo $customer_data['name']; ?></div>
 					</div>
-				<?php endif; endforeach; ?>
+					<?php if ( $customer_data['phone'] ) : ?>
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Phone', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<a href="tel:<?php echo esc_attr( $customer_data['phone'] ); ?>">
+								<?php echo $customer_data['phone']; ?>
+							</a>
+						</div>
+					</div>
+					<?php endif; ?>
+					<?php if ( $is_accepted_mover ) : ?>
+					<div class="gd-job-detail__field">
+						<div class="gd-job-detail__field-label"><?php esc_html_e( 'Email', 'go-deliver' ); ?></div>
+						<div class="gd-job-detail__field-value">
+							<a href="mailto:<?php echo esc_attr( $customer_data['email'] ); ?>">
+								<?php echo $customer_data['email']; ?>
+							</a>
+						</div>
+					</div>
+					<?php endif; ?>
+				</div>
 			</div>
-		</div>
-		<?php endif; ?>
-
-		<!-- Customer Details (shown after acceptance) -->
-		<?php if ( $show_full_details && $customer_data ) : ?>
-		<div class="gd-job-detail__section">
-			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Customer Contact', 'go-deliver' ); ?></div>
-			<div class="gd-job-detail__grid">
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Name', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value"><?php echo $customer_data['name']; ?></div>
-				</div>
-				<?php if ( $customer_data['phone'] ) : ?>
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Phone', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<a href="tel:<?php echo esc_attr( $customer_data['phone'] ); ?>">
-							<?php echo $customer_data['phone']; ?>
-						</a>
-					</div>
-				</div>
-				<?php endif; ?>
-				<?php if ( $is_accepted_mover ) : ?>
-				<div class="gd-job-detail__field">
-					<div class="gd-job-detail__field-label"><?php esc_html_e( 'Email', 'go-deliver' ); ?></div>
-					<div class="gd-job-detail__field-value">
-						<a href="mailto:<?php echo esc_attr( $customer_data['email'] ); ?>">
-							<?php echo $customer_data['email']; ?>
-						</a>
-					</div>
-				</div>
-				<?php endif; ?>
-			</div>
-		</div>
+			<?php endif; ?>
 		<?php endif; ?>
 
 		<!-- Quotes Section -->
