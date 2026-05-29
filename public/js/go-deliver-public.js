@@ -2429,6 +2429,164 @@
 	}
 
 	// =========================================================================
+	// Mover dashboard tour
+	// =========================================================================
+
+	function gdInitMoverTour() {
+		if ( ! $( '#gd-tour-overlay' ).length ) {
+			return;
+		}
+
+		var steps = [
+			{
+				target  : '#gd-tour-nav-messages',
+				title   : 'Messages',
+				body    : 'Use Messages to speak with customers. All your conversations with job requesters live here.',
+			},
+			{
+				target  : '#gd-tour-nav-my-jobs',
+				title   : 'My Jobs',
+				body    : 'Use My Jobs to track quotes and accepted jobs. See everything from pending quotes to active moves at a glance.',
+			},
+			{
+				target  : '#gd-tour-nav-settings',
+				title   : 'Settings',
+				body    : 'Use Settings to update your profile, photos, service areas, and business details so customers can find you.',
+			},
+		];
+
+		var currentStep = 0;
+
+		function positionTooltip( $target ) {
+			if ( ! $target || ! $target.length ) {
+				return;
+			}
+			var $tooltip   = $( '#gd-tour-tooltip' );
+			var offset     = $target.offset();
+			var tHeight    = $target.outerHeight();
+			var tWidth     = $target.outerWidth();
+			var ttWidth    = $tooltip.outerWidth();
+			var winWidth   = $( window ).width();
+
+			var top  = offset.top + tHeight + 12;
+			var left = offset.left + ( tWidth / 2 ) - ( ttWidth / 2 );
+
+			// Keep within viewport.
+			if ( left < 10 ) { left = 10; }
+			if ( left + ttWidth > winWidth - 10 ) { left = winWidth - ttWidth - 10; }
+
+			$tooltip.css( { top: top, left: left } );
+		}
+
+		function highlightTarget( $target ) {
+			$( '.gd-tour-highlight' ).removeClass( 'gd-tour-highlight' );
+			if ( $target && $target.length ) {
+				$target.addClass( 'gd-tour-highlight' );
+			}
+		}
+
+		function showStep( index ) {
+			var step = steps[ index ];
+			if ( ! step ) {
+				return;
+			}
+
+			var $target = $( step.target );
+
+			$( '#gd-tour-step-label' ).text( ( index + 1 ) + ' / ' + steps.length );
+			$( '#gd-tour-title' ).text( step.title );
+			$( '#gd-tour-body' ).text( step.body );
+
+			// Prev button visibility.
+			$( '#gd-tour-prev' ).toggle( index > 0 );
+
+			// Next vs Finish.
+			if ( index === steps.length - 1 ) {
+				$( '#gd-tour-next' ).hide();
+				$( '#gd-tour-finish' ).show();
+			} else {
+				$( '#gd-tour-next' ).show();
+				$( '#gd-tour-finish' ).hide();
+			}
+
+			highlightTarget( $target );
+
+			$( '#gd-tour-overlay' ).fadeIn( 200 );
+
+			// Scroll target into view then position tooltip.
+			if ( $target && $target.length ) {
+				$( 'html, body' ).animate( { scrollTop: $target.offset().top - 120 }, 300, function () {
+					positionTooltip( $target );
+				} );
+			} else {
+				positionTooltip( $target );
+			}
+		}
+
+		function startTour() {
+			currentStep = 0;
+			showStep( currentStep );
+		}
+
+		function endTour( completed ) {
+			$( '.gd-tour-highlight' ).removeClass( 'gd-tour-highlight' );
+			$( '#gd-tour-overlay' ).fadeOut( 200 );
+
+			if ( completed ) {
+				$( '#gd-tour-banner' ).slideUp( 300 );
+				$.post( gdPublic.ajaxUrl, {
+					action : 'gd_mover_dismiss_tour',
+					nonce  : gdPublic.nonce,
+				} );
+			}
+		}
+
+		// ---- Bind events ----
+
+		$( '#gd-start-tour' ).on( 'click', function () {
+			startTour();
+		} );
+
+		$( '#gd-dismiss-tour-banner' ).on( 'click', function () {
+			$( '#gd-tour-banner' ).slideUp( 300 );
+			$.post( gdPublic.ajaxUrl, {
+				action : 'gd_mover_dismiss_tour',
+				nonce  : gdPublic.nonce,
+			} );
+		} );
+
+		$( '#gd-tour-close' ).on( 'click', function () {
+			endTour( false );
+		} );
+
+		$( '#gd-tour-next' ).on( 'click', function () {
+			currentStep++;
+			showStep( currentStep );
+		} );
+
+		$( '#gd-tour-prev' ).on( 'click', function () {
+			currentStep--;
+			showStep( currentStep );
+		} );
+
+		$( '#gd-tour-finish' ).on( 'click', function () {
+			endTour( true );
+		} );
+
+		// Reposition on resize.
+		$( window ).on( 'resize.gdTour', function () {
+			if ( $( '#gd-tour-overlay' ).is( ':visible' ) ) {
+				positionTooltip( $( steps[ currentStep ].target ) );
+			}
+		} );
+
+		// Auto-start for first-time visitors.
+		if ( ! gdPublic.moverTourSeen ) {
+			setTimeout( startTour, 800 );
+		}
+	}
+
+	// =========================================================================
 	// Document ready
 	// =========================================================================
 
@@ -2447,6 +2605,7 @@
 		gdInitQuoteFeePreview();
 		gdInitLightbox();
 		gdInitTimeSince();
+		gdInitMoverTour();
 	} );
 
 } )( jQuery );

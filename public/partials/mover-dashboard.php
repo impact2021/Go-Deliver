@@ -244,13 +244,13 @@ $profile_photo_url = $profile_photo_id ? wp_get_attachment_image_url( $profile_p
 <a class="gd-sidebar-nav__item" data-panel="browse-jobs" role="button" tabindex="0">
 <span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> <?php esc_html_e( 'Browse Jobs', 'go-deliver' ); ?>
 </a>
-<a class="gd-sidebar-nav__item" data-panel="my-jobs" role="button" tabindex="0">
+<a class="gd-sidebar-nav__item" data-panel="my-jobs" id="gd-tour-nav-my-jobs" role="button" tabindex="0">
 <span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></span> <?php esc_html_e( 'My Jobs', 'go-deliver' ); ?>
 <?php if ( ! empty( $active_accepted_quotes ) ) : ?>
 <span class="gd-badge gd-badge--accepted" style="margin-left:auto;"><?php echo esc_html( count( $active_accepted_quotes ) ); ?></span>
 <?php endif; ?>
 </a>
-<a class="gd-sidebar-nav__item" href="<?php echo esc_url( $messaging_base_url ); ?>">
+<a class="gd-sidebar-nav__item" id="gd-tour-nav-messages" href="<?php echo esc_url( $messaging_base_url ); ?>">
 <span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> <?php esc_html_e( 'Messages', 'go-deliver' ); ?>
 </a>
 <a class="gd-sidebar-nav__item" data-panel="reviews" role="button" tabindex="0">
@@ -259,7 +259,7 @@ $profile_photo_url = $profile_photo_id ? wp_get_attachment_image_url( $profile_p
 <span class="gd-badge" style="margin-left:auto;background:var(--gd-primary-light);color:var(--gd-primary);"><?php echo esc_html( $review_count ); ?></span>
 <?php endif; ?>
 </a>
-<a class="gd-sidebar-nav__item" data-panel="profile" role="button" tabindex="0">
+<a class="gd-sidebar-nav__item" data-panel="profile" id="gd-tour-nav-settings" role="button" tabindex="0">
 <span class="gd-sidebar-nav__icon" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> <?php esc_html_e( 'Settings', 'go-deliver' ); ?>
 </a>
 <?php if ( $is_mover ) : ?>
@@ -301,6 +301,18 @@ esc_html( $display_name )
 <p class="gd-dashboard-header__subtitle">
 <?php esc_html_e( 'Manage your jobs, earnings, reviews, and profile all in one place.', 'go-deliver' ); ?>
 </p>
+<?php
+$tour_completed = get_user_meta( $user_id, 'gd_mover_tour_completed', true );
+?>
+<div class="gd-tour-banner" id="gd-tour-banner" style="<?php echo $tour_completed ? 'display:none;' : ''; ?>">
+<span class="gd-tour-banner__text">
+<?php esc_html_e( '👋 New here? Take a quick tour to learn how the dashboard works.', 'go-deliver' ); ?>
+</span>
+<button type="button" class="gd-btn gd-btn--sm gd-btn--primary" id="gd-start-tour">
+<?php esc_html_e( 'Start Tour', 'go-deliver' ); ?>
+</button>
+<button type="button" class="gd-tour-banner__dismiss" id="gd-dismiss-tour-banner" aria-label="<?php esc_attr_e( 'Dismiss tour', 'go-deliver' ); ?>">✕</button>
+</div>
 </div>
 
 <!-- Profile card -->
@@ -1576,6 +1588,23 @@ Go_Deliver_Sub_Users::MAX_SUB_USERS
 
 </div><!-- /.gd-dashboard -->
 </div><!-- /.gd-wrap -->
+
+<!-- Dashboard tour tooltip overlay -->
+<div id="gd-tour-overlay" class="gd-tour-overlay" aria-live="polite" style="display:none;">
+<div class="gd-tour-tooltip" id="gd-tour-tooltip" role="dialog" aria-modal="false">
+<div class="gd-tour-tooltip__header">
+<span class="gd-tour-tooltip__step" id="gd-tour-step-label"></span>
+<button type="button" class="gd-tour-tooltip__close" id="gd-tour-close" aria-label="<?php esc_attr_e( 'Close tour', 'go-deliver' ); ?>">✕</button>
+</div>
+<h3 class="gd-tour-tooltip__title" id="gd-tour-title"></h3>
+<p class="gd-tour-tooltip__body" id="gd-tour-body"></p>
+<div class="gd-tour-tooltip__footer">
+<button type="button" class="gd-btn gd-btn--sm gd-btn--outline" id="gd-tour-prev"><?php esc_html_e( '← Back', 'go-deliver' ); ?></button>
+<button type="button" class="gd-btn gd-btn--sm gd-btn--primary" id="gd-tour-next"><?php esc_html_e( 'Next →', 'go-deliver' ); ?></button>
+<button type="button" class="gd-btn gd-btn--sm gd-btn--success" id="gd-tour-finish" style="display:none;"><?php esc_html_e( 'Got it! ✓', 'go-deliver' ); ?></button>
+</div>
+</div>
+</div>
 
 <!-- Job detail modal -->
 <div class="gd-modal-overlay" id="gd-job-modal-overlay" role="dialog" aria-modal="true">

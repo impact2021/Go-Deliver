@@ -324,7 +324,16 @@ function gd_approval_badge( $status, $allowed, $default = 'pending' ) {
 						<tr id="gd-doc-row-<?php echo esc_attr( $doc_id ); ?>">
 							<td data-label="<?php esc_attr_e( 'ID', 'go-deliver' ); ?>"><?php echo esc_html( $doc_id ); ?></td>
 							<td data-label="<?php esc_attr_e( 'Type', 'go-deliver' ); ?>">
-								<?php echo esc_html( str_replace( '_', ' ', $doc_type ) ); ?>
+								<?php
+								$doc_labels = array(
+									'drivers_licence_front' => "Driver's Licence (Front)",
+									'drivers_licence_back'  => "Driver's Licence (Back)",
+									'drivers_licence'       => "Driver's Licence",
+									'police_check'          => 'Vehicle Registration',
+									'insurance'             => 'Public Liability Insurance',
+								);
+								echo esc_html( isset( $doc_labels[ $doc_type ] ) ? $doc_labels[ $doc_type ] : ucwords( str_replace( '_', ' ', $doc_type ) ) );
+								?>
 							</td>
 							<td data-label="<?php esc_attr_e( 'Status', 'go-deliver' ); ?>">
 								<?php

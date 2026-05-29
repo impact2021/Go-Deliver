@@ -4779,3 +4779,160 @@ opacity: 1; /* always visible on touch */
 		grid-template-columns: 1fr;
 	}
 }
+
+/* ==========================================================================
+   Mover dashboard tour
+   ========================================================================== */
+
+/* Tour banner inside dashboard header */
+.gd-tour-banner {
+display: flex;
+align-items: center;
+gap: 12px;
+flex-wrap: wrap;
+background: #eff6ff;
+border: 1px solid #bfdbfe;
+border-radius: 8px;
+padding: 12px 16px;
+margin-top: 16px;
+}
+
+.gd-tour-banner__text {
+flex: 1 1 auto;
+font-size: 0.9rem;
+color: #1e40af;
+}
+
+.gd-tour-banner__dismiss {
+background: none;
+border: none;
+cursor: pointer;
+font-size: 1rem;
+color: #6b7280;
+padding: 0 4px;
+line-height: 1;
+}
+
+.gd-tour-banner__dismiss:hover {
+color: #111827;
+}
+
+/* Overlay (semi-transparent backdrop) */
+.gd-tour-overlay {
+position: fixed;
+inset: 0;
+z-index: 99990;
+pointer-events: none;
+}
+
+/* Highlight ring on the target element */
+.gd-tour-highlight {
+position: relative;
+z-index: 99991;
+box-shadow: 0 0 0 4px #2563eb, 0 0 0 8px rgba(37, 99, 235, 0.25);
+border-radius: 6px;
+pointer-events: auto;
+}
+
+/* Tooltip bubble */
+.gd-tour-tooltip {
+position: absolute;
+z-index: 99992;
+width: 300px;
+max-width: calc(100vw - 24px);
+background: #fff;
+border: 1px solid #e5e7eb;
+border-radius: 12px;
+box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+padding: 18px 20px 16px;
+pointer-events: auto;
+}
+
+.gd-tour-tooltip::before {
+content: '';
+position: absolute;
+top: -8px;
+left: 50%;
+transform: translateX(-50%);
+border-width: 0 8px 8px;
+border-style: solid;
+border-color: transparent transparent #e5e7eb;
+}
+
+.gd-tour-tooltip::after {
+content: '';
+position: absolute;
+top: -7px;
+left: 50%;
+transform: translateX(-50%);
+border-width: 0 7px 7px;
+border-style: solid;
+border-color: transparent transparent #fff;
+}
+
+.gd-tour-tooltip__header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 10px;
+}
+
+.gd-tour-tooltip__step {
+font-size: 0.75rem;
+font-weight: 600;
+color: #6b7280;
+text-transform: uppercase;
+letter-spacing: 0.04em;
+}
+
+.gd-tour-tooltip__close {
+background: none;
+border: none;
+cursor: pointer;
+color: #9ca3af;
+font-size: 1rem;
+padding: 0;
+line-height: 1;
+}
+
+.gd-tour-tooltip__close:hover {
+color: #374151;
+}
+
+.gd-tour-tooltip__title {
+font-size: 1rem;
+font-weight: 700;
+color: #111827;
+margin: 0 0 6px;
+}
+
+.gd-tour-tooltip__body {
+font-size: 0.875rem;
+color: #4b5563;
+line-height: 1.6;
+margin: 0 0 14px;
+}
+
+.gd-tour-tooltip__footer {
+display: flex;
+gap: 8px;
+justify-content: flex-end;
+}
+
+/* Small tour button variants */
+.gd-btn--sm {
+padding: 6px 14px;
+font-size: 0.8rem;
+}
+
+.gd-btn--success {
+background: #16a34a;
+color: #fff;
+border: none;
+border-radius: 6px;
+cursor: pointer;
+}
+
+.gd-btn--success:hover {
+background: #15803d;
+}
