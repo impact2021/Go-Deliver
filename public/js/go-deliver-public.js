@@ -1249,7 +1249,19 @@
 		$dashboard.on( 'click', '.gd-filter-chip', function () {
 			$( this ).siblings( '.gd-filter-chip' ).removeClass( 'gd-filter-chip--active' );
 			$( this ).addClass( 'gd-filter-chip--active' );
+			gdUpdateJobsFilterCount( $dashboard );
 			gdLoadAvailableJobs( $dashboard );
+		} );
+
+		$dashboard.on( 'click', '.gd-jobs-toolbar__filter', function () {
+			var $btn = $( this );
+			var $bar = $dashboard.find( '#gd-job-filter-bar' );
+			$bar.toggleClass( 'gd-filter-bar--hidden' );
+			$btn.attr( 'aria-expanded', $bar.hasClass( 'gd-filter-bar--hidden' ) ? 'false' : 'true' );
+		} );
+
+		$dashboard.on( 'input', '#gd-job-search-input', function () {
+			gdFilterAvailableJobCards( $dashboard );
 		} );
 
 		// View job detail modal.
@@ -1594,23 +1606,48 @@
 			{ job_type: activeFilter },
 			function ( data ) {
 				$container.html( data.html || '<div class="gd-empty-state"><div class="gd-empty-state__icon">📦</div><p class="gd-empty-state__text">No available jobs in your area.</p></div>' );
-
-				// Update filter chip labels with job counts.
-				var counts = data.counts || {};
-				$dashboard.find( '.gd-filter-chip' ).each( function () {
-					var $chip  = $( this );
-					var slug   = $chip.data( 'filter' );
-					if ( ! slug ) { return; } // skip "All Types"
-					var base   = $chip.data( 'label-base' ) || $chip.text().trim().replace( /\s*\(\d+\)\s*$/, '' );
-					$chip.data( 'label-base', base );
-					var count  = counts[ slug ] || 0;
-					$chip.text( count > 0 ? base + ' (' + count + ')' : base );
-				} );
+				gdFilterAvailableJobCards( $dashboard );
+				gdUpdateJobsFilterCount( $dashboard );
 			},
 			function ( msg ) {
 				$container.html( '<p class="gd-text-danger">' + gdEscape( msg ) + '</p>' );
 			}
 		);
+	}
+
+	function gdUpdateJobsFilterCount( $dashboard ) {
+		var $count = $dashboard.find( '#gd-job-filter-count' );
+		if ( ! $count.length ) { return; }
+
+		var activeFilter = $dashboard.find( '.gd-filter-chip--active' ).data( 'filter' ) || '';
+		if ( activeFilter ) {
+			$count.text( '1' ).removeClass( 'gd-hidden' );
+		} else {
+			$count.text( '0' ).addClass( 'gd-hidden' );
+		}
+	}
+
+	function gdFilterAvailableJobCards( $dashboard ) {
+		var term = $.trim( ( $dashboard.find( '#gd-job-search-input' ).val() || '' ).toLowerCase() );
+		var $cards = $dashboard.find( '#gd-available-jobs-list .gd-job-card' );
+		var visibleCount = 0;
+
+		$cards.each( function () {
+			var $card = $( this );
+			var haystack = ( $card.attr( 'data-job-search' ) || $card.text() || '' ).toLowerCase();
+			var isVisible = ! term || haystack.indexOf( term ) !== -1;
+			$card.toggleClass( 'gd-job-card--search-hidden', ! isVisible );
+			if ( isVisible ) {
+				visibleCount += 1;
+			}
+		} );
+
+		$dashboard.find( '#gd-available-jobs-list .gd-job-search-empty' ).remove();
+		if ( term && $cards.length && ! visibleCount ) {
+			$dashboard.find( '#gd-available-jobs-list' ).append(
+				'<div class="gd-job-search-empty">No jobs match your search.</div>'
+			);
+		}
 	}
 
 	/**
