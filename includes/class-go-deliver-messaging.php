@@ -542,11 +542,16 @@ return $message;
 /**
  * Get all messages for a job (permission-checked).
  *
- * @param int $job_id  Job post ID.
- * @param int $user_id Requesting user ID.
+ * Movers who already quoted a job can view the full thread (all movers + customer)
+ * for anti-bypass oversight; in that case $other_user_id is intentionally ignored.
+ *
+ * @param int $job_id        Job post ID.
+ * @param int $user_id       Requesting user ID.
+ * @param int $other_user_id Optional participant ID (ignored for quoted movers).
  * @return array|WP_Error Message rows or WP_Error.
  */
 public function get_messages( $job_id, $user_id, $other_user_id = 0 ) {
+// Movers who have quoted can monitor the full job thread for anti-bypass reporting.
 if ( $this->user_can_view_marketplace_thread( (int) $job_id, (int) $user_id ) ) {
 return Go_Deliver_DB::get_messages_for_job( (int) $job_id );
 }
@@ -622,7 +627,9 @@ wp_send_json_error( array( 'message' => $messages->get_error_message() ) );
 // Mark all messages addressed to this user for this job as read so the
 // hourly cron does not keep re-sending "unread messages" emails for
 // conversations the user has already viewed.
-$mark_partner = $this->user_can_view_marketplace_thread( $job_id, $current_user_id ) ? 0 : $resolved_partner;
+$mark_partner = $this->user_can_view_marketplace_thread( $job_id, $current_user_id )
+	? 0 // 0 = mark all unread messages for this job, regardless of sender.
+	: $resolved_partner;
 Go_Deliver_DB::mark_messages_read( $job_id, $current_user_id, $mark_partner );
 
 // Clear the cron "already notified" flag so a future unread message
@@ -646,10 +653,10 @@ wp_send_json_success( $messages );
 			wp_send_json_error( array( 'message' => __( 'Please log in to submit reports.', 'go-deliver' ) ), 403 );
 		}
 
-		$job_id      = absint( $_POST['job_id'] ?? 0 );
-		$quote_id    = absint( $_POST['quote_id'] ?? 0 );
-		$message_id  = absint( $_POST['message_id'] ?? 0 );
-		$report_type = sanitize_key( $_POST['report_type'] ?? '' );
+		$job_id      = absint( wp_unslash( $_POST['job_id'] ?? 0 ) );
+		$quote_id    = absint( wp_unslash( $_POST['quote_id'] ?? 0 ) );
+		$message_id  = absint( wp_unslash( $_POST['message_id'] ?? 0 ) );
+		$report_type = sanitize_key( wp_unslash( $_POST['report_type'] ?? '' ) );
 		$reason      = sanitize_textarea_field( wp_unslash( $_POST['reason'] ?? '' ) );
 		$user_id     = get_current_user_id();
 
@@ -664,14 +671,21 @@ wp_send_json_success( $messages );
 		$target_details = '';
 		if ( 'quote' === $report_type ) {
 			$quote_job_id = (int) get_post_meta( $quote_id, 'gd_job_id', true );
+			$quote_mover_id = (int) get_post_meta( $quote_id, 'gd_mover_id', true );
 			if ( ! $quote_id || $quote_job_id !== $job_id ) {
 				wp_send_json_error( array( 'message' => __( 'Quote not found for this job.', 'go-deliver' ) ) );
+			}
+			if ( $quote_mover_id === $user_id ) {
+				wp_send_json_error( array( 'message' => __( 'You cannot report your own quote.', 'go-deliver' ) ) );
 			}
 			$target_details = sprintf( 'Quote ID: %d', $quote_id );
 		} else {
 			$message_row = $this->get_message_row( $message_id, $job_id );
 			if ( ! $message_row ) {
 				wp_send_json_error( array( 'message' => __( 'Message not found for this job.', 'go-deliver' ) ) );
+			}
+			if ( (int) $message_row->sender_id === $user_id ) {
+				wp_send_json_error( array( 'message' => __( 'You cannot report your own message.', 'go-deliver' ) ) );
 			}
 
 			$target_details = sprintf(
@@ -684,8 +698,7 @@ wp_send_json_success( $messages );
 		}
 
 		$current_user = wp_get_current_user();
-		$reporter     = $current_user ? $current_user->user_login : '';
-		$reporter     = $reporter ? $reporter : sprintf( 'User #%d', (int) $user_id );
+		$reporter     = ( $current_user && $current_user->user_login ) ? $current_user->user_login : sprintf( 'User #%d', (int) $user_id );
 		$job_title    = Go_Deliver_Jobs::get_display_title( $job_id );
 
 		$subject = sprintf(
@@ -710,7 +723,7 @@ wp_send_json_success( $messages );
 
 		$admin_email = gd_get_admin_email();
 		if ( ! $admin_email || ! is_email( $admin_email ) ) {
-			wp_send_json_error( array( 'message' => __( 'No admin report email is configured.', 'go-deliver' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Unable to submit report at this time. Please try again later.', 'go-deliver' ) ) );
 		}
 
 		$sent = wp_mail( $admin_email, $subject, $body );

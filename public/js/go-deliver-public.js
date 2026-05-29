@@ -1847,9 +1847,14 @@
 		var jobId      = parseInt( $btn.data( 'job-id' ), 10 ) || 0;
 		var quoteId    = parseInt( $btn.data( 'quote-id' ), 10 ) || 0;
 		var messageId  = parseInt( $btn.data( 'message-id' ), 10 ) || 0;
-		var reason     = window.prompt( 'Why are you reporting this activity? (optional)' );
+		var reason     = window.prompt( gdPublic.reportPrompt || 'Why are you reporting this activity? (optional)' );
 
 		if ( reason === null || ! reportType || ! jobId ) {
+			return;
+		}
+		reason = $.trim( reason );
+		if ( reason.length > 1000 ) {
+			gdToast( 'Please keep report notes under 1000 characters.', 'error' );
 			return;
 		}
 
@@ -1862,7 +1867,7 @@
 				report_type: reportType,
 				quote_id:    quoteId,
 				message_id:  messageId,
-				reason:      $.trim( reason ),
+				reason:      reason,
 			},
 			function ( data ) {
 				gdBtnReset( $btn );

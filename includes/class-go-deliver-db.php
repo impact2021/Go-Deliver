@@ -205,8 +205,9 @@ class Go_Deliver_DB {
 	 * does not keep re-sending "unread messages" notifications for messages
 	 * the user has already viewed.
 	 *
-	 * @param int $job_id  ID of the related gd_job post.
-	 * @param int $user_id ID of the user viewing the thread (the receiver).
+	 * @param int $job_id        ID of the related gd_job post.
+	 * @param int $user_id       ID of the user viewing the thread (the receiver).
+	 * @param int $other_user_id Optional sender ID filter; use 0 to mark all senders for this job.
 	 * @return int|false Number of rows updated, or false on failure.
 	 */
 	public static function mark_messages_read( $job_id, $user_id, $other_user_id = 0 ) {

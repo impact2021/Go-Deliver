@@ -368,7 +368,13 @@ $helpers_labels = array(
 				$q_message    = esc_html( get_post_meta( $q_id, 'gd_message', true ) );
 				$q_mover_id   = (int) get_post_meta( $q_id, 'gd_mover_id', true );
 				$q_mover      = get_userdata( $q_mover_id );
-				$q_mover_name = $q_mover ? ( get_user_meta( $q_mover_id, 'gd_company_name', true ) ?: $q_mover->first_name ) : '';
+				$q_mover_name = '';
+				if ( $q_mover ) {
+					$q_mover_name = sanitize_text_field( (string) get_user_meta( $q_mover_id, 'gd_company_name', true ) );
+					if ( ! $q_mover_name ) {
+						$q_mover_name = $q_mover->first_name;
+					}
+				}
 				$q_mover_name = $q_mover_name ? esc_html( $q_mover_name ) : esc_html__( 'Mover', 'go-deliver' );
 				$q_rating     = (float) get_user_meta( $q_mover_id, 'gd_average_rating', true );
 				$is_accepted  = ( 'accepted' === $q_status );
