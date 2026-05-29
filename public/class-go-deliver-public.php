@@ -17,6 +17,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Go_Deliver_Public {
 
 	/**
+	 * Return a cache-busting asset version for a public file.
+	 *
+	 * @param string $relative_path Path relative to the plugin root.
+	 * @return string
+	 */
+	private function get_asset_version( $relative_path ) {
+		$asset_path = GD_PLUGIN_DIR . ltrim( $relative_path, '/' );
+		$asset_time = file_exists( $asset_path ) ? (string) filemtime( $asset_path ) : '';
+
+		return $asset_time ? GD_VERSION . '.' . $asset_time : GD_VERSION;
+	}
+
+	/**
 	 * Output the viewport meta tag so responsive CSS media queries fire on
 	 * real mobile devices.  If the active theme already emits a viewport tag
 	 * this runs before it (priority 1) and browsers silently ignore the second
@@ -33,11 +46,14 @@ class Go_Deliver_Public {
 	 * Enqueue public-facing scripts and styles.
 	 */
 	public function enqueue_scripts() {
+		$public_css_version = $this->get_asset_version( 'public/css/go-deliver-public.css' );
+		$public_js_version  = $this->get_asset_version( 'public/js/go-deliver-public.js' );
+
 		wp_enqueue_style(
 			'go-deliver-public',
 			GD_PLUGIN_URL . 'public/css/go-deliver-public.css',
 			array(),
-			GD_VERSION
+			$public_css_version
 		);
 
 		// Override brand colours with admin-saved values.
@@ -66,7 +82,7 @@ class Go_Deliver_Public {
 			'go-deliver-public',
 			GD_PLUGIN_URL . 'public/js/go-deliver-public.js',
 			array( 'jquery' ),
-			GD_VERSION,
+			$public_js_version,
 			true
 		);
 

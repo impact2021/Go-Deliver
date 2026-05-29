@@ -91,6 +91,8 @@ if ( $is_mover ) {
 }
 
 $can_view_market_quotes = $is_mover && $has_market_quotes;
+$modal_view             = isset( $modal_view ) ? sanitize_key( (string) $modal_view ) : '';
+$quotes_only_view       = ( 'quotes' === $modal_view ) && $can_view_market_quotes && $quote_count > 0;
 
 // Privacy filter: only reveal full address to:
 // - the customer who owns the job
@@ -174,6 +176,7 @@ $helpers_labels = array(
 
 	<div class="gd-job-detail__body">
 
+		<?php if ( ! $quotes_only_view ) : ?>
 		<!-- Locations -->
 		<div class="gd-job-detail__section">
 			<div class="gd-job-detail__section-title"><?php esc_html_e( 'Locations', 'go-deliver' ); ?></div>
@@ -320,6 +323,7 @@ $helpers_labels = array(
 			</div>
 		</div>
 		<?php endif; ?>
+		<?php endif; ?>
 
 		<!-- Quotes Section -->
 		<?php if ( ( $is_job_owner || $can_view_market_quotes ) && $quote_count > 0 ) : ?>
@@ -447,6 +451,7 @@ $helpers_labels = array(
 		</div>
 		<?php endif; ?>
 
+		<?php if ( ! $quotes_only_view ) : ?>
 		<!-- Quote Form (mover view, only for open jobs) -->
 		<?php if ( $is_mover && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
 			<?php include __DIR__ . '/quote-form.php'; ?>
@@ -472,6 +477,7 @@ $helpers_labels = array(
 				</p>
 			</div>
 		<?php endif; endif; ?>
+		<?php endif; ?>
 
 	</div><!-- /.gd-job-detail__body -->
 </div><!-- /.gd-job-detail -->

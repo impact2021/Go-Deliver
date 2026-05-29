@@ -1653,7 +1653,8 @@ wp_send_json_success( array( 'html' => $html, 'counts' => $type_counts ) );
 public function ajax_get_job_detail_html() {
 check_ajax_referer( 'gd_public_nonce', 'nonce' );
 
-$job_id = absint( $_POST['job_id'] ?? 0 );
+$job_id     = absint( $_POST['job_id'] ?? 0 );
+$modal_view = sanitize_key( wp_unslash( $_POST['view'] ?? '' ) );
 if ( ! $job_id ) {
 wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
 }
