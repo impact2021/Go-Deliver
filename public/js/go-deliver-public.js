@@ -5,6 +5,7 @@
  */
 ( function ( $ ) {
 	'use strict';
+	var GD_BROWSE_JOBS_PAGE_SIZE = 10;
 
 	// =========================================================================
 	// Utilities
@@ -1616,8 +1617,6 @@
 			} );
 		} );
 	}
-
-	var GD_BROWSE_JOBS_PAGE_SIZE = 10;
 
 	/**
 	 * Load available jobs list via AJAX.
