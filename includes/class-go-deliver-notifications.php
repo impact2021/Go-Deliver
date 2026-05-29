@@ -761,7 +761,7 @@ class Go_Deliver_Notifications {
 	 * @param string $subject Email subject line.
 	 * @param string $message Plain-text message body.
 	 */
-	private static function send_plain_email( $to, $subject, $message ) {
+	public static function send_plain_email( $to, $subject, $message ) {
 		if ( ! is_email( $to ) ) {
 			return;
 		}

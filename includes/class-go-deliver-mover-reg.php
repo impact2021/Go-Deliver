@@ -169,14 +169,7 @@ admin_url( 'admin.php?page=go-deliver-movers' )
 		return;
 	}
 
-	$site_name    = get_bloginfo( 'name' );
-	$from_name    = get_option( 'gd_email_from_name', $site_name );
-	$from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
-	$headers      = array(
-		sprintf( 'From: %s <%s>', $from_name, $from_address ),
-	);
-
-	wp_mail( $recipient_email, $subject, $message, $headers );
+	Go_Deliver_Notifications::send_plain_email( $recipient_email, $subject, $message );
 	}
 
 	/**
@@ -331,14 +324,7 @@ sanitize_textarea_field( $reason )
 );
 }
 
-$site_name    = get_bloginfo( 'name' );
-$from_name    = get_option( 'gd_email_from_name', $site_name );
-$from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
-$headers      = array(
-	sprintf( 'From: %s <%s>', $from_name, $from_address ),
-);
-
-wp_mail( $mover->user_email, $subject, $message, $headers );
+Go_Deliver_Notifications::send_plain_email( $mover->user_email, $subject, $message );
 }
 
 return true;
