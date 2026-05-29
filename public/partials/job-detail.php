@@ -67,36 +67,30 @@ $labour_pickup       = (bool) get_post_meta( $job_id, 'gd_labour_pickup', true )
 $labour_dropoff      = (bool) get_post_meta( $job_id, 'gd_labour_dropoff', true );
 $accepted_quote_id   = (int) get_post_meta( $job_id, 'gd_accepted_quote_id', true );
 $quote_count         = (int) get_post_meta( $job_id, 'gd_quote_count', true );
-$mover_has_quote     = false;
+$has_market_quotes   = false;
 
 if ( $is_mover ) {
-	$mover_quote_check = new WP_Query(
+	$market_quotes_query = new WP_Query(
 		array(
 			'post_type'      => 'gd_quote',
 			'post_status'    => 'publish',
 			'posts_per_page' => 1,
 			'fields'         => 'ids',
 			'meta_query'     => array(
-				'relation' => 'AND',
 				array(
 					'key'   => 'gd_job_id',
 					'value' => $job_id,
-					'type'  => 'NUMERIC',
-				),
-				array(
-					'key'   => 'gd_mover_id',
-					'value' => $current_user_id,
 					'type'  => 'NUMERIC',
 				),
 			),
 			'no_found_rows'  => true,
 		)
 	);
-	$mover_has_quote = ! empty( $mover_quote_check->posts );
+	$has_market_quotes = ! empty( $market_quotes_query->posts );
 	wp_reset_postdata();
 }
 
-$can_view_market_quotes = $is_mover && $mover_has_quote;
+$can_view_market_quotes = $is_mover && $has_market_quotes;
 
 // Privacy filter: only reveal full address to:
 // - the customer who owns the job
