@@ -2439,6 +2439,11 @@
 
 		var steps = [
 			{
+				target  : null,
+				title   : 'Welcome to your dashboard! 👋',
+				body    : 'This quick 3-step tour highlights the key sections. Use Next → to move forward, ← Back to revisit a step, or ✕ to close at any time.',
+			},
+			{
 				target  : '#gd-tour-nav-messages',
 				title   : 'Messages',
 				body    : 'Use Messages to speak with customers. All your conversations with job requesters live here.',
@@ -2457,23 +2462,38 @@
 
 		var currentStep = 0;
 
+		function centerTooltip() {
+			var $tooltip = $( '#gd-tour-tooltip' );
+			var ttWidth  = $tooltip.outerWidth();
+			var ttHeight = $tooltip.outerHeight();
+			var winWidth = $( window ).width();
+			var winHeight = $( window ).height();
+			var scrollTop = $( window ).scrollTop();
+			var top  = scrollTop + ( winHeight / 2 ) - ( ttHeight / 2 );
+			var left = ( winWidth / 2 ) - ( ttWidth / 2 );
+			if ( left < 10 ) { left = 10; }
+			$tooltip.css( { top: top, left: left } );
+		}
+
 		function positionTooltip( $target ) {
 			if ( ! $target || ! $target.length ) {
 				return;
 			}
 			var $tooltip   = $( '#gd-tour-tooltip' );
-			var offset     = $target.offset();
-			var tHeight    = $target.outerHeight();
-			var tWidth     = $target.outerWidth();
+			var rect       = $target[0].getBoundingClientRect();
 			var ttWidth    = $tooltip.outerWidth();
+			var ttHeight   = $tooltip.outerHeight();
 			var winWidth   = $( window ).width();
+			var winHeight  = $( window ).height();
 
-			var top  = offset.top + tHeight + 12;
-			var left = offset.left + ( tWidth / 2 ) - ( ttWidth / 2 );
+			var top  = rect.bottom + 12;
+			var left = rect.left + ( rect.width / 2 ) - ( ttWidth / 2 );
 
 			// Keep within viewport.
 			if ( left < 10 ) { left = 10; }
 			if ( left + ttWidth > winWidth - 10 ) { left = winWidth - ttWidth - 10; }
+			if ( top + ttHeight > winHeight - 10 ) { top = rect.top - ttHeight - 12; }
+			if ( top < 10 ) { top = 10; }
 
 			$tooltip.css( { top: top, left: left } );
 		}
@@ -2519,7 +2539,7 @@
 					positionTooltip( $target );
 				} );
 			} else {
-				positionTooltip( $target );
+				centerTooltip();
 			}
 		}
 
@@ -2576,7 +2596,12 @@
 		// Reposition on resize.
 		$( window ).on( 'resize.gdTour', function () {
 			if ( $( '#gd-tour-overlay' ).is( ':visible' ) ) {
-				positionTooltip( $( steps[ currentStep ].target ) );
+				var $target = $( steps[ currentStep ].target );
+				if ( $target && $target.length ) {
+					positionTooltip( $target );
+				} else {
+					centerTooltip();
+				}
 			}
 		} );
 
