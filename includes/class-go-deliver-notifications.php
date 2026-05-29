@@ -73,7 +73,7 @@ class Go_Deliver_Notifications {
 		if ( $send_email ) {
 			$user = get_userdata( (int) $user_id );
 			if ( $user && $user->user_email ) {
-				wp_mail(
+				self::send_plain_email(
 					$user->user_email,
 					wp_strip_all_tags( $subject ),
 					wp_strip_all_tags( $message )
@@ -752,6 +752,28 @@ class Go_Deliver_Notifications {
 			// Clear the queue regardless of job status.
 			delete_user_meta( (int) $mover_id, 'gd_pending_job_notifications' );
 		}
+	}
+
+	/**
+	 * Send a plain-text email using the configured From name and address.
+	 *
+	 * @param string $to      Recipient email address.
+	 * @param string $subject Email subject line.
+	 * @param string $message Plain-text message body.
+	 */
+	private static function send_plain_email( $to, $subject, $message ) {
+		if ( ! is_email( $to ) ) {
+			return;
+		}
+
+		$site_name    = get_bloginfo( 'name' );
+		$from_name    = get_option( 'gd_email_from_name', $site_name );
+		$from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
+		$headers      = array(
+			sprintf( 'From: %s <%s>', $from_name, $from_address ),
+		);
+
+		wp_mail( $to, $subject, $message, $headers );
 	}
 
 	/**

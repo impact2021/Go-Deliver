@@ -577,6 +577,31 @@ $job_card_accent    = get_option( 'gd_job_card_accent', '#C9A227' );
 								value="<?php echo esc_attr( $email_from_address ); ?>"
 							>
 							<p class="description"><?php esc_html_e( 'The "From" email address used in all outgoing emails.', 'go-deliver' ); ?></p>
+							<?php
+							// Warn if the configured From Email address is empty or uses a different domain than the site.
+							$_gd_site_host  = wp_parse_url( home_url(), PHP_URL_HOST );
+							$_gd_site_host  = $_gd_site_host ? strtolower( ltrim( (string) $_gd_site_host, 'www.' ) ) : '';
+							if ( empty( $email_from_address ) ) {
+								echo '<p class="description" style="color:#d63638;">';
+								esc_html_e( '⚠ From Email is empty. A configured address improves email deliverability and prevents messages from landing in spam.', 'go-deliver' );
+								echo '</p>';
+							} else {
+								$_gd_from_host = strtolower( ltrim( (string) wp_parse_url( 'mailto://' . $email_from_address, PHP_URL_HOST ), 'www.' ) );
+								// Flag freemail providers.
+								$_gd_freemail = array( 'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.uk', 'hotmail.com', 'outlook.com', 'live.com', 'icloud.com' );
+								if ( in_array( $_gd_from_host, $_gd_freemail, true ) ) {
+									echo '<p class="description" style="color:#d63638;">';
+									/* translators: %s: free email domain */
+									printf( esc_html__( '⚠ "%s" is a free email provider. Use a mailbox on your own domain (e.g. notifications@%s) for better deliverability and to avoid spam filtering.', 'go-deliver' ), esc_html( $_gd_from_host ), esc_html( $_gd_site_host ) );
+									echo '</p>';
+								} elseif ( $_gd_site_host && $_gd_from_host !== $_gd_site_host ) {
+									echo '<p class="description" style="color:#b45309;">';
+									/* translators: 1: from email domain, 2: site domain */
+									printf( esc_html__( '⚠ From Email domain (%1$s) does not match your site domain (%2$s). Ensure SPF/DKIM records cover the sending domain, or use an address on %2$s.', 'go-deliver' ), esc_html( $_gd_from_host ), esc_html( $_gd_site_host ) );
+									echo '</p>';
+								}
+							}
+							?>
 						</td>
 					</tr>
 				</tbody>
