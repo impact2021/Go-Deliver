@@ -1279,6 +1279,12 @@
 			gdFilterAvailableJobCards( $dashboard );
 		} );
 
+		$dashboard.on( 'click', '.gd-job-load-more', function () {
+			var visibleLimit = parseInt( $dashboard.data( 'gdBrowseJobsVisibleLimit' ), 10 ) || GD_BROWSE_JOBS_PAGE_SIZE;
+			$dashboard.data( 'gdBrowseJobsVisibleLimit', visibleLimit + GD_BROWSE_JOBS_PAGE_SIZE );
+			gdFilterAvailableJobCards( $dashboard );
+		} );
+
 		// View job detail modal.
 		$dashboard.on( 'click', '.gd-job-view-btn', function () {
 			var jobId = $( this ).data( 'job-id' );
@@ -1611,6 +1617,8 @@
 		} );
 	}
 
+	var GD_BROWSE_JOBS_PAGE_SIZE = 10;
+
 	/**
 	 * Load available jobs list via AJAX.
 	 *
@@ -1629,6 +1637,7 @@
 			{ job_type: activeFilter },
 			function ( data ) {
 				$container.html( data.html || '<div class="gd-empty-state"><div class="gd-empty-state__icon">📦</div><p class="gd-empty-state__text">No available jobs in your area.</p></div>' );
+				gdInitAvailableJobsPagination( $dashboard );
 				gdFilterAvailableJobCards( $dashboard );
 				gdUpdateJobsFilterCount( $dashboard );
 			},
@@ -1654,6 +1663,8 @@
 		var term = $.trim( ( $dashboard.find( '#gd-job-search-input' ).val() || '' ).toLowerCase() );
 		var $cards = $dashboard.find( '#gd-available-jobs-list .gd-job-card' );
 		var visibleCount = 0;
+		var shownCount = 0;
+		var visibleLimit = parseInt( $dashboard.data( 'gdBrowseJobsVisibleLimit' ), 10 ) || GD_BROWSE_JOBS_PAGE_SIZE;
 
 		$cards.each( function () {
 			var $card = $( this );
@@ -1662,7 +1673,9 @@
 			$card.toggleClass( 'gd-job-card--search-hidden', ! isVisible );
 			if ( isVisible ) {
 				visibleCount += 1;
+				shownCount += 1;
 			}
+			$card.toggleClass( 'gd-job-card--paginate-hidden', isVisible && shownCount > visibleLimit );
 		} );
 
 		$dashboard.find( '#gd-available-jobs-list .gd-job-search-empty' ).remove();
@@ -1671,6 +1684,33 @@
 				'<div class="gd-job-search-empty">No jobs match your search.</div>'
 			);
 		}
+
+		gdUpdateAvailableJobsLoadMore( $dashboard, visibleCount, visibleLimit );
+	}
+
+	function gdInitAvailableJobsPagination( $dashboard ) {
+		var $container = $dashboard.find( '#gd-available-jobs-list' );
+		var $cards = $container.find( '.gd-job-card' );
+
+		$dashboard.data( 'gdBrowseJobsVisibleLimit', GD_BROWSE_JOBS_PAGE_SIZE );
+		$container.find( '.gd-job-load-more-wrap' ).remove();
+
+		if ( $cards.length > GD_BROWSE_JOBS_PAGE_SIZE ) {
+			$container.append(
+				'<div class="gd-job-load-more-wrap">' +
+					'<button type="button" class="gd-btn gd-btn--outline gd-job-load-more">Load more</button>' +
+				'</div>'
+			);
+		}
+	}
+
+	function gdUpdateAvailableJobsLoadMore( $dashboard, visibleCount, visibleLimit ) {
+		var $loadMoreWrap = $dashboard.find( '#gd-available-jobs-list .gd-job-load-more-wrap' );
+		if ( ! $loadMoreWrap.length ) {
+			return;
+		}
+
+		$loadMoreWrap.toggleClass( 'gd-hidden', visibleCount <= visibleLimit );
 	}
 
 	/**
