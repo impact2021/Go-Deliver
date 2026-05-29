@@ -2468,9 +2468,10 @@
 			var ttHeight = $tooltip.outerHeight();
 			var winWidth = $( window ).width();
 			var winHeight = $( window ).height();
-			var scrollTop = $( window ).scrollTop();
-			var top  = scrollTop + ( winHeight / 2 ) - ( ttHeight / 2 );
+			var top  = ( winHeight / 2 ) - ( ttHeight / 2 );
 			var left = ( winWidth / 2 ) - ( ttWidth / 2 );
+			if ( top < 10 ) { top = 10; }
+			if ( top + ttHeight > winHeight - 10 ) { top = winHeight - ttHeight - 10; }
 			if ( left < 10 ) { left = 10; }
 			$tooltip.css( { top: top, left: left } );
 		}
