@@ -68,7 +68,13 @@ class Go_Deliver_Email_Verification {
 			(int) round( self::CODE_TTL / MINUTE_IN_SECONDS )
 		);
 
-		if ( ! wp_mail( $email, $subject, $message ) ) {
+		$from_name    = get_option( 'gd_email_from_name', get_bloginfo( 'name' ) );
+		$from_address = get_option( 'gd_email_from_address', gd_get_admin_email() );
+		$headers      = array(
+			sprintf( 'From: %s <%s>', $from_name, $from_address ),
+		);
+
+		if ( ! wp_mail( $email, $subject, $message, $headers ) ) {
 			return new WP_Error( 'send_failed', __( 'We could not send the verification code right now. Please try again.', 'go-deliver' ) );
 		}
 

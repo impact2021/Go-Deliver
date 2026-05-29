@@ -325,6 +325,24 @@ class Go_Deliver_Public {
 		$active_jobs = (int) $active_jobs_query->found_posts;
 		wp_reset_postdata();
 
+		$completed_jobs_query = new WP_Query(
+			array(
+				'post_type'      => 'gd_job',
+				'post_status'    => 'publish',
+				'fields'         => 'ids',
+				'posts_per_page' => 1,
+				'no_found_rows'  => false,
+				'meta_query'     => array(
+					array(
+						'key'   => 'gd_job_status',
+						'value' => 'completed',
+					),
+				),
+			)
+		);
+		$completed_jobs = (int) $completed_jobs_query->found_posts;
+		wp_reset_postdata();
+
 		ob_start();
 		?>
 		<div class="gd-stats-bar gd-stats-bar--shortcode">
@@ -339,6 +357,10 @@ class Go_Deliver_Public {
 			<div class="gd-stat-card">
 				<div class="gd-stat-card__value"><?php echo esc_html( number_format_i18n( $active_jobs ) ); ?></div>
 				<div class="gd-stat-card__label"><?php esc_html_e( 'Active Jobs', 'go-deliver' ); ?></div>
+			</div>
+			<div class="gd-stat-card">
+				<div class="gd-stat-card__value"><?php echo esc_html( number_format_i18n( $completed_jobs ) ); ?></div>
+				<div class="gd-stat-card__label"><?php esc_html_e( 'Completed Jobs', 'go-deliver' ); ?></div>
 			</div>
 		</div>
 		<?php
