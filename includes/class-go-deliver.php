@@ -105,6 +105,7 @@ class Go_Deliver {
 		add_shortcode( 'gd_messaging', array( $public, 'render_messaging' ) );
 		add_shortcode( 'gd_wallet_topup', array( $public, 'render_wallet_topup' ) );
 		add_shortcode( 'gd_login_logout', array( $public, 'render_login_logout' ) );
+		add_shortcode( 'gd_stats_bar', array( $public, 'render_stats_bar' ) );
 
 		// Nav menu: inject unread message badge on the messaging page item.
 		add_filter( 'wp_nav_menu_objects', array( $this, 'add_unread_badge_to_menu' ), 10, 2 );
@@ -210,6 +211,8 @@ class Go_Deliver {
 			'gd_upload_mover_photo',
 			'gd_delete_mover_photo',
 			'gd_report_activity',
+			'gd_send_email_verification_code',
+			'gd_verify_email_verification_code',
 		);
 
 		foreach ( $ajax_actions_auth as $action ) {
@@ -220,6 +223,8 @@ class Go_Deliver {
 		$ajax_actions_nopriv = array(
 			'gd_submit_job',
 			'gd_register_mover',
+			'gd_send_email_verification_code',
+			'gd_verify_email_verification_code',
 		);
 
 		foreach ( $ajax_actions_nopriv as $action ) {
@@ -263,6 +268,8 @@ class Go_Deliver {
 			'gd_upload_mover_photo'  => array( 'Go_Deliver_Mover_Reg', 'ajax_upload_mover_photo' ),
 			'gd_delete_mover_photo'  => array( 'Go_Deliver_Mover_Reg', 'ajax_delete_mover_photo' ),
 			'gd_report_activity'     => array( 'Go_Deliver_Messaging', 'ajax_report_activity' ),
+			'gd_send_email_verification_code' => array( 'Go_Deliver_Email_Verification', 'ajax_send_code' ),
+			'gd_verify_email_verification_code' => array( 'Go_Deliver_Email_Verification', 'ajax_verify_code' ),
 		);
 
 		if ( isset( $handler_map[ $action ] ) ) {

@@ -27,6 +27,7 @@ $form_builder = new Go_Deliver_Form_Builder();
 	<form id="gd-job-form" method="post" enctype="multipart/form-data" novalidate>
 		<?php wp_nonce_field( 'gd_submit_job', 'gd_submit_job_nonce' ); ?>
 		<input type="hidden" name="action" value="gd_submit_job">
+		<input type="hidden" name="email_verification_token" id="gd_job_email_verification_token" value="">
 
 		<!-- Wizard header: title + progress bar (shown for steps 2+) -->
 		<div class="gd-job-form__header" style="display:none;">
@@ -519,6 +520,54 @@ $form_builder = new Go_Deliver_Form_Builder();
 				</div>
 
 			</div><!-- /step 6 -->
+
+			<!-- ============================================================
+			     Step 7: Email Verification
+			     ============================================================ -->
+			<div class="gd-form-section" data-step="7">
+				<h2 class="gd-form-section__title"><?php esc_html_e( 'Verify Your Email', 'go-deliver' ); ?></h2>
+				<p class="gd-text-muted" style="margin-bottom:14px;">
+					<?php esc_html_e( 'We’ve sent a 6-digit verification code to your email. Enter it below to unlock the final Submit Job button.', 'go-deliver' ); ?>
+				</p>
+				<div class="gd-alert gd-alert--info" style="margin-bottom:14px;">
+					<span class="gd-alert__icon">ℹ️</span>
+					<div class="gd-alert__body">
+						<?php esc_html_e( 'If you don’t see it in your inbox, please check your spam or junk folder.', 'go-deliver' ); ?>
+					</div>
+				</div>
+
+				<div class="gd-field-group">
+					<label for="gd_job_email_verification_code">
+						<?php esc_html_e( 'Verification Code', 'go-deliver' ); ?>
+						<span class="gd-required" aria-hidden="true">*</span>
+					</label>
+					<input
+						type="text"
+						id="gd_job_email_verification_code"
+						inputmode="numeric"
+						pattern="[0-9]{6}"
+						maxlength="6"
+						autocomplete="one-time-code"
+						placeholder="<?php esc_attr_e( 'Enter 6-digit code', 'go-deliver' ); ?>"
+					>
+				</div>
+
+				<div id="gd-job-email-verification-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
+					<button type="button" id="gd-job-verify-email-btn" class="gd-btn gd-btn--primary">
+						<?php esc_html_e( 'Verify Code', 'go-deliver' ); ?>
+					</button>
+					<button type="button" id="gd-job-resend-email-code" class="gd-btn gd-btn--outline">
+						<?php esc_html_e( 'Resend Code', 'go-deliver' ); ?>
+					</button>
+				</div>
+
+				<div class="gd-alert gd-alert--success" id="gd-job-email-verified-notice" style="display:none;margin-top:14px;">
+					<span class="gd-alert__icon">✅</span>
+					<div class="gd-alert__body">
+						<?php esc_html_e( 'Email verified. You can now submit your job.', 'go-deliver' ); ?>
+					</div>
+				</div>
+			</div><!-- /step 7 -->
 
 			</div><!-- /.gd-job-form__body -->
 
