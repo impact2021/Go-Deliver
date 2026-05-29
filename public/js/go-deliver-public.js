@@ -259,7 +259,7 @@
 
 		function getJobVerificationEmail() {
 			var $guestEmail = $form.find( '#gd_account_email' );
-			if ( $guestEmail.length && $guestEmail.is( ':visible' ) ) {
+			if ( $guestEmail.length ) {
 				return $.trim( $guestEmail.val() );
 			}
 			return $.trim( $form.find( '#gd_contact_email' ).val() );
