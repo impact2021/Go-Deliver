@@ -3836,8 +3836,7 @@
 
 	#gd-panel-browse-jobs .gd-job-search,
 	#gd-panel-browse-jobs .gd-jobs-toolbar__filter {
-		flex: 0 1 auto;
-		width: 100%;
+		flex: 0 1 100%;
 		min-height: 64px;
 	}
 
