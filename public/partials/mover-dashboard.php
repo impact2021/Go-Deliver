@@ -625,16 +625,40 @@ echo ' → ' . esc_html( mb_substr( $_rj['dropoff'], 0, 8 ) ) . '…';
      ======================================================== -->
 <div class="gd-panel" id="gd-panel-browse-jobs" style="display:none;">
 
-<!-- Filter bar -->
-<div class="gd-filter-bar">
-<span class="gd-filter-bar__label"><?php esc_html_e( 'Filter:', 'go-deliver' ); ?></span>
-<button type="button" class="gd-filter-chip gd-filter-chip--active" data-filter="">
-<?php esc_html_e( 'All Types', 'go-deliver' ); ?>
-</button>
+<div class="gd-jobs-toolbar">
+	<label class="gd-job-search" for="gd-job-search-input">
+		<span class="gd-job-search__icon" aria-hidden="true">
+			<svg viewBox="0 0 24 24" focusable="false">
+				<circle cx="11" cy="11" r="7"></circle>
+				<path d="M20 20L16.65 16.65"></path>
+			</svg>
+		</span>
+		<input
+			type="search"
+			id="gd-job-search-input"
+			class="gd-job-search__input"
+			placeholder="<?php esc_attr_e( 'Search jobs...', 'go-deliver' ); ?>"
+			autocomplete="off"
+		>
+	</label>
+	<button type="button" class="gd-jobs-toolbar__filter" aria-expanded="true">
+		<span class="gd-jobs-toolbar__filter-icon" aria-hidden="true">
+			<svg viewBox="0 0 24 24" focusable="false">
+				<line x1="4" y1="7" x2="20" y2="7"></line>
+				<line x1="4" y1="17" x2="20" y2="17"></line>
+				<circle cx="9" cy="7" r="2.5"></circle>
+				<circle cx="15" cy="17" r="2.5"></circle>
+			</svg>
+		</span>
+		<span><?php esc_html_e( 'Filter', 'go-deliver' ); ?></span>
+		<span class="gd-jobs-toolbar__filter-count gd-hidden" id="gd-job-filter-count">0</span>
+	</button>
+</div>
+
+<div class="gd-filter-bar" id="gd-job-filter-bar">
 <?php
 $available_types = array(
-'trademe_pickup'  => __( 'Trademe Purchase Pickup', 'go-deliver' ),
-'item'            => __( 'Item', 'go-deliver' ),
+'all'             => __( 'All', 'go-deliver' ),
 'move'            => __( 'Home or office move', 'go-deliver' ),
 'vehicle_or_boat' => __( 'Vehicle or boat', 'go-deliver' ),
 'pet'             => __( 'Pet', 'go-deliver' ),
@@ -642,8 +666,14 @@ $available_types = array(
 'other'           => __( 'Other', 'go-deliver' ),
 );
 foreach ( $available_types as $slug => $label ) :
+	$filter_value = 'all' === $slug ? '' : $slug;
 ?>
-<button type="button" class="gd-filter-chip" data-filter="<?php echo esc_attr( $slug ); ?>">
+<button
+	type="button"
+	class="gd-filter-chip<?php echo 'all' === $slug ? ' gd-filter-chip--active' : ''; ?>"
+	data-filter="<?php echo esc_attr( $filter_value ); ?>"
+	data-label-base="<?php echo esc_attr( $label ); ?>"
+>
 <?php echo esc_html( $label ); ?>
 </button>
 <?php endforeach; ?>
@@ -797,7 +827,7 @@ $cust_name  = esc_html( $raw_name );
 $cust_phone = $cust_id ? esc_html( get_user_meta( $cust_id, 'gd_phone', true ) ) : '';
 $cust_email = $cust_obj ? esc_html( $cust_obj->user_email ) : '';
 
-$msg_url = $q_job_id ? esc_url( add_query_arg( 'job_id', $q_job_id, $messaging_base_url ) ) : '';
+$msg_url = $q_job_id ? esc_url( add_query_arg( array( 'job_id' => $q_job_id, 'participant_id' => $cust_id ), $messaging_base_url ) ) : '';
 ?>
 <div class="gd-mover-card">
 <div class="gd-mover-card__header">

@@ -34,62 +34,265 @@ add_action( 'wp_ajax_gd_get_conversations', array( $this, 'ajax_get_conversation
 /**
  * Determine whether a user is allowed to send/read messages for a job.
  *
- * The job must have received at least one quote, and the user must be
- * either the customer who owns the job or a mover who submitted a quote.
- *
- * @param int $job_id  Job post ID.
- * @param int $user_id WordPress user ID.
+ * @param int $job_id        Job post ID.
+ * @param int $user_id       WordPress user ID.
+ * @param int $other_user_id Optional conversation participant ID.
  * @return bool
  */
-public function can_message( $job_id, $user_id ) {
-$job_id  = (int) $job_id;
-$user_id = (int) $user_id;
-
-if ( ! $job_id || ! $user_id ) {
-return false;
+public function can_message( $job_id, $user_id, $other_user_id = 0 ) {
+	return (bool) $this->resolve_conversation_partner( $job_id, $user_id, $other_user_id );
 }
 
-$job_status = get_post_meta( $job_id, 'gd_job_status', true );
+/**
+ * Resolve the other participant for a job conversation.
+ *
+ * @param int $job_id        Job post ID.
+ * @param int $user_id       Current user ID.
+ * @param int $other_user_id Optional preferred participant ID.
+ * @return int Resolved participant ID, or 0 when no conversation is allowed.
+ */
+public function resolve_conversation_partner( $job_id, $user_id, $other_user_id = 0 ) {
+	$job_id         = (int) $job_id;
+	$user_id        = (int) $user_id;
+	$other_user_id  = (int) $other_user_id;
+	$customer_id    = (int) get_post_meta( $job_id, 'gd_customer_id', true );
+	$job_status     = get_post_meta( $job_id, 'gd_job_status', true );
+	$is_customer    = ( $customer_id === $user_id );
+	$accepted_quote = (int) get_post_meta( $job_id, 'gd_accepted_quote_id', true );
+	$accepted_mover = $accepted_quote ? (int) get_post_meta( $accepted_quote, 'gd_mover_id', true ) : 0;
 
-// Must have at least one quote (status != 'open').
-if ( 'open' === $job_status ) {
-return false;
+	$job_post = get_post( $job_id );
+	if ( ! $job_id || ! $user_id || ! $customer_id || ! $job_post || 'gd_job' !== $job_post->post_type ) {
+		return 0;
+	}
+
+	if ( $is_customer ) {
+		if ( $other_user_id && $other_user_id !== $user_id && $this->is_valid_customer_counterparty( $job_id, $customer_id, $other_user_id ) ) {
+			return $other_user_id;
+		}
+
+		if ( $accepted_mover ) {
+			return $accepted_mover;
+		}
+
+		$latest_partner = $this->get_latest_conversation_partner( $job_id, $user_id );
+		if ( $latest_partner ) {
+			return $latest_partner;
+		}
+
+		return $this->get_first_quote_mover( $job_id );
+	}
+
+	if ( $other_user_id && $other_user_id !== $customer_id ) {
+		return 0;
+	}
+
+	if ( $this->user_has_quote( $job_id, $user_id ) ) {
+		return $customer_id;
+	}
+
+	if ( in_array( $job_status, array( 'open', 'locked' ), true ) && $this->can_start_prequote_conversation( $job_id, $user_id ) ) {
+		return $customer_id;
+	}
+
+	if ( $this->has_existing_conversation( $job_id, $user_id, $customer_id ) ) {
+		return $customer_id;
+	}
+
+	return 0;
 }
 
-// Check if user is the customer.
-$customer_id = (int) get_post_meta( $job_id, 'gd_customer_id', true );
-if ( $customer_id === $user_id ) {
-return true;
+/**
+ * Check whether a mover already has a quote on a job.
+ *
+ * @param int $job_id   Job post ID.
+ * @param int $mover_id Mover user ID.
+ * @return bool
+ */
+private function user_has_quote( $job_id, $mover_id ) {
+	$query = new WP_Query(
+		array(
+			'post_type'      => 'gd_quote',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'meta_query'     => array(
+				'relation' => 'AND',
+				array(
+					'key'   => 'gd_job_id',
+					'value' => (int) $job_id,
+					'type'  => 'NUMERIC',
+				),
+				array(
+					'key'   => 'gd_mover_id',
+					'value' => (int) $mover_id,
+					'type'  => 'NUMERIC',
+				),
+			),
+			'no_found_rows'  => false,
+			'fields'         => 'ids',
+		)
+	);
+
+	$has_quote = $query->found_posts > 0;
+	wp_reset_postdata();
+
+	return $has_quote;
 }
 
-// Check if user has a quote on this job.
-$query = new WP_Query(
-array(
-'post_type'      => 'gd_quote',
-'post_status'    => 'publish',
-'posts_per_page' => 1,
-'meta_query'     => array(
-'relation' => 'AND',
-array(
-'key'   => 'gd_job_id',
-'value' => $job_id,
-'type'  => 'NUMERIC',
-),
-array(
-'key'   => 'gd_mover_id',
-'value' => $user_id,
-'type'  => 'NUMERIC',
-),
-),
-'no_found_rows'  => false,
-'fields'         => 'ids',
-)
-);
+/**
+ * Determine whether a mover can start a pre-quote conversation on a job.
+ *
+ * @param int $job_id   Job post ID.
+ * @param int $mover_id Mover user ID.
+ * @return bool
+ */
+private function can_start_prequote_conversation( $job_id, $mover_id ) {
+	$mover = get_userdata( (int) $mover_id );
+	if ( ! $mover ) {
+		return false;
+	}
 
-$has_quote = $query->found_posts > 0;
-wp_reset_postdata();
+	$roles = (array) $mover->roles;
 
-return $has_quote;
+	if ( ! in_array( 'gd_mover', $roles, true ) && ! in_array( 'gd_mover_sub', $roles, true ) ) {
+		return false;
+	}
+
+	if ( 'approved' !== get_user_meta( (int) $mover_id, 'gd_mover_status', true ) ) {
+		return false;
+	}
+
+	$excluded = get_post_meta( (int) $job_id, 'gd_excluded_mover_ids', true );
+	$excluded = is_array( $excluded ) ? array_map( 'intval', $excluded ) : array();
+	if ( in_array( (int) $mover_id, $excluded, true ) ) {
+		return false;
+	}
+
+	$jobs_handler = new Go_Deliver_Jobs();
+	$available    = $jobs_handler->get_open_jobs_for_mover( (int) $mover_id );
+
+	foreach ( $available as $job ) {
+		if ( (int) ( $job['id'] ?? 0 ) === (int) $job_id ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Check whether the selected customer thread participant is valid.
+ *
+ * @param int $job_id        Job post ID.
+ * @param int $customer_id   Customer user ID.
+ * @param int $other_user_id Other participant ID.
+ * @return bool
+ */
+private function is_valid_customer_counterparty( $job_id, $customer_id, $other_user_id ) {
+	if ( $other_user_id === $customer_id ) {
+		return false;
+	}
+
+	return $this->has_existing_conversation( $job_id, $customer_id, $other_user_id )
+		|| $this->user_has_quote( $job_id, $other_user_id );
+}
+
+/**
+ * Return true when two users already have messages on a job.
+ *
+ * @param int $job_id        Job post ID.
+ * @param int $user_id       First user ID.
+ * @param int $other_user_id Second user ID.
+ * @return bool
+ */
+private function has_existing_conversation( $job_id, $user_id, $other_user_id ) {
+	global $wpdb;
+
+	$message_id = $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT id FROM `{$wpdb->prefix}gd_messages`
+			 WHERE job_id = %d
+			   AND (
+					( sender_id = %d AND receiver_id = %d )
+					OR
+					( sender_id = %d AND receiver_id = %d )
+			   )
+			 LIMIT 1",
+			(int) $job_id,
+			(int) $user_id,
+			(int) $other_user_id,
+			(int) $other_user_id,
+			(int) $user_id
+		)
+	);
+
+	return ! empty( $message_id );
+}
+
+/**
+ * Find the latest conversation partner for a user's job thread.
+ *
+ * @param int $job_id  Job post ID.
+ * @param int $user_id User ID.
+ * @return int
+ */
+private function get_latest_conversation_partner( $job_id, $user_id ) {
+	global $wpdb;
+
+	$partner_id = $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT CASE
+					WHEN sender_id = %d THEN receiver_id
+					ELSE sender_id
+				END AS other_user_id
+			 FROM `{$wpdb->prefix}gd_messages`
+			 WHERE job_id = %d
+			   AND ( sender_id = %d OR receiver_id = %d )
+			 ORDER BY created_at DESC, id DESC
+			 LIMIT 1",
+			(int) $user_id,
+			(int) $job_id,
+			(int) $user_id,
+			(int) $user_id
+		)
+	);
+
+	return (int) $partner_id;
+}
+
+/**
+ * Get the mover on the earliest quote for a job.
+ *
+ * @param int $job_id Job post ID.
+ * @return int
+ */
+private function get_first_quote_mover( $job_id ) {
+	$first_query = new WP_Query(
+		array(
+			'post_type'      => 'gd_quote',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+			'meta_query'     => array(
+				array(
+					'key'   => 'gd_job_id',
+					'value' => (int) $job_id,
+					'type'  => 'NUMERIC',
+				),
+			),
+			'no_found_rows'  => true,
+			'fields'         => 'ids',
+		)
+	);
+
+	$mover_id = 0;
+	if ( ! empty( $first_query->posts ) ) {
+		$mover_id = (int) get_post_meta( $first_query->posts[0], 'gd_mover_id', true );
+	}
+	wp_reset_postdata();
+
+	return $mover_id;
 }
 
 // =========================================================================
@@ -149,11 +352,11 @@ return false;
  * @param string $message   Raw message text.
  * @return int|WP_Error Inserted message ID or WP_Error.
  */
-public function send_message( $job_id, $sender_id, $message ) {
+public function send_message( $job_id, $sender_id, $message, $other_user_id = 0 ) {
 $job_id    = (int) $job_id;
 $sender_id = (int) $sender_id;
 
-if ( ! $this->can_message( $job_id, $sender_id ) ) {
+if ( ! $this->can_message( $job_id, $sender_id, $other_user_id ) ) {
 return new WP_Error( 'permission_denied', __( 'You are not allowed to message on this job.', 'go-deliver' ) );
 }
 
@@ -178,7 +381,7 @@ if ( empty( $message ) ) {
 return new WP_Error( 'empty_message', __( 'Message cannot be empty.', 'go-deliver' ) );
 }
 
-$receiver_id = $this->determine_receiver( $job_id, $sender_id );
+$receiver_id = $this->determine_receiver( $job_id, $sender_id, $other_user_id );
 if ( is_wp_error( $receiver_id ) ) {
 return $receiver_id;
 }
@@ -209,72 +412,14 @@ return $message_id;
  * @param int $sender_id Sender user ID.
  * @return int|WP_Error Receiver user ID or WP_Error.
  */
-private function determine_receiver( $job_id, $sender_id ) {
-$customer_id = (int) get_post_meta( $job_id, 'gd_customer_id', true );
+private function determine_receiver( $job_id, $sender_id, $other_user_id = 0 ) {
+	$receiver_id = $this->resolve_conversation_partner( $job_id, $sender_id, $other_user_id );
 
-if ( $sender_id === $customer_id ) {
-// Sender is customer: find mover to reply to.
-// Prefer the accepted quote mover.
-$accepted_query = new WP_Query(
-array(
-'post_type'      => 'gd_quote',
-'post_status'    => 'publish',
-'posts_per_page' => 1,
-'meta_query'     => array(
-'relation' => 'AND',
-array(
-'key'   => 'gd_job_id',
-'value' => $job_id,
-'type'  => 'NUMERIC',
-),
-array(
-'key'   => 'gd_status',
-'value' => 'accepted',
-),
-),
-'no_found_rows'  => true,
-'fields'         => 'ids',
-)
-);
+	if ( $receiver_id ) {
+		return $receiver_id;
+	}
 
-if ( ! empty( $accepted_query->posts ) ) {
-$mover_id = (int) get_post_meta( $accepted_query->posts[0], 'gd_mover_id', true );
-wp_reset_postdata();
-return $mover_id;
-}
-
-// Fall back to first quote mover.
-$first_query = new WP_Query(
-array(
-'post_type'      => 'gd_quote',
-'post_status'    => 'publish',
-'posts_per_page' => 1,
-'orderby'        => 'date',
-'order'          => 'ASC',
-'meta_query'     => array(
-array(
-'key'   => 'gd_job_id',
-'value' => $job_id,
-'type'  => 'NUMERIC',
-),
-),
-'no_found_rows'  => true,
-'fields'         => 'ids',
-)
-);
-
-if ( empty( $first_query->posts ) ) {
-wp_reset_postdata();
-return new WP_Error( 'no_mover', __( 'No mover found for this job.', 'go-deliver' ) );
-}
-
-$mover_id = (int) get_post_meta( $first_query->posts[0], 'gd_mover_id', true );
-wp_reset_postdata();
-return $mover_id;
-}
-
-// Sender is mover: receiver is customer.
-return $customer_id;
+	return new WP_Error( 'no_receiver', __( 'No recipient found for this conversation.', 'go-deliver' ) );
 }
 
 /**
@@ -346,12 +491,14 @@ return $message;
  * @param int $user_id Requesting user ID.
  * @return array|WP_Error Message rows or WP_Error.
  */
-public function get_messages( $job_id, $user_id ) {
-if ( ! $this->can_message( (int) $job_id, (int) $user_id ) ) {
+public function get_messages( $job_id, $user_id, $other_user_id = 0 ) {
+$resolved_partner = $this->resolve_conversation_partner( (int) $job_id, (int) $user_id, (int) $other_user_id );
+
+if ( ! $resolved_partner ) {
 return new WP_Error( 'permission_denied', __( 'You are not allowed to view messages for this job.', 'go-deliver' ) );
 }
 
-return Go_Deliver_DB::get_messages( (int) $job_id, (int) $user_id );
+return Go_Deliver_DB::get_messages( (int) $job_id, (int) $user_id, $resolved_partner );
 }
 
 // =========================================================================
@@ -368,8 +515,9 @@ if ( ! is_user_logged_in() ) {
 wp_send_json_error( array( 'message' => __( 'Please log in to send messages.', 'go-deliver' ) ), 403 );
 }
 
-$job_id  = absint( $_POST['job_id'] ?? 0 );
-$message = isset( $_POST['message'] ) ? wp_unslash( $_POST['message'] ) : '';
+$job_id         = absint( $_POST['job_id'] ?? 0 );
+$other_user_id  = absint( $_POST['participant_id'] ?? 0 );
+$message        = isset( $_POST['message'] ) ? wp_unslash( $_POST['message'] ) : '';
 
 if ( ! $job_id ) {
 wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
@@ -379,7 +527,7 @@ if ( empty( trim( $message ) ) ) {
 wp_send_json_error( array( 'message' => __( 'Message cannot be empty.', 'go-deliver' ) ) );
 }
 
-$result = $this->send_message( $job_id, get_current_user_id(), $message );
+$result = $this->send_message( $job_id, get_current_user_id(), $message, $other_user_id );
 
 if ( is_wp_error( $result ) ) {
 wp_send_json_error( array( 'message' => $result->get_error_message() ) );
@@ -398,12 +546,15 @@ if ( ! is_user_logged_in() ) {
 wp_send_json_error( array( 'message' => __( 'Please log in to view messages.', 'go-deliver' ) ), 403 );
 }
 
-$job_id = absint( $_POST['job_id'] ?? $_GET['job_id'] ?? 0 );
+$job_id        = absint( $_POST['job_id'] ?? $_GET['job_id'] ?? 0 );
+$other_user_id = absint( $_POST['participant_id'] ?? $_GET['participant_id'] ?? 0 );
 if ( ! $job_id ) {
 wp_send_json_error( array( 'message' => __( 'Invalid job ID.', 'go-deliver' ) ) );
 }
 
-$messages = $this->get_messages( $job_id, get_current_user_id() );
+$current_user_id = get_current_user_id();
+$resolved_partner = $this->resolve_conversation_partner( $job_id, $current_user_id, $other_user_id );
+$messages         = $this->get_messages( $job_id, $current_user_id, $resolved_partner );
 
 if ( is_wp_error( $messages ) ) {
 wp_send_json_error( array( 'message' => $messages->get_error_message() ) );
@@ -412,15 +563,15 @@ wp_send_json_error( array( 'message' => $messages->get_error_message() ) );
 // Mark all messages addressed to this user for this job as read so the
 // hourly cron does not keep re-sending "unread messages" emails for
 // conversations the user has already viewed.
-Go_Deliver_DB::mark_messages_read( $job_id, get_current_user_id() );
+Go_Deliver_DB::mark_messages_read( $job_id, $current_user_id, $resolved_partner );
 
 // Clear the cron "already notified" flag so a future unread message
 // can trigger a fresh notification.
-delete_user_meta( get_current_user_id(), 'gd_unread_msg_cron_notified' );
+delete_user_meta( $current_user_id, 'gd_unread_msg_cron_notified' );
 
 // Clear the per-message notification flag so the next incoming message will
 // trigger a fresh email notification to this user.
-delete_user_meta( get_current_user_id(), 'gd_msg_notified_' . $job_id );
+delete_user_meta( $current_user_id, 'gd_msg_notified_' . $job_id . '_' . $resolved_partner );
 
 wp_send_json_success( $messages );
 }

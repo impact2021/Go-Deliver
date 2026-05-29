@@ -1463,6 +1463,9 @@ $status_labels = array(
 'locked' => __( 'Receiving Quotes', 'go-deliver' ),
 );
 
+$messaging_page_id  = (int) get_option( 'gd_messaging_page_id', 0 );
+$messaging_base_url = $messaging_page_id ? get_permalink( $messaging_page_id ) : home_url();
+
 $expiry_days = (int) get_option( 'gd_job_expiry_days', 14 );
 
 ob_start();
@@ -1474,131 +1477,166 @@ $dropoff       = $job['dropoff_location'] ?? array();
 $status        = $job['status'] ?? 'open';
 $type          = $job['job_type'] ?? '';
 $type_label    = isset( $job_type_labels[ $type ] ) ? $job_type_labels[ $type ] : ucwords( str_replace( '_', ' ', $type ) );
-$listing_title = ! empty( $job['listing_title'] ) ? $job['listing_title'] : null;
 $status_label  = isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : ucfirst( $status );
-$date          = ! empty( $job['date_requested'] ) ? date_i18n( get_option( 'date_format' ), strtotime( $job['date_requested'] ) ) : '';
+$title         = self::get_display_title( (int) $job['id'] );
+$pickup_name   = $pickup['suburb'] ?? $pickup['address'] ?? __( 'Unknown', 'go-deliver' );
+$dropoff_name  = $dropoff['suburb'] ?? $dropoff['address'] ?? __( 'Unknown', 'go-deliver' );
+$date_raw      = ! empty( $job['date_requested'] ) ? strtotime( $job['date_requested'] ) : 0;
+$date          = $date_raw ? date_i18n( get_option( 'date_format' ), $date_raw ) : '';
 $date_flexible = ! empty( $job['form_data']['date_flexible'] );
-$photos        = ! empty( $job['photos'] ) && is_array( $job['photos'] ) ? $job['photos'] : array();
+$time_since    = ! empty( $job['created_at'] ) ? self::time_since( $job['created_at'] ) : '';
+$posted_utc    = ! empty( $job['created_at'] ) ? strtotime( get_gmt_from_date( $job['created_at'] ) ) : 0;
+$posted_label  = $time_since ? sprintf( __( 'Posted %s', 'go-deliver' ), $time_since ) : '';
+$q_stats       = $quote_stats[ $job['id'] ] ?? array( 'count' => 0, 'min' => null, 'max' => null );
+$q_count       = (int) $q_stats['count'];
 
-$inventory      = ! empty( $job['inventory'] ) ? wp_strip_all_tags( $job['inventory'] ) : '';
-$inv_words      = $inventory ? preg_split( '/\s+/', $inventory, -1, PREG_SPLIT_NO_EMPTY ) : array();
-$inv_word_count = count( $inv_words );
-$inv_needs_more = $inv_word_count > GD_JOB_CARD_PREVIEW_WORDS;
-$inv_preview    = $inv_needs_more ? implode( ' ', array_slice( $inv_words, 0, GD_JOB_CARD_PREVIEW_WORDS ) ) . '…' : $inventory;
+$quote_title = 0 === $q_count
+	? __( '0 quotes yet', 'go-deliver' )
+	: sprintf(
+		/* translators: %d: number of quotes */
+		_n( '%d quote', '%d quotes', $q_count, 'go-deliver' ),
+		$q_count
+	);
+$quote_subtitle = 0 === $q_count ? __( 'Be the first!', 'go-deliver' ) : __( 'View quotes', 'go-deliver' );
 
-$q_stats = $quote_stats[ $job['id'] ] ?? array( 'count' => 0, 'min' => null, 'max' => null );
-$q_count = (int) $q_stats['count'];
+$labour_pickup  = ! empty( $job['labour_pickup'] );
+$labour_dropoff = ! empty( $job['labour_dropoff'] );
+$is_vehicle_job = in_array( $type, array( 'vehicle_or_boat', 'vehicle', 'car', 'motorcycle', 'other_vehicle', 'boat' ), true );
+
+if ( $is_vehicle_job ) {
+	$requirements_title = __( 'Vehicle transport', 'go-deliver' );
+	$requirements_text  = __( 'Special handling', 'go-deliver' );
+} elseif ( $labour_pickup && $labour_dropoff ) {
+	$requirements_title = __( 'Help required', 'go-deliver' );
+	$requirements_text  = __( 'Load & unload', 'go-deliver' );
+} elseif ( $labour_pickup ) {
+	$requirements_title = __( 'Help required', 'go-deliver' );
+	$requirements_text  = __( 'Load only', 'go-deliver' );
+} elseif ( $labour_dropoff ) {
+	$requirements_title = __( 'Help required', 'go-deliver' );
+	$requirements_text  = __( 'Unload only', 'go-deliver' );
+} else {
+	$requirements_title = __( 'Standard items', 'go-deliver' );
+	$requirements_text  = __( 'No special gear', 'go-deliver' );
+}
+
+$urgency_label = '';
+if ( $date_flexible ) {
+	$urgency_label = __( 'Flexible', 'go-deliver' );
+} elseif ( $date_raw && ( $date_raw - current_time( 'timestamp' ) ) <= ( 3 * DAY_IN_SECONDS ) ) {
+	$urgency_label = __( 'Urgent', 'go-deliver' );
+}
+
+$search_text = implode(
+	' ',
+	array_filter(
+		array(
+			$title,
+			$type_label,
+			$pickup_name,
+			$dropoff_name,
+			$date,
+			$requirements_title,
+			$requirements_text,
+		)
+	)
+);
+$search_text = function_exists( 'mb_strtolower' ) ? mb_strtolower( $search_text ) : strtolower( $search_text );
 ?>
-<div class="gd-job-card" data-job-id="<?php echo esc_attr( $job['id'] ); ?>">
-
-<div class="gd-job-card__header">
-<span class="gd-badge gd-badge--<?php echo esc_attr( $status ); ?>">
-<?php echo esc_html( $status_label ); ?>
-</span>
-<div class="gd-job-card__title-wrap">
-<span class="gd-job-card__type"><?php echo esc_html( $type_label ); ?></span>
-<?php if ( $listing_title ) : ?>
-<span class="gd-job-card__listing-title"><?php echo esc_html( $listing_title ); ?></span>
+<div class="gd-job-card" data-job-id="<?php echo esc_attr( $job['id'] ); ?>" data-job-search="<?php echo esc_attr( $search_text ); ?>">
+<div class="gd-job-card__topline">
+<div class="gd-job-card__pill-group">
+<span class="gd-job-card__pill gd-job-card__pill--type"><?php echo esc_html( $type_label ); ?></span>
+<span class="gd-job-card__pill gd-job-card__pill--status gd-job-card__pill--<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $status_label ); ?></span>
+</div>
+<div class="gd-job-card__meta-top">
+<?php if ( $urgency_label ) : ?>
+<span class="gd-job-card__pill gd-job-card__pill--accent gd-job-card__pill--<?php echo esc_attr( strtolower( $urgency_label ) ); ?>"><?php echo esc_html( $urgency_label ); ?></span>
 <?php endif; ?>
+<?php if ( $posted_label ) : ?>
+<span class="gd-job-card__time-since"<?php echo $posted_utc ? ' data-gd-posted-utc="' . esc_attr( $posted_utc ) . '"' : ''; ?>><?php echo esc_html( $posted_label ); ?></span>
+<?php endif; ?>
+<button
+type="button"
+class="gd-job-card__dismiss gd-dismiss-job-btn"
+data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
+title="<?php esc_attr_e( 'Hide this job', 'go-deliver' ); ?>"
+aria-label="<?php esc_attr_e( 'Hide this job', 'go-deliver' ); ?>"
+>
+×
+</button>
 </div>
 </div>
 
-<div class="gd-job-card__info-row">
-<div class="gd-job-card__info-cols">
-<div class="gd-job-card__info-col">
-<span class="gd-job-card__info-label"><?php esc_html_e( 'From', 'go-deliver' ); ?></span>
-<span class="gd-job-card__info-value">
-<?php echo esc_html( $pickup['suburb'] ?? $pickup['address'] ?? __( 'Unknown', 'go-deliver' ) ); ?>
+<h3 class="gd-job-card__title"><?php echo esc_html( $title ); ?></h3>
+
+<div class="gd-job-card__route">
+<div class="gd-job-card__route-stop">
+<span class="gd-job-card__route-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24" focusable="false"><path d="M12 21s-6-4.8-6-10a6 6 0 1112 0c0 5.2-6 10-6 10zm0-8.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"></path></svg>
 </span>
+<span><?php echo esc_html( $pickup_name ); ?></span>
 </div>
-<div class="gd-job-card__info-col">
-<span class="gd-job-card__info-label"><?php esc_html_e( 'To', 'go-deliver' ); ?></span>
-<span class="gd-job-card__info-value">
-<?php echo esc_html( $dropoff['suburb'] ?? $dropoff['address'] ?? __( 'Unknown', 'go-deliver' ) ); ?>
-</span>
+<span class="gd-job-card__route-arrow" aria-hidden="true">→</span>
+<div class="gd-job-card__route-stop">
+<span><?php echo esc_html( $dropoff_name ); ?></span>
 </div>
+</div>
+
+<div class="gd-job-card__stats">
 <?php if ( $date ) : ?>
-<div class="gd-job-card__info-col">
-<span class="gd-job-card__info-label"><?php esc_html_e( 'Moving date', 'go-deliver' ); ?></span>
-<span class="gd-job-card__info-value"><?php echo esc_html( $date ); ?></span>
-<?php if ( $date_flexible ) : ?>
-<span class="gd-job-card__info-flex"><?php esc_html_e( '(flexible)', 'go-deliver' ); ?></span>
-<?php endif; ?>
-</div>
-<?php endif; ?>
-<div class="gd-job-card__info-col">
-<span class="gd-job-card__info-label"><?php esc_html_e( 'Quotes', 'go-deliver' ); ?></span>
-<span class="gd-job-card__info-value">
-<?php if ( 0 === $q_count ) : ?>
-<?php esc_html_e( 'None yet', 'go-deliver' ); ?>
-<?php else : ?>
-<?php echo esc_html( $q_count ); ?>
-<?php if ( null !== $q_stats['min'] ) : ?>
-&nbsp;·&nbsp;
-<?php if ( $q_stats['min'] === $q_stats['max'] ) : ?>
-$<?php echo esc_html( number_format( $q_stats['min'], 0 ) ); ?>
-<?php else : ?>
-$<?php echo esc_html( number_format( $q_stats['min'], 0 ) ); ?>–$<?php echo esc_html( number_format( $q_stats['max'], 0 ) ); ?>
-<?php endif; ?>
-<?php endif; ?>
-<?php endif; ?>
+<div class="gd-job-card__stat">
+<span class="gd-job-card__stat-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"></rect><line x1="16" y1="3" x2="16" y2="7"></line><line x1="8" y1="3" x2="8" y2="7"></line><line x1="3" y1="11" x2="21" y2="11"></line></svg>
 </span>
+<div class="gd-job-card__stat-text">
+<strong><?php echo esc_html( $date ); ?></strong>
+<span><?php echo esc_html( $date_flexible ? __( '(Flexible)', 'go-deliver' ) : __( 'Scheduled date', 'go-deliver' ) ); ?></span>
 </div>
 </div>
-<div class="gd-job-card__cta">
+<?php endif; ?>
+<div class="gd-job-card__stat">
+<span class="gd-job-card__stat-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24" focusable="false"><path d="M21 11.5a8.5 8.5 0 01-14.5 6L3 21l1.7-4.2A8.5 8.5 0 1112.5 20H21"></path><line x1="8.5" y1="10.5" x2="15.5" y2="10.5"></line><line x1="8.5" y1="14" x2="12.5" y2="14"></line></svg>
+</span>
+<div class="gd-job-card__stat-text">
+<strong><?php echo esc_html( $quote_title ); ?></strong>
+<span><?php echo esc_html( $quote_subtitle ); ?></span>
+</div>
+</div>
+<div class="gd-job-card__stat">
+<span class="gd-job-card__stat-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24" focusable="false"><path d="M3 16h6l2-3h5l2-3h3"></path><path d="M7 16v2a2 2 0 104 0v-2"></path><path d="M15 13v5a2 2 0 104 0v-5"></path><circle cx="6" cy="18" r="1.5"></circle><circle cx="17" cy="18" r="1.5"></circle><path d="M10 13V8l3-2 2 2"></path></svg>
+</span>
+<div class="gd-job-card__stat-text">
+<strong><?php echo esc_html( $requirements_title ); ?></strong>
+<span><?php echo esc_html( $requirements_text ); ?></span>
+</div>
+</div>
+</div>
+
+<div class="gd-job-card__actions">
 <button
 type="button"
-class="gd-btn gd-btn--primary gd-quote-btn"
+class="gd-btn gd-job-card__action gd-job-card__action--primary gd-quote-btn"
 data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
 >
-<?php esc_html_e( 'Submit a Quote', 'go-deliver' ); ?>
+<?php esc_html_e( 'Quote Job', 'go-deliver' ); ?>
 </button>
-<button
-type="button"
-class="gd-btn gd-btn--dark gd-dismiss-job-btn"
-data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
-title="<?php esc_attr_e( 'Not interested in this job', 'go-deliver' ); ?>"
+<a
+href="<?php echo esc_url( add_query_arg( array( 'job_id' => $job['id'], 'participant_id' => (int) ( $job['customer_id'] ?? 0 ) ), $messaging_base_url ) ); ?>"
+class="gd-btn gd-job-card__action gd-job-card__action--secondary"
 >
-<?php esc_html_e( 'Not interested in this job', 'go-deliver' ); ?>
-</button>
-</div>
-</div>
-
-<?php if ( $inventory || ! empty( $photos ) ) : ?>
-<div class="gd-job-card__divider"></div>
-<?php endif; ?>
-
-<?php if ( $inventory ) : ?>
-<div class="gd-job-card__extra">
-<div class="gd-job-card__extra-label"><?php esc_html_e( 'Additional information', 'go-deliver' ); ?></div>
-<div class="gd-job-card__extra-text">
-<?php if ( $inv_needs_more ) : ?>
-<span class="gd-read-more-short"><?php echo esc_html( $inv_preview ); ?></span>
-<span class="gd-read-more-full gd-hidden"><?php echo esc_html( $inventory ); ?></span>
-<button type="button" class="gd-read-more-btn"><?php esc_html_e( 'Read more', 'go-deliver' ); ?></button>
-<?php else : ?>
-<?php echo esc_html( $inventory ); ?>
-<?php endif; ?>
-</div>
-</div>
-<?php endif; ?>
-
-<?php if ( ! empty( $photos ) ) : ?>
-<div class="gd-photo-gallery">
-<?php foreach ( array_slice( $photos, 0, 4 ) as $photo_id ) :
-$full_url  = wp_get_attachment_url( (int) $photo_id );
-$thumb_src = wp_get_attachment_image_src( (int) $photo_id, 'thumbnail' );
-if ( $full_url ) :
-$thumb_url = $thumb_src ? $thumb_src[0] : $full_url;
-?>
-<div class="gd-photo-gallery__item">
-<a href="<?php echo esc_url( $full_url ); ?>" target="_blank" rel="noopener" class="gd-photo-gallery__link">
-<img src="<?php echo esc_url( $thumb_url ); ?>" alt="<?php esc_attr_e( 'Job photo', 'go-deliver' ); ?>" loading="lazy">
+<?php esc_html_e( 'Message Customer', 'go-deliver' ); ?>
 </a>
+<button
+type="button"
+class="gd-job-card__action-link gd-job-view-btn"
+data-job-id="<?php echo esc_attr( $job['id'] ); ?>"
+>
+<?php esc_html_e( 'View Job', 'go-deliver' ); ?>
+</button>
 </div>
-<?php endif; endforeach; ?>
-</div>
-<?php endif; ?>
 
 </div><!-- /.gd-job-card -->
 <?php endforeach; ?>

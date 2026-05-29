@@ -683,9 +683,10 @@
 		// -----------------------------------------------------------------------
 		$dashboard.on( 'click', '.gd-dashboard-open-convo', function ( e ) {
 			e.preventDefault();
-			var jobId     = $( this ).data( 'job-id' );
-			var otherName = $( this ).data( 'other-name' ) || 'Mover';
-			gdOpenInlineConversation( jobId, otherName );
+			var jobId         = $( this ).data( 'job-id' );
+			var otherName     = $( this ).data( 'other-name' ) || 'Mover';
+			var participantId = parseInt( $( this ).data( 'participant-id' ), 10 ) || 0;
+			gdOpenInlineConversation( jobId, otherName, participantId );
 		} );
 
 		/**
@@ -694,7 +695,7 @@
 		 * @param {number} jobId
 		 * @param {string} otherName
 		 */
-		function gdOpenInlineConversation( jobId, otherName ) {
+		function gdOpenInlineConversation( jobId, otherName, participantId ) {
 			// Switch to messages panel.
 			gdActivateCustomerPanel( 'messages' );
 			$( 'html, body' ).animate( { scrollTop: $dashboard.offset().top - 20 }, 300 );
@@ -714,6 +715,7 @@
 				'</div>' +
 				'<div id="gd-messaging-panel" class="gd-messaging-panel"' +
 					' data-job-id="' + parseInt( jobId, 10 ) + '"' +
+					' data-participant-id="' + parseInt( participantId || 0, 10 ) + '"' +
 					' data-nonce="' + gdEscape( nonce ) + '"' +
 					' data-quote-accepted="0"' +
 					'>' +
@@ -1247,7 +1249,19 @@
 		$dashboard.on( 'click', '.gd-filter-chip', function () {
 			$( this ).siblings( '.gd-filter-chip' ).removeClass( 'gd-filter-chip--active' );
 			$( this ).addClass( 'gd-filter-chip--active' );
+			gdUpdateJobsFilterCount( $dashboard );
 			gdLoadAvailableJobs( $dashboard );
+		} );
+
+		$dashboard.on( 'click', '.gd-jobs-toolbar__filter', function () {
+			var $btn = $( this );
+			var $bar = $dashboard.find( '#gd-job-filter-bar' );
+			$bar.toggleClass( 'gd-filter-bar--hidden' );
+			$btn.attr( 'aria-expanded', $bar.hasClass( 'gd-filter-bar--hidden' ) ? 'false' : 'true' );
+		} );
+
+		$dashboard.on( 'input', '#gd-job-search-input', function () {
+			gdFilterAvailableJobCards( $dashboard );
 		} );
 
 		// View job detail modal.
@@ -1592,23 +1606,48 @@
 			{ job_type: activeFilter },
 			function ( data ) {
 				$container.html( data.html || '<div class="gd-empty-state"><div class="gd-empty-state__icon">📦</div><p class="gd-empty-state__text">No available jobs in your area.</p></div>' );
-
-				// Update filter chip labels with job counts.
-				var counts = data.counts || {};
-				$dashboard.find( '.gd-filter-chip' ).each( function () {
-					var $chip  = $( this );
-					var slug   = $chip.data( 'filter' );
-					if ( ! slug ) { return; } // skip "All Types"
-					var base   = $chip.data( 'label-base' ) || $chip.text().trim().replace( /\s*\(\d+\)\s*$/, '' );
-					$chip.data( 'label-base', base );
-					var count  = counts[ slug ] || 0;
-					$chip.text( count > 0 ? base + ' (' + count + ')' : base );
-				} );
+				gdFilterAvailableJobCards( $dashboard );
+				gdUpdateJobsFilterCount( $dashboard );
 			},
 			function ( msg ) {
 				$container.html( '<p class="gd-text-danger">' + gdEscape( msg ) + '</p>' );
 			}
 		);
+	}
+
+	function gdUpdateJobsFilterCount( $dashboard ) {
+		var $count = $dashboard.find( '#gd-job-filter-count' );
+		if ( ! $count.length ) { return; }
+
+		var activeFilter = $dashboard.find( '.gd-filter-chip--active' ).data( 'filter' ) || '';
+		if ( activeFilter ) {
+			$count.text( '1' ).removeClass( 'gd-hidden' );
+		} else {
+			$count.text( '0' ).addClass( 'gd-hidden' );
+		}
+	}
+
+	function gdFilterAvailableJobCards( $dashboard ) {
+		var term = $.trim( ( $dashboard.find( '#gd-job-search-input' ).val() || '' ).toLowerCase() );
+		var $cards = $dashboard.find( '#gd-available-jobs-list .gd-job-card' );
+		var visibleCount = 0;
+
+		$cards.each( function () {
+			var $card = $( this );
+			var haystack = ( $card.attr( 'data-job-search' ) || $card.text() || '' ).toLowerCase();
+			var isVisible = ! term || haystack.indexOf( term ) !== -1;
+			$card.toggleClass( 'gd-job-card--search-hidden', ! isVisible );
+			if ( isVisible ) {
+				visibleCount += 1;
+			}
+		} );
+
+		$dashboard.find( '#gd-available-jobs-list .gd-job-search-empty' ).remove();
+		if ( term && $cards.length && ! visibleCount ) {
+			$dashboard.find( '#gd-available-jobs-list' ).append(
+				'<div class="gd-job-search-empty">No jobs match your search.</div>'
+			);
+		}
 	}
 
 	/**
@@ -1748,9 +1787,10 @@
 	 * @param {jQuery} $panel
 	 */
 	function gdLoadMessages( jobId, $panel ) {
+		var participantId = parseInt( $panel.data( 'participant-id' ), 10 ) || 0;
 		gdAjax(
 			'gd_get_messages',
-			{ job_id: jobId, nonce: $panel.data( 'nonce' ) || gdPublic.nonce },
+			{ job_id: jobId, participant_id: participantId, nonce: $panel.data( 'nonce' ) || gdPublic.nonce },
 			function ( messages ) {
 				var $list = $panel.find( '#gd-message-list' );
 				if ( ! Array.isArray( messages ) || ! messages.length ) {
@@ -1799,6 +1839,7 @@
 		var $input        = $panel.find( '#gd-message-input' );
 		var $btn          = $panel.find( '#gd-send-message-btn' );
 		var message       = $.trim( $input.val() );
+		var participantId = parseInt( $panel.data( 'participant-id' ), 10 ) || 0;
 		var quoteAccepted = parseInt( $panel.data( 'quote-accepted' ), 10 ) === 1;
 
 		if ( ! message ) { return; }
@@ -1814,9 +1855,10 @@
 		gdAjax(
 			'gd_send_message',
 			{
-				job_id:  jobId,
-				message: message,
-				nonce:   $panel.data( 'nonce' ) || gdPublic.nonce,
+				job_id:         jobId,
+				participant_id: participantId,
+				message:        message,
+				nonce:          $panel.data( 'nonce' ) || gdPublic.nonce,
 			},
 			function () {
 				gdBtnReset( $btn );

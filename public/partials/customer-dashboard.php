@@ -386,48 +386,27 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 					<?php
 					$recent_convos = array_slice( $conversations, 0, 3 );
 					foreach ( $recent_convos as $convo ) :
-						$convo_job_id      = (int) $convo->job_id;
-						$convo_unread      = (int) $convo->unread_count;
-						$convo_last_at     = $convo->last_message_at;
-						$convo_job_title   = esc_html( Go_Deliver_Jobs::get_display_title( $convo_job_id ) ) ?: esc_html__( 'Moving Job', 'go-deliver' );
+						$convo_job_id    = (int) $convo->job_id;
+						$convo_other_id  = (int) $convo->other_user_id;
+						$convo_unread    = (int) $convo->unread_count;
+						$convo_last_at   = $convo->last_message_at;
+						$convo_job_title = esc_html( Go_Deliver_Jobs::get_display_title( $convo_job_id ) ) ?: esc_html__( 'Moving Job', 'go-deliver' );
 
-						// Determine the other party.
-						$convo_customer_id = (int) get_post_meta( $convo_job_id, 'gd_customer_id', true );
-						if ( $convo_customer_id === $user_id ) {
-							// Customer: find the mover.
-							$acc_qid       = (int) get_post_meta( $convo_job_id, 'gd_accepted_quote_id', true );
-							$convo_mover_id = $acc_qid ? (int) get_post_meta( $acc_qid, 'gd_mover_id', true ) : 0;
-							if ( ! $convo_mover_id ) {
-								// Fall back to first quote mover.
-								$first_q = new WP_Query( array(
-									'post_type'      => 'gd_quote',
-									'post_status'    => 'publish',
-									'posts_per_page' => 1,
-									'orderby'        => 'date',
-									'order'          => 'ASC',
-									'no_found_rows'  => true,
-									'fields'         => 'ids',
-									'meta_query'     => array(
-										array( 'key' => 'gd_job_id', 'value' => $convo_job_id, 'type' => 'NUMERIC' ),
-									),
-								) );
-								$convo_mover_id = ! empty( $first_q->posts ) ? (int) get_post_meta( $first_q->posts[0], 'gd_mover_id', true ) : 0;
-								wp_reset_postdata();
-							}
-							$other_user    = $convo_mover_id ? get_userdata( $convo_mover_id ) : null;
-							$other_name    = $convo_mover_id ? ( get_user_meta( $convo_mover_id, 'gd_company_name', true ) ?: ( $other_user ? $other_user->display_name : '' ) ) : $convo_job_title;
-						} else {
-							$other_user = get_userdata( $convo_customer_id );
-							$other_name = $other_user ? $other_user->display_name : $convo_job_title;
-						}
+						$other_user = $convo_other_id ? get_userdata( $convo_other_id ) : null;
+						$other_name = $other_user ? ( get_user_meta( $convo_other_id, 'gd_company_name', true ) ?: ( trim( $other_user->first_name . ' ' . $other_user->last_name ) ?: $other_user->display_name ) ) : $convo_job_title;
 
 						// Last message snippet.
 						global $wpdb;
 						$last_msg_row = $wpdb->get_row( $wpdb->prepare(
 							"SELECT message, sender_id FROM `{$wpdb->prefix}gd_messages`
-							 WHERE job_id = %d AND (sender_id = %d OR receiver_id = %d)
+							 WHERE job_id = %d
+							   AND (
+									(sender_id = %d AND receiver_id = %d)
+									OR
+									(sender_id = %d AND receiver_id = %d)
+							   )
 							 ORDER BY created_at DESC LIMIT 1",
-							$convo_job_id, $user_id, $user_id
+							$convo_job_id, $user_id, $convo_other_id, $convo_other_id, $user_id
 						) );
 						$last_snippet = $last_msg_row ? esc_html( wp_trim_words( $last_msg_row->message, 8, '…' ) ) : '';
 
@@ -447,7 +426,7 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 						// Initials for avatar.
 						$other_initials = strtoupper( substr( $other_name, 0, 2 ) );
 					?>
-					<a class="gd-recent-msg-item gd-dashboard-open-convo" data-job-id="<?php echo esc_attr( $convo_job_id ); ?>" data-other-name="<?php echo esc_attr( $other_name ); ?>" href="#" role="button">
+					<a class="gd-recent-msg-item gd-dashboard-open-convo" data-job-id="<?php echo esc_attr( $convo_job_id ); ?>" data-participant-id="<?php echo esc_attr( $convo_other_id ); ?>" data-other-name="<?php echo esc_attr( $other_name ); ?>" href="#" role="button">
 						<div class="gd-recent-msg-item__avatar"><?php echo esc_html( $other_initials ); ?></div>
 						<div class="gd-recent-msg-item__body">
 							<div class="gd-recent-msg-item__name"><?php echo esc_html( $other_name ); ?></div>
@@ -657,7 +636,7 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 							</div>
 						<?php endif; ?>
 					</div>
-					<button type="button" class="gd-btn gd-btn--dark gd-btn--sm gd-dashboard-open-convo" data-job-id="<?php echo esc_attr( $hj_msg_job_id ); ?>" data-other-name="<?php echo esc_attr( $hj_company ); ?>">
+					<button type="button" class="gd-btn gd-btn--dark gd-btn--sm gd-dashboard-open-convo" data-job-id="<?php echo esc_attr( $hj_msg_job_id ); ?>" data-participant-id="<?php echo esc_attr( $hj_mover_id ); ?>" data-other-name="<?php echo esc_attr( $hj_company ); ?>">
 						<?php esc_html_e( 'Message Mover', 'go-deliver' ); ?>
 					</button>
 				</div><!-- /.gd-current-job-hero__mover-row -->
@@ -1045,51 +1024,32 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 		<?php if ( empty( $conversations ) ) : ?>
 			<div class="gd-empty-state">
 				<div class="gd-empty-state__icon">💬</div>
-				<p class="gd-empty-state__text"><?php esc_html_e( 'No conversations yet. Messages appear here after you receive a quote on a job.', 'go-deliver' ); ?></p>
+				<p class="gd-empty-state__text"><?php esc_html_e( 'No conversations yet. Messages appear here after a mover or customer starts one on a job.', 'go-deliver' ); ?></p>
 			</div>
 		<?php else : ?>
 		<div class="gd-conversations-list">
 		<?php foreach ( $conversations as $convo ) :
-			$convo_job_id      = (int) $convo->job_id;
-			$convo_unread      = (int) $convo->unread_count;
-			$convo_last_at     = $convo->last_message_at;
-			$convo_job_title   = esc_html( Go_Deliver_Jobs::get_display_title( $convo_job_id ) ) ?: esc_html__( 'Moving Job', 'go-deliver' );
+			$convo_job_id    = (int) $convo->job_id;
+			$convo_other_id  = (int) $convo->other_user_id;
+			$convo_unread    = (int) $convo->unread_count;
+			$convo_last_at   = $convo->last_message_at;
+			$convo_job_title = esc_html( Go_Deliver_Jobs::get_display_title( $convo_job_id ) ) ?: esc_html__( 'Moving Job', 'go-deliver' );
 
-			// Determine the other party name.
-			$convo_customer_id = (int) get_post_meta( $convo_job_id, 'gd_customer_id', true );
-			if ( $convo_customer_id === $user_id ) {
-				$acc_qid        = (int) get_post_meta( $convo_job_id, 'gd_accepted_quote_id', true );
-				$convo_mover_id = $acc_qid ? (int) get_post_meta( $acc_qid, 'gd_mover_id', true ) : 0;
-				if ( ! $convo_mover_id ) {
-					$first_q = new WP_Query( array(
-						'post_type'      => 'gd_quote',
-						'post_status'    => 'publish',
-						'posts_per_page' => 1,
-						'orderby'        => 'date',
-						'order'          => 'ASC',
-						'no_found_rows'  => true,
-						'fields'         => 'ids',
-						'meta_query'     => array(
-							array( 'key' => 'gd_job_id', 'value' => $convo_job_id, 'type' => 'NUMERIC' ),
-						),
-					) );
-					$convo_mover_id = ! empty( $first_q->posts ) ? (int) get_post_meta( $first_q->posts[0], 'gd_mover_id', true ) : 0;
-					wp_reset_postdata();
-				}
-				$other_user_msg  = $convo_mover_id ? get_userdata( $convo_mover_id ) : null;
-				$other_name_msg  = $convo_mover_id ? ( get_user_meta( $convo_mover_id, 'gd_company_name', true ) ?: ( $other_user_msg ? $other_user_msg->display_name : '' ) ) : $convo_job_title;
-			} else {
-				$other_user_msg = get_userdata( $convo_customer_id );
-				$other_name_msg = $other_user_msg ? $other_user_msg->display_name : $convo_job_title;
-			}
+			$other_user_msg = $convo_other_id ? get_userdata( $convo_other_id ) : null;
+			$other_name_msg = $other_user_msg ? ( get_user_meta( $convo_other_id, 'gd_company_name', true ) ?: ( trim( $other_user_msg->first_name . ' ' . $other_user_msg->last_name ) ?: $other_user_msg->display_name ) ) : $convo_job_title;
 
 			// Last snippet.
 			global $wpdb;
 			$last_msg_row2   = $wpdb->get_row( $wpdb->prepare(
 				"SELECT message FROM `{$wpdb->prefix}gd_messages`
-				 WHERE job_id = %d AND (sender_id = %d OR receiver_id = %d)
+				 WHERE job_id = %d
+				   AND (
+						(sender_id = %d AND receiver_id = %d)
+						OR
+						(sender_id = %d AND receiver_id = %d)
+				   )
 				 ORDER BY created_at DESC LIMIT 1",
-				$convo_job_id, $user_id, $user_id
+				$convo_job_id, $user_id, $convo_other_id, $convo_other_id, $user_id
 			) );
 			$last_snippet2 = $last_msg_row2 ? esc_html( wp_trim_words( $last_msg_row2->message, 12, '…' ) ) : '';
 
@@ -1109,6 +1069,7 @@ $display_first_name = $current_user->first_name ?: $current_user->display_name;
 		?>
 		<a class="gd-convo-item gd-dashboard-open-convo<?php echo $convo_unread > 0 ? ' gd-convo-item--unread' : ''; ?>"
 		   data-job-id="<?php echo esc_attr( $convo_job_id ); ?>"
+		   data-participant-id="<?php echo esc_attr( $convo_other_id ); ?>"
 		   data-other-name="<?php echo esc_attr( $other_name_msg ); ?>"
 		   href="#" role="button">
 			<div class="gd-convo-item__avatar"><?php echo esc_html( $convo_initials2 ); ?></div>
