@@ -44,6 +44,40 @@ public function can_message( $job_id, $user_id, $other_user_id = 0 ) {
 }
 
 /**
+ * Determine whether the user can view all quote-stage messages for a job.
+ *
+ * @param int $job_id  Job post ID.
+ * @param int $user_id User ID.
+ * @return bool
+ */
+public function can_view_all_job_messages( $job_id, $user_id ) {
+	return $this->user_can_view_marketplace_thread( $job_id, $user_id );
+}
+
+/**
+ * Determine whether the user can submit a report on a job conversation/quote.
+ *
+ * @param int $job_id  Job post ID.
+ * @param int $user_id User ID.
+ * @return bool
+ */
+public function can_report_job_activity( $job_id, $user_id ) {
+	$job_id      = (int) $job_id;
+	$user_id     = (int) $user_id;
+	$customer_id = (int) get_post_meta( $job_id, 'gd_customer_id', true );
+
+	if ( ! $job_id || ! $user_id ) {
+		return false;
+	}
+
+	if ( $customer_id && $customer_id === $user_id ) {
+		return true;
+	}
+
+	return $this->user_can_view_marketplace_thread( $job_id, $user_id );
+}
+
+/**
  * Resolve the other participant for a job conversation.
  *
  * @param int $job_id        Job post ID.
@@ -137,6 +171,27 @@ private function user_has_quote( $job_id, $mover_id ) {
 	wp_reset_postdata();
 
 	return $has_quote;
+}
+
+/**
+ * Return true when the user is a mover who has already quoted this job.
+ *
+ * @param int $job_id  Job post ID.
+ * @param int $user_id User ID.
+ * @return bool
+ */
+private function user_can_view_marketplace_thread( $job_id, $user_id ) {
+	$user = get_userdata( (int) $user_id );
+	if ( ! $user ) {
+		return false;
+	}
+
+	$roles = (array) $user->roles;
+	if ( ! in_array( 'gd_mover', $roles, true ) && ! in_array( 'gd_mover_sub', $roles, true ) ) {
+		return false;
+	}
+
+	return $this->user_has_quote( (int) $job_id, (int) $user_id );
 }
 
 /**
@@ -492,6 +547,10 @@ return $message;
  * @return array|WP_Error Message rows or WP_Error.
  */
 public function get_messages( $job_id, $user_id, $other_user_id = 0 ) {
+if ( $this->user_can_view_marketplace_thread( (int) $job_id, (int) $user_id ) ) {
+return Go_Deliver_DB::get_messages_for_job( (int) $job_id );
+}
+
 $resolved_partner = $this->resolve_conversation_partner( (int) $job_id, (int) $user_id, (int) $other_user_id );
 
 if ( ! $resolved_partner ) {
@@ -563,7 +622,8 @@ wp_send_json_error( array( 'message' => $messages->get_error_message() ) );
 // Mark all messages addressed to this user for this job as read so the
 // hourly cron does not keep re-sending "unread messages" emails for
 // conversations the user has already viewed.
-Go_Deliver_DB::mark_messages_read( $job_id, $current_user_id, $resolved_partner );
+$mark_partner = $this->user_can_view_marketplace_thread( $job_id, $current_user_id ) ? 0 : $resolved_partner;
+Go_Deliver_DB::mark_messages_read( $job_id, $current_user_id, $mark_partner );
 
 // Clear the cron "already notified" flag so a future unread message
 // can trigger a fresh notification.
@@ -575,6 +635,113 @@ delete_user_meta( $current_user_id, 'gd_msg_notified_' . $job_id . '_' . $resolv
 
 wp_send_json_success( $messages );
 }
+
+	/**
+	 * AJAX: report suspicious quote/message activity.
+	 */
+	public function ajax_report_activity() {
+		check_ajax_referer( 'gd_public_nonce', 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => __( 'Please log in to submit reports.', 'go-deliver' ) ), 403 );
+		}
+
+		$job_id      = absint( $_POST['job_id'] ?? 0 );
+		$quote_id    = absint( $_POST['quote_id'] ?? 0 );
+		$message_id  = absint( $_POST['message_id'] ?? 0 );
+		$report_type = sanitize_key( $_POST['report_type'] ?? '' );
+		$reason      = sanitize_textarea_field( wp_unslash( $_POST['reason'] ?? '' ) );
+		$user_id     = get_current_user_id();
+
+		if ( ! $job_id || ! in_array( $report_type, array( 'quote', 'message' ), true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid report request.', 'go-deliver' ) ) );
+		}
+
+		if ( ! $this->can_report_job_activity( $job_id, $user_id ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to report activity for this job.', 'go-deliver' ) ), 403 );
+		}
+
+		$target_details = '';
+		if ( 'quote' === $report_type ) {
+			$quote_job_id = (int) get_post_meta( $quote_id, 'gd_job_id', true );
+			if ( ! $quote_id || $quote_job_id !== $job_id ) {
+				wp_send_json_error( array( 'message' => __( 'Quote not found for this job.', 'go-deliver' ) ) );
+			}
+			$target_details = sprintf( 'Quote ID: %d', $quote_id );
+		} else {
+			$message_row = $this->get_message_row( $message_id, $job_id );
+			if ( ! $message_row ) {
+				wp_send_json_error( array( 'message' => __( 'Message not found for this job.', 'go-deliver' ) ) );
+			}
+
+			$target_details = sprintf(
+				'Message ID: %d | Sender: %d | Receiver: %d | Content: %s',
+				(int) $message_row->id,
+				(int) $message_row->sender_id,
+				(int) $message_row->receiver_id,
+				wp_strip_all_tags( (string) $message_row->message )
+			);
+		}
+
+		$current_user = wp_get_current_user();
+		$reporter     = $current_user ? $current_user->user_login : '';
+		$reporter     = $reporter ? $reporter : sprintf( 'User #%d', (int) $user_id );
+		$job_title    = Go_Deliver_Jobs::get_display_title( $job_id );
+
+		$subject = sprintf(
+			/* translators: %d: job ID */
+			__( '[Go Deliver] Activity report for Job #%d', 'go-deliver' ),
+			$job_id
+		);
+		$body    = implode(
+			"\n",
+			array(
+				'Go Deliver activity report',
+				'',
+				'Job ID: ' . (int) $job_id,
+				'Job: ' . wp_strip_all_tags( (string) $job_title ),
+				'Type: ' . ucfirst( $report_type ),
+				$target_details,
+				'Reported by: ' . $reporter . ' (User ID: ' . (int) $user_id . ')',
+				'Reason: ' . ( $reason ? $reason : 'No reason provided.' ),
+				'Reported at: ' . current_time( 'mysql' ),
+			)
+		);
+
+		$admin_email = gd_get_admin_email();
+		if ( ! $admin_email || ! is_email( $admin_email ) ) {
+			wp_send_json_error( array( 'message' => __( 'No admin report email is configured.', 'go-deliver' ) ) );
+		}
+
+		$sent = wp_mail( $admin_email, $subject, $body );
+		if ( ! $sent ) {
+			wp_send_json_error( array( 'message' => __( 'Could not submit the report right now.', 'go-deliver' ) ) );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Report submitted. Thank you.', 'go-deliver' ) ) );
+	}
+
+	/**
+	 * Fetch a message row by ID and job.
+	 *
+	 * @param int $message_id Message row ID.
+	 * @param int $job_id     Job post ID.
+	 * @return object|null
+	 */
+	private function get_message_row( $message_id, $job_id ) {
+		global $wpdb;
+
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM `{$wpdb->prefix}gd_messages`
+				 WHERE id = %d
+				   AND job_id = %d
+				 LIMIT 1",
+				(int) $message_id,
+				(int) $job_id
+			)
+		);
+	}
 
 /**
  * AJAX: retrieve all conversation threads for the current user.

@@ -180,6 +180,25 @@ class Go_Deliver_DB {
 	}
 
 	/**
+	 * Retrieve all messages for a job thread.
+	 *
+	 * @param int $job_id ID of the related gd_job post.
+	 * @return array Array of message row objects.
+	 */
+	public static function get_messages_for_job( $job_id ) {
+		global $wpdb;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM `{$wpdb->prefix}gd_messages`
+				 WHERE job_id = %d
+				 ORDER BY created_at ASC",
+				(int) $job_id
+			)
+		);
+	}
+
+	/**
 	 * Mark all unread messages addressed to a user for a given job as read.
 	 *
 	 * Called whenever a user fetches the message thread so the hourly cron

@@ -99,6 +99,7 @@ if ( ! $job_id ) {
 $messaging   = new Go_Deliver_Messaging();
 $participant_id = $messaging->resolve_conversation_partner( $job_id, $current_user_id, $participant_id );
 $can_message    = (bool) $participant_id;
+$can_report_activity = $messaging->can_report_job_activity( $job_id, $current_user_id );
 
 if ( ! $can_message ) {
 	echo '<div class="gd-wrap"><div class="gd-alert gd-alert--warning"><span class="gd-alert__icon">⚠️</span><div class="gd-alert__body">'
@@ -160,6 +161,7 @@ $quote_accepted  = (bool) get_post_meta( $job_id, 'gd_accepted_quote_id', true )
 	data-participant-id="<?php echo esc_attr( $participant_id ); ?>"
 	data-nonce="<?php echo esc_attr( $messaging_nonce ); ?>"
 	data-quote-accepted="<?php echo $quote_accepted ? '1' : '0'; ?>"
+	data-can-report="<?php echo $can_report_activity ? '1' : '0'; ?>"
 	>
 		<!-- Header -->
 		<div class="gd-messaging-panel__header">
@@ -234,5 +236,10 @@ $quote_accepted  = (bool) get_post_meta( $job_id, 'gd_accepted_quote_id', true )
 	<p class="gd-text-muted gd-text-sm" style="margin-top:12px;text-align:center;">
 		<?php esc_html_e( 'Messages are automatically checked every 30 seconds for new replies.', 'go-deliver' ); ?>
 	</p>
+	<?php if ( $can_report_activity ) : ?>
+		<p class="gd-text-muted gd-text-sm" style="margin-top:6px;text-align:center;">
+			<?php esc_html_e( 'See something suspicious? Use the Report button beside any message.', 'go-deliver' ); ?>
+		</p>
+	<?php endif; ?>
 
 </div><!-- /.gd-wrap -->
