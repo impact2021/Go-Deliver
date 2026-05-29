@@ -91,8 +91,11 @@ if ( $is_mover ) {
 }
 
 $can_view_market_quotes = $is_mover && $has_market_quotes;
-$modal_view             = isset( $modal_view ) ? sanitize_key( (string) $modal_view ) : '';
-$quotes_only_view       = ( 'quotes' === $modal_view ) && $can_view_market_quotes && $quote_count > 0;
+if ( $can_view_market_quotes && $quote_count < 1 ) {
+	$quote_count = 1;
+}
+$modal_view       = isset( $modal_view ) ? sanitize_key( (string) $modal_view ) : '';
+$quotes_only_view = ( 'quotes' === $modal_view ) && $can_view_market_quotes;
 
 // Privacy filter: only reveal full address to:
 // - the customer who owns the job
