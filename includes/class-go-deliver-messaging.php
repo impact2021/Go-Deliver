@@ -74,7 +74,7 @@ public function can_report_job_activity( $job_id, $user_id ) {
 		return true;
 	}
 
-	return $this->user_can_view_marketplace_thread( $job_id, $user_id );
+	return $this->mover_can_view_market_quotes( $job_id, $user_id );
 }
 
 /**
@@ -192,6 +192,50 @@ private function user_can_view_marketplace_thread( $job_id, $user_id ) {
 	}
 
 	return $this->user_has_quote( (int) $job_id, (int) $user_id );
+}
+
+/**
+ * Return true when the user is a mover who can see market quotes on a job.
+ *
+ * Mirrors the mover quote-modal visibility rule: any mover/sub-mover can view
+ * market quotes when at least one quote exists for the job.
+ *
+ * @param int $job_id  Job post ID.
+ * @param int $user_id User ID.
+ * @return bool
+ */
+private function mover_can_view_market_quotes( $job_id, $user_id ) {
+	$user = get_userdata( (int) $user_id );
+	if ( ! $user ) {
+		return false;
+	}
+
+	$roles = (array) $user->roles;
+	if ( ! in_array( 'gd_mover', $roles, true ) && ! in_array( 'gd_mover_sub', $roles, true ) ) {
+		return false;
+	}
+
+	$query = new WP_Query(
+		array(
+			'post_type'      => 'gd_quote',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				array(
+					'key'   => 'gd_job_id',
+					'value' => (int) $job_id,
+					'type'  => 'NUMERIC',
+				),
+			),
+			'no_found_rows'  => true,
+		)
+	);
+
+	$can_view = ! empty( $query->posts );
+	wp_reset_postdata();
+
+	return $can_view;
 }
 
 /**

@@ -164,8 +164,23 @@
 					else { gdToast( msg, 'error' ); }
 				}
 			},
-			error: function () {
+			error: function ( jqXHR ) {
 				var msg = 'Network error. Please try again.';
+				var response = jqXHR && jqXHR.responseJSON ? jqXHR.responseJSON : null;
+
+				if ( response && response.data && response.data.message ) {
+					msg = response.data.message;
+				} else if ( jqXHR && jqXHR.responseText ) {
+					try {
+						response = JSON.parse( jqXHR.responseText );
+						if ( response && response.data && response.data.message ) {
+							msg = response.data.message;
+						}
+					} catch ( e ) {
+						// Leave the generic network message in place.
+					}
+				}
+
 				if ( typeof fail === 'function' ) { fail( msg ); }
 				else { gdToast( msg, 'error' ); }
 			},
