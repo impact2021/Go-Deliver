@@ -1276,6 +1276,14 @@
 			gdOpenJobModal( jobId );
 		} );
 
+		// "View quotes" stat on job cards opens the job detail modal.
+		$dashboard.on( 'click keydown', '.gd-job-card__stat--link', function ( e ) {
+			if ( e.type === 'keydown' && e.which !== 13 && e.which !== 32 ) { return; }
+			if ( e.type === 'keydown' ) { e.preventDefault(); }
+			var jobId = $( this ).closest( '.gd-job-card' ).data( 'job-id' );
+			if ( jobId ) { gdOpenJobModal( jobId ); }
+		} );
+
 		// Withdraw quote.
 		$dashboard.on( 'click', '.gd-withdraw-quote-btn', function () {
 			var quoteId = $( this ).data( 'quote-id' );
@@ -2619,16 +2627,28 @@
 			showStep( currentStep );
 		}
 
+		var tourStorageKey = 'gd_tour_seen_' + ( gdPublic.userId || '0' );
+
+		function markTourSeen() {
+			try { localStorage.setItem( tourStorageKey, '1' ); } catch ( e ) {}
+			$.post( gdPublic.ajaxUrl, {
+				action : 'gd_mover_dismiss_tour',
+				nonce  : gdPublic.nonce,
+			} );
+		}
+
+		function isTourSeen() {
+			if ( gdPublic.moverTourSeen ) { return true; }
+			try { return !! localStorage.getItem( tourStorageKey ); } catch ( e ) { return false; }
+		}
+
 		function endTour( completed ) {
 			$( '.gd-tour-highlight' ).removeClass( 'gd-tour-highlight' );
 			$( '#gd-tour-overlay' ).fadeOut( 200 );
 
 			if ( completed ) {
 				$( '#gd-tour-banner' ).slideUp( 300 );
-				$.post( gdPublic.ajaxUrl, {
-					action : 'gd_mover_dismiss_tour',
-					nonce  : gdPublic.nonce,
-				} );
+				markTourSeen();
 			}
 		}
 
@@ -2638,12 +2658,13 @@
 			startTour();
 		} );
 
+		$( '.gd-replay-tour-btn' ).on( 'click', function () {
+			startTour();
+		} );
+
 		$( '#gd-dismiss-tour-banner' ).on( 'click', function () {
 			$( '#gd-tour-banner' ).slideUp( 300 );
-			$.post( gdPublic.ajaxUrl, {
-				action : 'gd_mover_dismiss_tour',
-				nonce  : gdPublic.nonce,
-			} );
+			markTourSeen();
 		} );
 
 		$( '#gd-tour-close' ).on( 'click', function () {
@@ -2677,7 +2698,7 @@
 		} );
 
 		// Auto-start for first-time visitors.
-		if ( ! gdPublic.moverTourSeen ) {
+		if ( ! isTourSeen() ) {
 			setTimeout( startTour, 800 );
 		}
 	}

@@ -1579,6 +1579,14 @@ Go_Deliver_Sub_Users::MAX_SUB_USERS
 </p>
 <?php endif; ?>
 
+<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--gd-border);">
+<h3 style="margin:0 0 8px;font-size:15px;"><?php esc_html_e( 'Dashboard Tour', 'go-deliver' ); ?></h3>
+<p style="margin:0 0 12px;font-size:13px;color:var(--gd-text-muted);"><?php esc_html_e( 'Want a reminder of how the dashboard works?', 'go-deliver' ); ?></p>
+<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-replay-tour-btn">
+<?php esc_html_e( '🎯 Replay Tour', 'go-deliver' ); ?>
+</button>
+</div>
+
 </div>
 </div>
 </div><!-- /#gd-panel-team -->
