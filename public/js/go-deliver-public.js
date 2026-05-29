@@ -1758,6 +1758,18 @@
 		var jobId = $panel.data( 'job-id' );
 		if ( ! jobId ) { return; }
 
+		// Restore dismissed state of the contact-policy notice.
+		var warnKey = 'gd_cwarn_' + jobId;
+		if ( sessionStorage.getItem( warnKey ) ) {
+			$( '#gd-contact-policy-notice' ).hide();
+		}
+
+		// Dismiss button for the contact-policy notice.
+		$( '#gd-contact-policy-notice' ).on( 'click', '.gd-alert__close', function () {
+			$( '#gd-contact-policy-notice' ).slideUp( 200 );
+			try { sessionStorage.setItem( warnKey, '1' ); } catch ( e ) {}
+		} );
+
 		// Initial load.
 		gdLoadMessages( jobId, $panel );
 
@@ -1778,6 +1790,7 @@
 				gdSendMessage( jobId, $panel );
 			}
 		} );
+
 	}
 
 	/**
@@ -1807,16 +1820,23 @@
 
 				var currentUserId = parseInt( gdPublic.userId || 0, 10 );
 				var html          = '';
+				var canReport     = parseInt( $panel.data( 'can-report' ), 10 ) === 1;
 
 				$.each( messages, function ( i, msg ) {
 					var isMine  = parseInt( msg.sender_id, 10 ) === currentUserId;
 					var dir     = isMine ? 'from' : 'to';
 					var time    = msg.created_at ? new Date( msg.created_at.replace( ' ', 'T' ) ).toLocaleTimeString( [], { hour: '2-digit', minute: '2-digit' } ) : '';
+					var reportButton = '';
+
+					if ( canReport && ! isMine && msg.id ) {
+						reportButton = '<button type="button" class="gd-btn gd-btn--outline gd-btn--sm gd-report-activity-btn" data-report-type="message" data-job-id="' + gdEscape( String( jobId ) ) + '" data-message-id="' + gdEscape( String( msg.id ) ) + '">⚑ Report</button>';
+					}
 
 					html += '<div class="gd-message-bubble gd-message-bubble--' + dir + '">' +
 					        ( ! isMine ? '<span class="gd-message-bubble__sender">' + gdEscape( msg.sender_name || 'User' ) + '</span>' : '' ) +
 					        '<div class="gd-message-bubble__body">' + gdEscape( msg.message ) + '</div>' +
 					        '<span class="gd-message-bubble__time">' + gdEscape( time ) + '</span>' +
+					        reportButton +
 					        '</div>';
 				} );
 
@@ -1827,6 +1847,55 @@
 				// Silent fail on polling errors.
 			}
 		);
+	}
+
+	/**
+	 * Submit a quote/message report.
+	 *
+	 * @param {jQuery} $btn
+	 */
+	function gdReportActivity( $btn ) {
+		var reportType = String( $btn.data( 'report-type' ) || '' );
+		var jobId      = parseInt( $btn.data( 'job-id' ), 10 ) || 0;
+		var quoteId    = parseInt( $btn.data( 'quote-id' ), 10 ) || 0;
+		var messageId  = parseInt( $btn.data( 'message-id' ), 10 ) || 0;
+		var reason     = window.prompt( gdPublic.reportPrompt || 'Why are you reporting this activity? (optional)' );
+
+		if ( reason === null || ! reportType || ! jobId ) {
+			return;
+		}
+		reason = $.trim( reason );
+		if ( reason.length > 1000 ) {
+			gdToast( 'Please keep report notes under 1000 characters.', 'error' );
+			return;
+		}
+
+		gdBtnLoading( $btn );
+
+		gdAjax(
+			'gd_report_activity',
+			{
+				job_id:      jobId,
+				report_type: reportType,
+				quote_id:    quoteId,
+				message_id:  messageId,
+				reason:      reason,
+			},
+			function ( data ) {
+				gdBtnReset( $btn );
+				gdToast( ( data && data.message ) ? data.message : 'Report submitted.', 'success' );
+			},
+			function ( msg ) {
+				gdBtnReset( $btn );
+				gdToast( msg || 'Could not submit report.', 'error' );
+			}
+		);
+	}
+
+	function gdInitActivityReporting() {
+		$( document ).on( 'click', '.gd-report-activity-btn', function () {
+			gdReportActivity( $( this ) );
+		} );
 	}
 
 	/**
@@ -2633,6 +2702,7 @@
 		gdInitLightbox();
 		gdInitTimeSince();
 		gdInitMoverTour();
+		gdInitActivityReporting();
 	} );
 
 } )( jQuery );

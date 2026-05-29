@@ -88,6 +88,7 @@ class Go_Deliver_Public {
 				'userId'                => is_user_logged_in() ? (string) get_current_user_id() : '0',
 				'subUsersNonce'         => wp_create_nonce( 'gd_sub_users' ),
 				'moverTourSeen'         => is_user_logged_in() && get_user_meta( get_current_user_id(), 'gd_mover_tour_completed', true ) ? '1' : '',
+				'reportPrompt'          => __( 'Why are you reporting this activity? (optional)', 'go-deliver' ),
 			)
 		);
 

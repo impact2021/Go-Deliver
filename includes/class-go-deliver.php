@@ -209,6 +209,7 @@ class Go_Deliver {
 			'gd_restore_job',
 			'gd_upload_mover_photo',
 			'gd_delete_mover_photo',
+			'gd_report_activity',
 		);
 
 		foreach ( $ajax_actions_auth as $action ) {
@@ -261,6 +262,7 @@ class Go_Deliver {
 			'gd_restore_job'         => array( 'Go_Deliver_Jobs', 'ajax_restore_job' ),
 			'gd_upload_mover_photo'  => array( 'Go_Deliver_Mover_Reg', 'ajax_upload_mover_photo' ),
 			'gd_delete_mover_photo'  => array( 'Go_Deliver_Mover_Reg', 'ajax_delete_mover_photo' ),
+			'gd_report_activity'     => array( 'Go_Deliver_Messaging', 'ajax_report_activity' ),
 		);
 
 		if ( isset( $handler_map[ $action ] ) ) {

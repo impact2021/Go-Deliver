@@ -67,6 +67,36 @@ $labour_pickup       = (bool) get_post_meta( $job_id, 'gd_labour_pickup', true )
 $labour_dropoff      = (bool) get_post_meta( $job_id, 'gd_labour_dropoff', true );
 $accepted_quote_id   = (int) get_post_meta( $job_id, 'gd_accepted_quote_id', true );
 $quote_count         = (int) get_post_meta( $job_id, 'gd_quote_count', true );
+$mover_has_quote     = false;
+
+if ( $is_mover ) {
+	$mover_quote_check = new WP_Query(
+		array(
+			'post_type'      => 'gd_quote',
+			'post_status'    => 'publish',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+			'meta_query'     => array(
+				'relation' => 'AND',
+				array(
+					'key'   => 'gd_job_id',
+					'value' => $job_id,
+					'type'  => 'NUMERIC',
+				),
+				array(
+					'key'   => 'gd_mover_id',
+					'value' => $current_user_id,
+					'type'  => 'NUMERIC',
+				),
+			),
+			'no_found_rows'  => true,
+		)
+	);
+	$mover_has_quote = ! empty( $mover_quote_check->posts );
+	wp_reset_postdata();
+}
+
+$can_view_market_quotes = $is_mover && $mover_has_quote;
 
 // Privacy filter: only reveal full address to:
 // - the customer who owns the job
@@ -297,12 +327,23 @@ $helpers_labels = array(
 		</div>
 		<?php endif; ?>
 
-		<!-- Quotes Section (customer view) -->
-		<?php if ( $is_job_owner && $quote_count > 0 ) : ?>
+		<!-- Quotes Section -->
+		<?php if ( ( $is_job_owner || $can_view_market_quotes ) && $quote_count > 0 ) : ?>
 		<div class="gd-job-detail__section">
 			<div class="gd-job-detail__section-title">
-				<?php printf( esc_html__( 'Quotes Received (%d)', 'go-deliver' ), $quote_count ); ?>
+				<?php
+				if ( $is_job_owner ) {
+					printf( esc_html__( 'Quotes Received (%d)', 'go-deliver' ), $quote_count );
+				} else {
+					printf( esc_html__( 'All Quotes On This Job (%d)', 'go-deliver' ), $quote_count );
+				}
+				?>
 			</div>
+			<?php if ( $can_view_market_quotes ) : ?>
+				<p class="gd-text-sm" style="margin:0 0 10px;">
+					<?php esc_html_e( 'You can view competing quotes and report suspicious activity from this job.', 'go-deliver' ); ?>
+				</p>
+			<?php endif; ?>
 			<?php
 			$quotes_query = new WP_Query( array(
 				'post_type'      => 'gd_quote',
@@ -327,7 +368,14 @@ $helpers_labels = array(
 				$q_message    = esc_html( get_post_meta( $q_id, 'gd_message', true ) );
 				$q_mover_id   = (int) get_post_meta( $q_id, 'gd_mover_id', true );
 				$q_mover      = get_userdata( $q_mover_id );
-				$q_mover_name = $q_mover ? esc_html( $q_mover->first_name ) : esc_html__( 'Mover', 'go-deliver' );
+				$q_mover_name = '';
+				if ( $q_mover ) {
+					$q_mover_name = sanitize_text_field( (string) get_user_meta( $q_mover_id, 'gd_company_name', true ) );
+					if ( ! $q_mover_name ) {
+						$q_mover_name = $q_mover->first_name;
+					}
+				}
+				$q_mover_name = $q_mover_name ? esc_html( $q_mover_name ) : esc_html__( 'Mover', 'go-deliver' );
 				$q_rating     = (float) get_user_meta( $q_mover_id, 'gd_average_rating', true );
 				$is_accepted  = ( 'accepted' === $q_status );
 				$q_mover_phone = ( $is_accepted && $is_job_owner ) ? esc_html( get_user_meta( $q_mover_id, 'gd_phone', true ) ) : '';
@@ -375,7 +423,7 @@ $helpers_labels = array(
 						</div>
 					<?php endif; ?>
 
-					<?php if ( 'pending' === $q_status && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
+					<?php if ( 'pending' === $q_status && $is_job_owner && in_array( $job_status, array( 'open', 'locked' ), true ) ) : ?>
 						<div class="gd-quote-card__actions">
 							<button
 								type="button"
@@ -384,6 +432,18 @@ $helpers_labels = array(
 								data-job-id="<?php echo esc_attr( $job_id ); ?>"
 							>
 								✓ <?php esc_html_e( 'Accept Quote', 'go-deliver' ); ?>
+							</button>
+						</div>
+					<?php elseif ( $can_view_market_quotes && $q_mover_id !== $current_user_id ) : ?>
+						<div class="gd-quote-card__actions">
+							<button
+								type="button"
+								class="gd-btn gd-btn--outline gd-btn--sm gd-report-activity-btn"
+								data-report-type="quote"
+								data-job-id="<?php echo esc_attr( $job_id ); ?>"
+								data-quote-id="<?php echo esc_attr( $q_id ); ?>"
+							>
+								⚑ <?php esc_html_e( 'Report', 'go-deliver' ); ?>
 							</button>
 						</div>
 					<?php endif; ?>

@@ -180,14 +180,34 @@ class Go_Deliver_DB {
 	}
 
 	/**
+	 * Retrieve all messages for a job thread.
+	 *
+	 * @param int $job_id ID of the related gd_job post.
+	 * @return array Array of message row objects.
+	 */
+	public static function get_messages_for_job( $job_id ) {
+		global $wpdb;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM `{$wpdb->prefix}gd_messages`
+				 WHERE job_id = %d
+				 ORDER BY created_at ASC",
+				(int) $job_id
+			)
+		);
+	}
+
+	/**
 	 * Mark all unread messages addressed to a user for a given job as read.
 	 *
 	 * Called whenever a user fetches the message thread so the hourly cron
 	 * does not keep re-sending "unread messages" notifications for messages
 	 * the user has already viewed.
 	 *
-	 * @param int $job_id  ID of the related gd_job post.
-	 * @param int $user_id ID of the user viewing the thread (the receiver).
+	 * @param int $job_id        ID of the related gd_job post.
+	 * @param int $user_id       ID of the user viewing the thread (the receiver).
+	 * @param int $other_user_id Optional sender ID filter; use 0 to mark all senders for this job.
 	 * @return int|false Number of rows updated, or false on failure.
 	 */
 	public static function mark_messages_read( $job_id, $user_id, $other_user_id = 0 ) {
