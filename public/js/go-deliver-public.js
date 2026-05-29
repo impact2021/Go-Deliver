@@ -2439,6 +2439,11 @@
 
 		var steps = [
 			{
+				target  : null,
+				title   : 'Welcome to your dashboard! 👋',
+				body    : 'This quick 3-step tour highlights the key sections. Use Next → to move forward, ← Back to revisit a step, or ✕ to close at any time.',
+			},
+			{
 				target  : '#gd-tour-nav-messages',
 				title   : 'Messages',
 				body    : 'Use Messages to speak with customers. All your conversations with job requesters live here.',
@@ -2456,6 +2461,19 @@
 		];
 
 		var currentStep = 0;
+
+		function centerTooltip() {
+			var $tooltip = $( '#gd-tour-tooltip' );
+			var ttWidth  = $tooltip.outerWidth();
+			var ttHeight = $tooltip.outerHeight();
+			var winWidth = $( window ).width();
+			var winHeight = $( window ).height();
+			var scrollTop = $( window ).scrollTop();
+			var top  = scrollTop + ( winHeight / 2 ) - ( ttHeight / 2 );
+			var left = ( winWidth / 2 ) - ( ttWidth / 2 );
+			if ( left < 10 ) { left = 10; }
+			$tooltip.css( { top: top, left: left } );
+		}
 
 		function positionTooltip( $target ) {
 			if ( ! $target || ! $target.length ) {
@@ -2519,7 +2537,7 @@
 					positionTooltip( $target );
 				} );
 			} else {
-				positionTooltip( $target );
+				centerTooltip();
 			}
 		}
 
