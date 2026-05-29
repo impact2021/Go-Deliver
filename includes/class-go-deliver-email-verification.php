@@ -61,7 +61,7 @@ class Go_Deliver_Email_Verification {
 		$message   = sprintf(
 			/* translators: 1: verification code, 2: minutes */
 			__(
-				"Your Go Deliver verification code is: %1\$s\n\nThis code expires in %2\$d minutes.\n\nIf you can't find this email, please check your spam or junk folder.",
+				"Your Go Deliver verification code is: %1\$s\n\nThis code expires in %2\$d minutes.",
 				'go-deliver'
 			),
 			$code,

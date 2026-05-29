@@ -497,65 +497,65 @@
 					gdToast( 'Network error. Please try again.', 'error' );
 				},
 			} );
+		} );
 
-			$form.on( 'click', '#gd-job-verify-email-btn', function () {
-				var email = getJobVerificationEmail();
-				var code  = $.trim( $form.find( '#gd_job_email_verification_code' ).val() );
-				var $btn  = $( this );
+		$form.on( 'click', '#gd-job-verify-email-btn', function () {
+			var email = getJobVerificationEmail();
+			var code  = $.trim( $form.find( '#gd_job_email_verification_code' ).val() );
+			var $btn  = $( this );
 
-				if ( ! email ) {
-					gdToast( 'Please enter your email before verification.', 'error' );
-					return;
-				}
-				if ( ! /^\d{6}$/.test( code ) ) {
-					gdToast( 'Please enter the 6-digit verification code.', 'error' );
-					return;
-				}
+			if ( ! email ) {
+				gdToast( 'Please enter your email before verification.', 'error' );
+				return;
+			}
+			if ( ! /^\d{6}$/.test( code ) ) {
+				gdToast( 'Please enter the 6-digit verification code.', 'error' );
+				return;
+			}
 
-				gdBtnLoading( $btn );
-				$.post(
-					gdPublic.ajaxUrl,
-					{
-						action: 'gd_verify_email_verification_code',
-						nonce: gdPublic.nonce,
-						email: email,
-						flow: 'job_submission',
-						code: code,
-					},
-					function ( response ) {
-						gdBtnReset( $btn );
-						if ( response && response.success && response.data && response.data.token ) {
-							jobEmailVerified = true;
-							$form.find( '#gd_job_email_verification_token' ).val( response.data.token );
-							showStep( currentStep );
-							gdToast( 'Email verified.', 'success' );
-						} else {
-							var msg = ( response && response.data && response.data.message ) ? response.data.message : 'Verification failed.';
-							gdToast( msg, 'error' );
-						}
-					},
-					'json'
-				).fail( function () {
+			gdBtnLoading( $btn );
+			$.post(
+				gdPublic.ajaxUrl,
+				{
+					action: 'gd_verify_email_verification_code',
+					nonce: gdPublic.nonce,
+					email: email,
+					flow: 'job_submission',
+					code: code,
+				},
+				function ( response ) {
 					gdBtnReset( $btn );
-					gdToast( 'Network error. Please try again.', 'error' );
-				} );
+					if ( response && response.success && response.data && response.data.token ) {
+						jobEmailVerified = true;
+						$form.find( '#gd_job_email_verification_token' ).val( response.data.token );
+						showStep( currentStep );
+						gdToast( 'Email verified.', 'success' );
+					} else {
+						var msg = ( response && response.data && response.data.message ) ? response.data.message : 'Verification failed.';
+						gdToast( msg, 'error' );
+					}
+				},
+				'json'
+			).fail( function () {
+				gdBtnReset( $btn );
+				gdToast( 'Network error. Please try again.', 'error' );
 			} );
+		} );
 
-			$form.on( 'click', '#gd-job-resend-email-code', function () {
-				jobEmailVerified = false;
-				$form.find( '#gd_job_email_verification_token' ).val( '' );
-				requestJobVerificationCode();
-			} );
+		$form.on( 'click', '#gd-job-resend-email-code', function () {
+			jobEmailVerified = false;
+			$form.find( '#gd_job_email_verification_token' ).val( '' );
+			requestJobVerificationCode();
+		} );
 
-			$form.on( 'input', '#gd_account_email, #gd_contact_email', function () {
-				jobEmailVerified = false;
-				jobCodeDispatched = false;
-				$form.find( '#gd_job_email_verification_token' ).val( '' );
-				$form.find( '#gd_job_email_verification_code' ).val( '' );
-				if ( currentStep === totalSteps ) {
-					showStep( currentStep );
-				}
-			} );
+		$form.on( 'input', '#gd_account_email, #gd_contact_email', function () {
+			jobEmailVerified = false;
+			jobCodeDispatched = false;
+			$form.find( '#gd_job_email_verification_token' ).val( '' );
+			$form.find( '#gd_job_email_verification_code' ).val( '' );
+			if ( currentStep === totalSteps ) {
+				showStep( currentStep );
+			}
 		} );
 
 		// Initialize conditional fields.
@@ -2499,65 +2499,65 @@
 					gdToast( 'Network error. Please try again.', 'error' );
 				},
 			} );
+		} );
 
-			$form.on( 'click', '#gd-reg-verify-email-btn', function () {
-				var email = getMoverVerificationEmail();
-				var code  = $.trim( $form.find( '#gd_reg_email_verification_code' ).val() );
-				var $btn  = $( this );
+		$form.on( 'click', '#gd-reg-verify-email-btn', function () {
+			var email = getMoverVerificationEmail();
+			var code  = $.trim( $form.find( '#gd_reg_email_verification_code' ).val() );
+			var $btn  = $( this );
 
-				if ( ! email ) {
-					gdToast( 'Please enter your email before verification.', 'error' );
-					return;
-				}
-				if ( ! /^\d{6}$/.test( code ) ) {
-					gdToast( 'Please enter the 6-digit verification code.', 'error' );
-					return;
-				}
+			if ( ! email ) {
+				gdToast( 'Please enter your email before verification.', 'error' );
+				return;
+			}
+			if ( ! /^\d{6}$/.test( code ) ) {
+				gdToast( 'Please enter the 6-digit verification code.', 'error' );
+				return;
+			}
 
-				gdBtnLoading( $btn );
-				$.post(
-					gdPublic.ajaxUrl,
-					{
-						action: 'gd_verify_email_verification_code',
-						nonce: gdPublic.nonce,
-						email: email,
-						flow: 'mover_registration',
-						code: code,
-					},
-					function ( response ) {
-						gdBtnReset( $btn );
-						if ( response && response.success && response.data && response.data.token ) {
-							moverEmailVerified = true;
-							$form.find( '#gd_reg_email_verification_token' ).val( response.data.token );
-							showRegStep( currentStep );
-							gdToast( 'Email verified.', 'success' );
-						} else {
-							var msg = ( response && response.data && response.data.message ) ? response.data.message : 'Verification failed.';
-							gdToast( msg, 'error' );
-						}
-					},
-					'json'
-				).fail( function () {
+			gdBtnLoading( $btn );
+			$.post(
+				gdPublic.ajaxUrl,
+				{
+					action: 'gd_verify_email_verification_code',
+					nonce: gdPublic.nonce,
+					email: email,
+					flow: 'mover_registration',
+					code: code,
+				},
+				function ( response ) {
 					gdBtnReset( $btn );
-					gdToast( 'Network error. Please try again.', 'error' );
-				} );
+					if ( response && response.success && response.data && response.data.token ) {
+						moverEmailVerified = true;
+						$form.find( '#gd_reg_email_verification_token' ).val( response.data.token );
+						showRegStep( currentStep );
+						gdToast( 'Email verified.', 'success' );
+					} else {
+						var msg = ( response && response.data && response.data.message ) ? response.data.message : 'Verification failed.';
+						gdToast( msg, 'error' );
+					}
+				},
+				'json'
+			).fail( function () {
+				gdBtnReset( $btn );
+				gdToast( 'Network error. Please try again.', 'error' );
 			} );
+		} );
 
-			$form.on( 'click', '#gd-reg-resend-email-code', function () {
-				moverEmailVerified = false;
-				$form.find( '#gd_reg_email_verification_token' ).val( '' );
-				requestMoverVerificationCode();
-			} );
+		$form.on( 'click', '#gd-reg-resend-email-code', function () {
+			moverEmailVerified = false;
+			$form.find( '#gd_reg_email_verification_token' ).val( '' );
+			requestMoverVerificationCode();
+		} );
 
-			$form.on( 'input', '#gd-reg-email', function () {
-				moverEmailVerified = false;
-				moverCodeDispatched = false;
-				$form.find( '#gd_reg_email_verification_token' ).val( '' );
-				$form.find( '#gd_reg_email_verification_code' ).val( '' );
-				if ( currentStep === totalSteps ) {
-					showRegStep( currentStep );
-				}
-			} );
+		$form.on( 'input', '#gd-reg-email', function () {
+			moverEmailVerified = false;
+			moverCodeDispatched = false;
+			$form.find( '#gd_reg_email_verification_token' ).val( '' );
+			$form.find( '#gd_reg_email_verification_code' ).val( '' );
+			if ( currentStep === totalSteps ) {
+				showRegStep( currentStep );
+			}
 		} );
 
 		// "Select all" for job types.

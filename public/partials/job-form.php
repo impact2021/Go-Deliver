@@ -527,7 +527,7 @@ $form_builder = new Go_Deliver_Form_Builder();
 			<div class="gd-form-section" data-step="7">
 				<h2 class="gd-form-section__title"><?php esc_html_e( 'Verify Your Email', 'go-deliver' ); ?></h2>
 				<p class="gd-text-muted" style="margin-bottom:14px;">
-					<?php esc_html_e( 'We’ve sent a 6-digit verification code to your email. Enter it below to unlock the final Submit Job button.', 'go-deliver' ); ?>
+					<?php esc_html_e( 'We’ve sent a 6-digit verification code to your email. Enter it below to submit your job request.', 'go-deliver' ); ?>
 				</p>
 				<div class="gd-alert gd-alert--info" style="margin-bottom:14px;">
 					<span class="gd-alert__icon">ℹ️</span>
