@@ -577,6 +577,32 @@ $job_card_accent    = get_option( 'gd_job_card_accent', '#C9A227' );
 								value="<?php echo esc_attr( $email_from_address ); ?>"
 							>
 							<p class="description"><?php esc_html_e( 'The "From" email address used in all outgoing emails.', 'go-deliver' ); ?></p>
+							<?php
+							// Warn if the configured From Email address is empty or uses a different domain than the site.
+							$gd_site_domain = wp_parse_url( home_url(), PHP_URL_HOST );
+							$gd_site_domain = $gd_site_domain ? strtolower( ltrim( (string) $gd_site_domain, 'www.' ) ) : '';
+							if ( empty( $email_from_address ) ) {
+								echo '<p class="description" style="color:#d63638;">';
+								esc_html_e( '⚠ From Email is empty. A configured address improves email deliverability and prevents messages from landing in spam.', 'go-deliver' );
+								echo '</p>';
+							} else {
+								$at_pos          = strrpos( $email_from_address, '@' );
+								$gd_from_domain  = false !== $at_pos ? strtolower( ltrim( substr( $email_from_address, $at_pos + 1 ), 'www.' ) ) : '';
+								// Flag freemail providers.
+								$gd_freemail_domains = array( 'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.uk', 'hotmail.com', 'outlook.com', 'live.com', 'icloud.com' );
+								if ( in_array( $gd_from_domain, $gd_freemail_domains, true ) ) {
+									echo '<p class="description" style="color:#d63638;">';
+									/* translators: %s: free email domain */
+									printf( esc_html__( '⚠ "%s" is a free email provider. Use a mailbox on your own domain (e.g. notifications@%s) for better deliverability and to avoid spam filtering.', 'go-deliver' ), esc_html( $gd_from_domain ), esc_html( $gd_site_domain ) );
+									echo '</p>';
+								} elseif ( $gd_site_domain && $gd_from_domain !== $gd_site_domain ) {
+									echo '<p class="description" style="color:#b45309;">';
+									/* translators: 1: from email domain, 2: site domain */
+									printf( esc_html__( '⚠ From Email domain (%1$s) does not match your site domain (%2$s). Ensure SPF/DKIM records cover the sending domain, or use an address on %2$s.', 'go-deliver' ), esc_html( $gd_from_domain ), esc_html( $gd_site_domain ) );
+									echo '</p>';
+								}
+							}
+							?>
 						</td>
 					</tr>
 				</tbody>

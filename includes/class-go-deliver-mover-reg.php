@@ -169,7 +169,7 @@ admin_url( 'admin.php?page=go-deliver-movers' )
 		return;
 	}
 
-	wp_mail( $recipient_email, $subject, $message );
+	Go_Deliver_Notifications::send_plain_email( $recipient_email, $subject, $message );
 	}
 
 	/**
@@ -324,7 +324,7 @@ sanitize_textarea_field( $reason )
 );
 }
 
-wp_mail( $mover->user_email, $subject, $message );
+Go_Deliver_Notifications::send_plain_email( $mover->user_email, $subject, $message );
 }
 
 return true;
