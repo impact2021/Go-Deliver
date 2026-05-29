@@ -2461,6 +2461,7 @@
 		];
 
 		var currentStep = 0;
+		var viewportPadding = 10;
 
 		function centerTooltip() {
 			var $tooltip = $( '#gd-tour-tooltip' );
@@ -2468,10 +2469,11 @@
 			var ttHeight = $tooltip.outerHeight();
 			var winWidth = $( window ).width();
 			var winHeight = $( window ).height();
-			var scrollTop = $( window ).scrollTop();
-			var top  = scrollTop + ( winHeight / 2 ) - ( ttHeight / 2 );
+			var top  = ( winHeight / 2 ) - ( ttHeight / 2 );
 			var left = ( winWidth / 2 ) - ( ttWidth / 2 );
-			if ( left < 10 ) { left = 10; }
+			if ( top < viewportPadding ) { top = viewportPadding; }
+			if ( top + ttHeight > winHeight - viewportPadding ) { top = winHeight - ttHeight - viewportPadding; }
+			if ( left < viewportPadding ) { left = viewportPadding; }
 			$tooltip.css( { top: top, left: left } );
 		}
 
@@ -2490,10 +2492,10 @@
 			var left = rect.left + ( rect.width / 2 ) - ( ttWidth / 2 );
 
 			// Keep within viewport.
-			if ( left < 10 ) { left = 10; }
-			if ( left + ttWidth > winWidth - 10 ) { left = winWidth - ttWidth - 10; }
-			if ( top + ttHeight > winHeight - 10 ) { top = rect.top - ttHeight - 12; }
-			if ( top < 10 ) { top = 10; }
+			if ( left < viewportPadding ) { left = viewportPadding; }
+			if ( left + ttWidth > winWidth - viewportPadding ) { left = winWidth - ttWidth - viewportPadding; }
+			if ( top + ttHeight > winHeight - viewportPadding ) { top = rect.top - ttHeight - 12; }
+			if ( top < viewportPadding ) { top = viewportPadding; }
 
 			$tooltip.css( { top: top, left: left } );
 		}
