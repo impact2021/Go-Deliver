@@ -3711,6 +3711,22 @@
 	min-width: 0;
 }
 
+#gd-available-jobs-list .gd-job-card__stat--link {
+	cursor: pointer;
+	border-radius: 8px;
+	transition: background 0.15s;
+}
+
+#gd-available-jobs-list .gd-job-card__stat--link:hover,
+#gd-available-jobs-list .gd-job-card__stat--link:focus {
+	background: #f0f5ff;
+	outline: none;
+}
+
+#gd-available-jobs-list .gd-job-card__stat--link .gd-job-card__stat-text span {
+	color: #1d64f2;
+}
+
 #gd-available-jobs-list .gd-job-card__stat + .gd-job-card__stat {
 	padding-left: 20px;
 	border-left: 1px solid #ebeff5;

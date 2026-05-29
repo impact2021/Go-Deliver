@@ -1595,7 +1595,7 @@ aria-label="<?php esc_attr_e( 'Hide this job', 'go-deliver' ); ?>"
 </div>
 </div>
 <?php endif; ?>
-<div class="gd-job-card__stat">
+<div class="gd-job-card__stat<?php echo $q_count > 0 ? ' gd-job-card__stat--link' : ''; ?>"<?php echo $q_count > 0 ? ' role="button" tabindex="0" title="' . esc_attr__( 'View job details and quotes', 'go-deliver' ) . '"' : ''; ?>>
 <span class="gd-job-card__stat-icon" aria-hidden="true">
 <svg viewBox="0 0 24 24" focusable="false"><path d="M21 11.5a8.5 8.5 0 01-14.5 6L3 21l1.7-4.2A8.5 8.5 0 1112.5 20H21"></path><line x1="8.5" y1="10.5" x2="15.5" y2="10.5"></line><line x1="8.5" y1="14" x2="12.5" y2="14"></line></svg>
 </span>
