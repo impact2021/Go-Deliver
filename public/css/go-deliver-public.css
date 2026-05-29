@@ -3803,6 +3803,20 @@
 	display: none;
 }
 
+#gd-available-jobs-list .gd-job-card--paginate-hidden {
+	display: none;
+}
+
+#gd-available-jobs-list .gd-job-load-more-wrap {
+	display: flex;
+	justify-content: center;
+	margin-top: 6px;
+}
+
+#gd-available-jobs-list .gd-job-load-more {
+	min-width: 180px;
+}
+
 #gd-available-jobs-list .gd-job-search-empty {
 	margin: 4px 0 0;
 	padding: 24px;
@@ -3822,7 +3836,7 @@
 
 	#gd-panel-browse-jobs .gd-job-search,
 	#gd-panel-browse-jobs .gd-jobs-toolbar__filter {
-		width: 100%;
+		flex: 0 1 100%;
 		min-height: 64px;
 	}
 
