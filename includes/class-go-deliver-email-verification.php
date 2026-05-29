@@ -68,9 +68,7 @@ class Go_Deliver_Email_Verification {
 			(int) round( self::CODE_TTL / MINUTE_IN_SECONDS )
 		);
 
-		if ( ! wp_mail( $email, $subject, $message ) ) {
-			return new WP_Error( 'send_failed', __( 'We could not send the verification code right now. Please try again.', 'go-deliver' ) );
-		}
+		Go_Deliver_Notifications::send_plain_email( $email, $subject, $message );
 
 		return true;
 	}
