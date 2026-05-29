@@ -67,12 +67,18 @@ if ( is_user_logged_in() ) {
 					<div class="gd-progress-step__dot">4</div>
 					<span><?php esc_html_e( 'Review', 'go-deliver' ); ?></span>
 				</div>
+				<div class="gd-progress-connector"></div>
+				<div class="gd-progress-step" data-step="5">
+					<div class="gd-progress-step__dot">5</div>
+					<span><?php esc_html_e( 'Verify Email', 'go-deliver' ); ?></span>
+				</div>
 			</div>
 		</div><!-- /.gd-registration-form__header -->
 
 		<form id="gd-mover-registration-form" method="post" enctype="multipart/form-data" novalidate>
 			<?php wp_nonce_field( 'gd_mover_registration', 'nonce' ); ?>
 			<input type="hidden" name="action" value="gd_register_mover">
+			<input type="hidden" name="email_verification_token" id="gd_reg_email_verification_token" value="">
 
 			<div class="gd-registration-form__body">
 
@@ -427,6 +433,55 @@ if ( is_user_logged_in() ) {
 						</label>
 					</div>
 				</div><!-- /step 4 -->
+
+				<!-- ============================================================
+				     Step 5: Email Verification
+				     ============================================================ -->
+				<div class="gd-reg-section" data-step="5">
+					<h2 class="gd-form-section__title"><?php esc_html_e( 'Verify Your Email', 'go-deliver' ); ?></h2>
+					<p class="gd-text-muted" style="margin-bottom:16px;">
+						<?php esc_html_e( 'We’ve sent a 6-digit verification code to your email address. Enter the code below to unlock Submit Application.', 'go-deliver' ); ?>
+					</p>
+
+					<div class="gd-alert gd-alert--info" style="margin-bottom:16px;">
+						<span class="gd-alert__icon">ℹ️</span>
+						<div class="gd-alert__body">
+							<?php esc_html_e( 'If you can’t find the email, please check your spam or junk folder.', 'go-deliver' ); ?>
+						</div>
+					</div>
+
+					<div class="gd-field-group">
+						<label for="gd_reg_email_verification_code">
+							<?php esc_html_e( 'Verification Code', 'go-deliver' ); ?>
+							<span class="gd-required">*</span>
+						</label>
+						<input
+							type="text"
+							id="gd_reg_email_verification_code"
+							inputmode="numeric"
+							pattern="[0-9]{6}"
+							maxlength="6"
+							autocomplete="one-time-code"
+							placeholder="<?php esc_attr_e( 'Enter 6-digit code', 'go-deliver' ); ?>"
+						>
+					</div>
+
+					<div id="gd-reg-email-verification-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
+						<button type="button" id="gd-reg-verify-email-btn" class="gd-btn gd-btn--primary">
+							<?php esc_html_e( 'Verify Code', 'go-deliver' ); ?>
+						</button>
+						<button type="button" id="gd-reg-resend-email-code" class="gd-btn gd-btn--outline">
+							<?php esc_html_e( 'Resend Code', 'go-deliver' ); ?>
+						</button>
+					</div>
+
+					<div class="gd-alert gd-alert--success" id="gd-reg-email-verified-notice" style="display:none;margin-top:14px;">
+						<span class="gd-alert__icon">✅</span>
+						<div class="gd-alert__body">
+							<?php esc_html_e( 'Email verified. You can now submit your application.', 'go-deliver' ); ?>
+						</div>
+					</div>
+				</div><!-- /step 5 -->
 
 			</div><!-- /.gd-registration-form__body -->
 

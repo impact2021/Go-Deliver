@@ -289,4 +289,59 @@ class Go_Deliver_Public {
 		}
 		return ob_get_clean();
 	}
+
+	/**
+	 * Render platform-wide marketplace stats bar.
+	 *
+	 * Shortcode: [gd_stats_bar]
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string HTML output.
+	 */
+	public function render_stats_bar( $atts ) {
+		$counts      = count_users();
+		$role_counts = is_array( $counts['avail_roles'] ?? null ) ? $counts['avail_roles'] : array();
+		$total_movers = (int) ( $role_counts['gd_mover'] ?? 0 ) + (int) ( $role_counts['gd_mover_sub'] ?? 0 );
+
+		$job_counts = wp_count_posts( 'gd_job' );
+		$total_jobs = (int) ( $job_counts->publish ?? 0 );
+
+		$active_jobs_query = new WP_Query(
+			array(
+				'post_type'      => 'gd_job',
+				'post_status'    => 'publish',
+				'fields'         => 'ids',
+				'posts_per_page' => 1,
+				'no_found_rows'  => false,
+				'meta_query'     => array(
+					array(
+						'key'     => 'gd_job_status',
+						'value'   => array( 'open', 'locked', 'accepted' ),
+						'compare' => 'IN',
+					),
+				),
+			)
+		);
+		$active_jobs = (int) $active_jobs_query->found_posts;
+		wp_reset_postdata();
+
+		ob_start();
+		?>
+		<div class="gd-stats-bar gd-stats-bar--shortcode">
+			<div class="gd-stat-card">
+				<div class="gd-stat-card__value"><?php echo esc_html( number_format_i18n( $total_movers ) ); ?></div>
+				<div class="gd-stat-card__label"><?php esc_html_e( 'Movers', 'go-deliver' ); ?></div>
+			</div>
+			<div class="gd-stat-card">
+				<div class="gd-stat-card__value"><?php echo esc_html( number_format_i18n( $total_jobs ) ); ?></div>
+				<div class="gd-stat-card__label"><?php esc_html_e( 'Jobs Posted', 'go-deliver' ); ?></div>
+			</div>
+			<div class="gd-stat-card">
+				<div class="gd-stat-card__value"><?php echo esc_html( number_format_i18n( $active_jobs ) ); ?></div>
+				<div class="gd-stat-card__label"><?php esc_html_e( 'Active Jobs', 'go-deliver' ); ?></div>
+			</div>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
 }

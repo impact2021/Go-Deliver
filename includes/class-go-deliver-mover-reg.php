@@ -431,11 +431,17 @@ $data = array(
 'job_types'   => array(),
 'documents'   => array(),
 );
+$verification_token = sanitize_text_field( wp_unslash( $_POST['email_verification_token'] ?? '' ) );
 
 if ( ! empty( $_POST['job_types'] ) && is_array( $_POST['job_types'] ) ) {
 foreach ( $_POST['job_types'] as $jt ) {
 $data['job_types'][] = sanitize_text_field( wp_unslash( $jt ) );
 }
+}
+
+$verification_result = Go_Deliver_Email_Verification::validate_token( $verification_token, $data['email'], 'mover_registration', true );
+if ( is_wp_error( $verification_result ) ) {
+wp_send_json_error( array( 'message' => $verification_result->get_error_message() ) );
 }
 
 // Handle document uploads.

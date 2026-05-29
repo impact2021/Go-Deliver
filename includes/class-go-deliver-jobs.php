@@ -1070,6 +1070,7 @@ public function ajax_submit_job() {
 check_ajax_referer( 'gd_public_nonce', 'nonce' );
 
 $current_user_id = get_current_user_id();
+$verification_token = sanitize_text_field( wp_unslash( $_POST['email_verification_token'] ?? '' ) );
 
 if ( ! $current_user_id ) {
 // Guest: validate account creation fields and register a new customer.
@@ -1098,6 +1099,11 @@ if ( strlen( $password ) < 8 ) {
 wp_send_json_error( array( 'message' => __( 'Password must be at least 8 characters.', 'go-deliver' ) ) );
 }
 
+$verification_result = Go_Deliver_Email_Verification::validate_token( $verification_token, $email, 'job_submission', true );
+if ( is_wp_error( $verification_result ) ) {
+wp_send_json_error( array( 'message' => $verification_result->get_error_message() ) );
+}
+
 // Use the email address as the WordPress username (common single-field
 // registration pattern; username is not displayed to end users).
 $user_id = wp_create_user( $email, $password, $email );
@@ -1122,6 +1128,13 @@ wp_set_auth_cookie( $user_id );
 $current_user_id = $user_id;
 } elseif ( ! current_user_can( 'gd_submit_jobs' ) ) {
 wp_send_json_error( array( 'message' => __( 'Permission denied.', 'go-deliver' ) ), 403 );
+} else {
+$current_user = wp_get_current_user();
+$current_email = $current_user && ! empty( $current_user->user_email ) ? sanitize_email( $current_user->user_email ) : '';
+$verification_result = Go_Deliver_Email_Verification::validate_token( $verification_token, $current_email, 'job_submission', true );
+if ( is_wp_error( $verification_result ) ) {
+wp_send_json_error( array( 'message' => $verification_result->get_error_message() ) );
+}
 }
 
 $pickup_location = array(
