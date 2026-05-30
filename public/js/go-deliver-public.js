@@ -35,8 +35,8 @@
 		 * @param {Function} onDismiss
 		 */
 		function gdShowCompletionModal( title, message, onDismiss ) {
-			var modalOpenDelay  = 10;
-			var modalCloseDelay = 200;
+			var modalOpenDelay  = 10;  // Delay required so opening transition applies after first paint.
+			var modalCloseDelay = 200; // Matches `.gd-modal-overlay` CSS transition duration.
 			var $existing = $( '#gd-completion-modal' );
 			if ( $existing.length ) {
 				$existing.remove();
@@ -93,7 +93,7 @@
 					return;
 				}
 
-				var $focusable = $modal.find( 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])' ).filter( ':visible' );
+				var $focusable = $modal.find( 'button, [href], input, select, textarea, [tabindex="0"], [tabindex]:not([tabindex="-1"])' ).filter( ':visible' );
 				if ( ! $focusable.length ) {
 					e.preventDefault();
 					return;
