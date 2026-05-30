@@ -35,11 +35,14 @@
 		 * @param {Function} onDismiss
 		 */
 		function gdShowCompletionModal( title, message, onDismiss ) {
+			var modalOpenDelay  = 10;
+			var modalCloseDelay = 200;
 			var $existing = $( '#gd-completion-modal' );
 			if ( $existing.length ) {
 				$existing.remove();
 			}
 
+			var previousFocus = document.activeElement;
 			var $modal = $(
 				'<div class="gd-modal-overlay" id="gd-completion-modal" role="dialog" aria-modal="true" aria-labelledby="gd-completion-modal-title">' +
 					'<div class="gd-modal">' +
@@ -68,27 +71,63 @@
 				}
 			}
 
-			$modal.on( 'click', '.gd-completion-modal__ok, .gd-modal__close', function () {
+			function closeModal() {
 				$modal.removeClass( 'gd-modal-overlay--open' );
 				setTimeout( function () {
+					$( document ).off( 'keydown.gdCompletionModal' );
 					$modal.remove();
+					if ( previousFocus && typeof previousFocus.focus === 'function' ) {
+						previousFocus.focus();
+					}
 					finishDismiss();
-				}, 200 );
+				}, modalCloseDelay );
+			}
+
+			function trapFocus( e ) {
+				if ( 'Escape' === e.key ) {
+					e.preventDefault();
+					closeModal();
+					return;
+				}
+				if ( 'Tab' !== e.key ) {
+					return;
+				}
+
+				var $focusable = $modal.find( 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])' ).filter( ':visible' );
+				if ( ! $focusable.length ) {
+					e.preventDefault();
+					return;
+				}
+
+				var firstEl = $focusable.get( 0 );
+				var lastEl  = $focusable.get( $focusable.length - 1 );
+
+				if ( e.shiftKey && document.activeElement === firstEl ) {
+					e.preventDefault();
+					lastEl.focus();
+				} else if ( ! e.shiftKey && document.activeElement === lastEl ) {
+					e.preventDefault();
+					firstEl.focus();
+				}
+			}
+
+			$modal.on( 'click', '.gd-completion-modal__ok, .gd-modal__close', function () {
+				closeModal();
 			} );
 
 			$modal.on( 'click', function ( e ) {
 				if ( $( e.target ).is( '.gd-modal-overlay' ) ) {
-					$modal.removeClass( 'gd-modal-overlay--open' );
-					setTimeout( function () {
-						$modal.remove();
-						finishDismiss();
-					}, 200 );
+					closeModal();
 				}
 			} );
 
+			$( document ).on( 'keydown.gdCompletionModal', trapFocus );
+
+			// Delay class toggle so CSS transition runs after initial paint.
 			setTimeout( function () {
 				$modal.addClass( 'gd-modal-overlay--open' );
-			}, 10 );
+				$modal.find( '.gd-completion-modal__ok' ).trigger( 'focus' );
+			}, modalOpenDelay );
 		}
 
 		var $toast = $( '<div class="gd-toast gd-toast--' + type + '">' + gdEscape( message ) + '</div>' );
