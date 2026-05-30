@@ -35,8 +35,9 @@
 		 * @param {Function} onDismiss
 		 */
 		function gdShowCompletionModal( title, message, onDismiss ) {
-			var modalOpenDelay  = 10;  // Delay required so opening transition applies after first paint.
+			var modalOpenDelay  = 10;  // Minimum delay so browser paints initial state before transition class is applied.
 			var modalCloseDelay = 200; // Matches `.gd-modal-overlay` CSS transition duration.
+			var focusableSelector = 'button, [href], input, select, textarea, [tabindex="0"], [tabindex]:not([tabindex="-1"])';
 			var $existing = $( '#gd-completion-modal' );
 			if ( $existing.length ) {
 				$existing.remove();
@@ -93,7 +94,7 @@
 					return;
 				}
 
-				var $focusable = $modal.find( 'button, [href], input, select, textarea, [tabindex="0"], [tabindex]:not([tabindex="-1"])' ).filter( ':visible' );
+				var $focusable = $modal.find( focusableSelector ).filter( ':visible' );
 				if ( ! $focusable.length ) {
 					e.preventDefault();
 					return;
@@ -577,7 +578,7 @@
 					if ( response.success ) {
 						gdShowCompletionModal(
 							'Job posted successfully!',
-							'Your job is posted. Please check your inbox, and your spam or junk folder just in case, for confirmation emails.',
+							'Your job has been posted. Please check your inbox and spam/junk folder for confirmation emails.',
 							function () {
 							if ( gdPublic.dashboardUrl ) {
 								window.location.href = gdPublic.dashboardUrl;
@@ -2589,7 +2590,7 @@
 					if ( response.success ) {
 						gdShowCompletionModal(
 							'Application submitted!',
-							'Your sign up is complete. Please check your inbox, and your spam or junk folder just in case, for updates.',
+							'Your sign-up is complete. Please check your inbox and spam/junk folder for updates.',
 							function () {
 								if ( gdPublic.moverRegRedirectUrl ) {
 									window.location.href = gdPublic.moverRegRedirectUrl;
