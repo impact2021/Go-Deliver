@@ -27,6 +27,70 @@
 			$container = $( '<div id="gd-toast-container"></div>' ).appendTo( 'body' );
 		}
 
+		/**
+		 * Show a completion modal and run a callback once dismissed.
+		 *
+		 * @param {string}   title
+		 * @param {string}   message
+		 * @param {Function} onDismiss
+		 */
+		function gdShowCompletionModal( title, message, onDismiss ) {
+			var $existing = $( '#gd-completion-modal' );
+			if ( $existing.length ) {
+				$existing.remove();
+			}
+
+			var $modal = $(
+				'<div class="gd-modal-overlay" id="gd-completion-modal" role="dialog" aria-modal="true" aria-labelledby="gd-completion-modal-title">' +
+					'<div class="gd-modal">' +
+						'<div class="gd-modal__header">' +
+							'<h3 class="gd-modal__title" id="gd-completion-modal-title">' + gdEscape( title ) + '</h3>' +
+							'<button type="button" class="gd-modal__close" aria-label="Close">&times;</button>' +
+						'</div>' +
+						'<div class="gd-modal__body">' +
+							'<p>' + gdEscape( message ) + '</p>' +
+						'</div>' +
+						'<div class="gd-modal__footer">' +
+							'<button type="button" class="gd-btn gd-btn--primary gd-completion-modal__ok">OK</button>' +
+						'</div>' +
+					'</div>' +
+				'</div>'
+			).appendTo( 'body' );
+
+			var dismissed = false;
+			function finishDismiss() {
+				if ( dismissed ) {
+					return;
+				}
+				dismissed = true;
+				if ( typeof onDismiss === 'function' ) {
+					onDismiss();
+				}
+			}
+
+			$modal.on( 'click', '.gd-completion-modal__ok, .gd-modal__close', function () {
+				$modal.removeClass( 'gd-modal-overlay--open' );
+				setTimeout( function () {
+					$modal.remove();
+					finishDismiss();
+				}, 200 );
+			} );
+
+			$modal.on( 'click', function ( e ) {
+				if ( $( e.target ).is( '.gd-modal-overlay' ) ) {
+					$modal.removeClass( 'gd-modal-overlay--open' );
+					setTimeout( function () {
+						$modal.remove();
+						finishDismiss();
+					}, 200 );
+				}
+			} );
+
+			setTimeout( function () {
+				$modal.addClass( 'gd-modal-overlay--open' );
+			}, 10 );
+		}
+
 		var $toast = $( '<div class="gd-toast gd-toast--' + type + '">' + gdEscape( message ) + '</div>' );
 		$container.append( $toast );
 
@@ -472,9 +536,10 @@
 				success: function ( response ) {
 					gdBtnReset( $btn );
 					if ( response.success ) {
-						gdToast( 'Your job has been submitted successfully!', 'success', 5000 );
-						// Redirect to dashboard after short delay.
-						setTimeout( function () {
+						gdShowCompletionModal(
+							'Job posted successfully!',
+							'Your job is posted. Please check your inbox, and your spam or junk folder just in case, for confirmation emails.',
+							function () {
 							if ( gdPublic.dashboardUrl ) {
 								window.location.href = gdPublic.dashboardUrl;
 							} else {
@@ -486,7 +551,8 @@
 								$form.find( '#gd_job_email_verification_token' ).val( '' );
 								$form.find( '#gd_job_email_verification_code' ).val( '' );
 							}
-						}, 2000 );
+							}
+						);
 					} else {
 						var msg = ( response.data && response.data.message ) ? response.data.message : 'Submission failed.';
 						gdToast( msg, 'error' );
@@ -2482,13 +2548,19 @@
 				success: function ( response ) {
 					gdBtnReset( $btn );
 					if ( response.success ) {
-						if ( gdPublic.moverRegRedirectUrl ) {
-							window.location.href = gdPublic.moverRegRedirectUrl;
-						} else {
-							$( '#gd-mover-registration-form-wrap' ).hide();
-							$( '#gd-registration-success' ).show();
-							$( 'html, body' ).animate( { scrollTop: $( '#gd-registration-success' ).offset().top - 20 }, 300 );
-						}
+						gdShowCompletionModal(
+							'Application submitted!',
+							'Your sign up is complete. Please check your inbox, and your spam or junk folder just in case, for updates.',
+							function () {
+								if ( gdPublic.moverRegRedirectUrl ) {
+									window.location.href = gdPublic.moverRegRedirectUrl;
+								} else {
+									$( '#gd-mover-registration-form-wrap' ).hide();
+									$( '#gd-registration-success' ).show();
+									$( 'html, body' ).animate( { scrollTop: $( '#gd-registration-success' ).offset().top - 20 }, 300 );
+								}
+							}
+						);
 					} else {
 						var msg = ( response.data && response.data.message ) ? response.data.message : 'Registration failed.';
 						gdToast( msg, 'error' );
