@@ -6,6 +6,9 @@
 ( function ( $ ) {
 	'use strict';
 	var GD_BROWSE_JOBS_PAGE_SIZE = 10;
+	var GD_MODAL_OPEN_DELAY      = 10;
+	var GD_MODAL_CLOSE_DELAY     = 200;
+	var GD_FOCUSABLE_SELECTOR    = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 	// =========================================================================
 	// Utilities
@@ -38,6 +41,113 @@
 			$toast.removeClass( 'gd-toast--visible' );
 			setTimeout( function () { $toast.remove(); }, 300 );
 		}, duration );
+	}
+
+	/**
+	 * Show a completion modal and run a callback once dismissed.
+	 *
+	 * @param {string}   title
+	 * @param {string}   message
+	 * @param {Function} onDismiss
+	 */
+	function gdShowCompletionModal( title, message, onDismiss ) {
+		var $existing = $( '#gd-completion-modal' );
+		if ( $existing.length ) {
+			$existing.remove();
+		}
+
+		var previousFocus = document.activeElement;
+		var $modal   = $( '<div></div>' )
+			.attr( {
+				'class': 'gd-modal-overlay',
+				id:      'gd-completion-modal',
+				role:    'dialog',
+				'aria-modal': 'true',
+				'aria-labelledby': 'gd-completion-modal-title',
+			} );
+		var $dialog  = $( '<div class="gd-modal"></div>' );
+		var $header  = $( '<div class="gd-modal__header"></div>' );
+		var $title   = $( '<h3 class="gd-modal__title" id="gd-completion-modal-title"></h3>' ).text( title );
+		var $close   = $( '<button type="button" class="gd-modal__close" aria-label="Close">&times;</button>' );
+		var $body    = $( '<div class="gd-modal__body"></div>' );
+		var $message = $( '<p></p>' ).text( message );
+		var $footer  = $( '<div class="gd-modal__footer"></div>' );
+		var $ok      = $( '<button type="button" class="gd-btn gd-btn--primary gd-completion-modal__ok"></button>' ).text( 'OK' );
+
+		$header.append( $title, $close );
+		$body.append( $message );
+		$footer.append( $ok );
+		$dialog.append( $header, $body, $footer );
+		$modal.append( $dialog ).appendTo( 'body' );
+
+		var dismissed = false;
+		function finishDismiss() {
+			if ( dismissed ) {
+				return;
+			}
+			dismissed = true;
+			if ( typeof onDismiss === 'function' ) {
+				onDismiss();
+			}
+		}
+
+		function closeModal() {
+			$modal.removeClass( 'gd-modal-overlay--open' );
+			setTimeout( function () {
+				$( document ).off( 'keydown.gdCompletionModal' );
+				$modal.remove();
+				if ( previousFocus && typeof previousFocus.focus === 'function' ) {
+					previousFocus.focus();
+				}
+				finishDismiss();
+			}, GD_MODAL_CLOSE_DELAY );
+		}
+
+		function trapFocus( e ) {
+			if ( 'Escape' === e.key ) {
+				e.preventDefault();
+				closeModal();
+				return;
+			}
+			if ( 'Tab' !== e.key ) {
+				return;
+			}
+
+			var $focusable = $modal.find( GD_FOCUSABLE_SELECTOR ).filter( ':visible' );
+			if ( ! $focusable.length ) {
+				e.preventDefault();
+				return;
+			}
+
+			var firstEl = $focusable.get( 0 );
+			var lastEl  = $focusable.get( $focusable.length - 1 );
+
+			if ( e.shiftKey && document.activeElement === firstEl ) {
+				e.preventDefault();
+				lastEl.focus();
+			} else if ( ! e.shiftKey && document.activeElement === lastEl ) {
+				e.preventDefault();
+				firstEl.focus();
+			}
+		}
+
+		$modal.on( 'click', '.gd-completion-modal__ok, .gd-modal__close', function () {
+			closeModal();
+		} );
+
+		$modal.on( 'click', function ( e ) {
+			if ( $( e.target ).is( '.gd-modal-overlay' ) ) {
+				closeModal();
+			}
+		} );
+
+		$( document ).on( 'keydown.gdCompletionModal', trapFocus );
+
+		// Delay class toggle so CSS transition runs after initial paint.
+		setTimeout( function () {
+			$modal.addClass( 'gd-modal-overlay--open' );
+			$modal.find( '.gd-completion-modal__ok' ).trigger( 'focus' );
+		}, GD_MODAL_OPEN_DELAY );
 	}
 
 	/**
@@ -472,9 +582,10 @@
 				success: function ( response ) {
 					gdBtnReset( $btn );
 					if ( response.success ) {
-						gdToast( 'Your job has been submitted successfully!', 'success', 5000 );
-						// Redirect to dashboard after short delay.
-						setTimeout( function () {
+						gdShowCompletionModal(
+							'Job posted successfully!',
+							'Your job has been posted. Please check your inbox and spam/junk folder for confirmation emails.',
+							function () {
 							if ( gdPublic.dashboardUrl ) {
 								window.location.href = gdPublic.dashboardUrl;
 							} else {
@@ -486,7 +597,8 @@
 								$form.find( '#gd_job_email_verification_token' ).val( '' );
 								$form.find( '#gd_job_email_verification_code' ).val( '' );
 							}
-						}, 2000 );
+							}
+						);
 					} else {
 						var msg = ( response.data && response.data.message ) ? response.data.message : 'Submission failed.';
 						gdToast( msg, 'error' );
@@ -2482,13 +2594,19 @@
 				success: function ( response ) {
 					gdBtnReset( $btn );
 					if ( response.success ) {
-						if ( gdPublic.moverRegRedirectUrl ) {
-							window.location.href = gdPublic.moverRegRedirectUrl;
-						} else {
-							$( '#gd-mover-registration-form-wrap' ).hide();
-							$( '#gd-registration-success' ).show();
-							$( 'html, body' ).animate( { scrollTop: $( '#gd-registration-success' ).offset().top - 20 }, 300 );
-						}
+						gdShowCompletionModal(
+							'Application submitted!',
+							'Your sign-up is complete. Please check your inbox and spam/junk folder for updates.',
+							function () {
+								if ( gdPublic.moverRegRedirectUrl ) {
+									window.location.href = gdPublic.moverRegRedirectUrl;
+								} else {
+									$( '#gd-mover-registration-form-wrap' ).hide();
+									$( '#gd-registration-success' ).show();
+									$( 'html, body' ).animate( { scrollTop: $( '#gd-registration-success' ).offset().top - 20 }, 300 );
+								}
+							}
+						);
 					} else {
 						var msg = ( response.data && response.data.message ) ? response.data.message : 'Registration failed.';
 						gdToast( msg, 'error' );
